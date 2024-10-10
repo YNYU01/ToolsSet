@@ -1,0 +1,527 @@
+<!doctype html>
+<html>
+  <link rel="stylesheet" type="text/css" href="./css/style.css">
+  
+<body class="noselect noscrollbar">
+  <!--以下核心功能区-->
+  <!--顶栏1-->
+  <div id="top-main-1"  class="noscrollbar top-box" style="display: flex;">
+    <div id="file-name" style="font-size:10px; opacity:0.5;">[-- 暂无数据 --]</div>
+    <div id="another-btns" style="display: none;">
+      <div class="btn-text" onclick="alltag()" >全部</div>
+      <div style="opacity: 0.5;margin: 0 var(--btn-gap);"> | </div>
+      <div class="btn-text" onclick="notag()" >清空</div>
+    </div>
+    <div id="another-btns-2" style="display: none;">
+      <div class="btn-text" onclick="addDataText()" >确认</div>
+      <div style="opacity: 0.5;margin: 0 var(--btn-gap);"> | </div>
+      <div class="btn-text" onclick="notag()" >清空</div>
+    </div>
+    <div id="another-btns-3" style="display: none;">
+      <div class="btn-text"  style="color: #f42a2a;" >数据错误</div>
+      <div style="opacity: 0.5;margin: 0 var(--btn-gap);"> | </div>
+      <div class="btn-text" onclick="notag()" >清空</div>
+    </div>
+  </div>
+  <!--顶栏2-->
+  <div id="top-main-2"  class="noscrollbar top-box" style="display: none;">
+    <div id="export-info" style="font-size:10px; opacity:0.5;">[-- 未选中容器 --]</div>
+  </div>
+  <!--顶栏3-->
+  <div id="top-main-3" style="display: none;">
+  </div>
+
+  <!--视窗1-->
+  <div  class="page-main" id="page-main-1" style="display: flex;">
+    <!--拖拽区域，用于感知拖拽-->
+    <div class="btn-upfile-auto" id="upfile-area" style="height: 100%;">
+      <!--预览区域，用于切换视图-->
+      <div class="tags-box" id="tags-container-1" style="width: 100%; height:250px; position: relative;">
+        <!--根据列表生成标签-->
+      </div>
+    </div>
+    <!--用于【拖拽】【粘贴】两种交互式上传操作-->
+    <div id="auto-upfile"  style="display: block; text-align: center; position: relative;">
+
+      <div>
+        <div style="margin: auto; width: 40px; height: 40px;" >
+          <input type="file" id="user-excel" style="display: none;" onchange="upFileByExcel()">
+          <label for="user-excel" class="btn-text" > <user-excel></user-excel> </label>
+        </div>
+        <div>点击 | 拖拽 | 输入</div>
+      </div>
+
+      <div style="width: 260px; padding: 4px;">
+        <textarea id="data-text" class="input-textarea noscrollbar" placeholder="*name *w *h s" ondblclick="this.value = 'name\tw\th\nkv\t1920\t1080'; inputDataText()"></textarea>
+      </div>
+
+      <div id="data-text-tips" style="position: absolute; bottom: 20px;left: 20px; text-align: left; font-size: 12px; color: var(--boxBod);">
+        <li class="tags">复制表格（含表头）或双击查看示例</li>
+        <li class="tags">手动输入要用tab隔开行内数据</li>
+        <li class="tags">name:资源名；w/h：宽高；s：大小</li>
+      </div>
+    </div>
+      
+  </div>
+
+  <!--视窗2-->
+  <div  class="page-main" id="page-main-2" style="display: none;">
+    <!--拖拽区域，用于感知拖拽-->
+    <div class="btn-upfile-auto" >
+      <!--预览区域，用于切换视图-->
+      <div class="tags-box" id="tags-container-2" style="width: 100%; height:250px; position: relative;">
+        <!--根据列表生成标签-->
+      </div>
+    </div>    
+  </div>
+
+  <!--视窗3-->
+  <div  class="page-main" id="page-main-3" style="display: none; align-items:baseline; margin-top: 0;">
+    <!--功能模块-->
+    <div class="page-box noscrollbar">
+      <div style="margin: 0 0 10px 0;">📐[对象操作]</div>
+      <div style="display: flex; gap: 4px; position: relative;  align-items: center; height: 18px;">
+        <div class="tags-search-toast-area" style="left:0px; bottom: -1px;">
+          <div class="tags-search-toast" style="left:0px; width:calc(100vw - 60px);"> 功能说明功能说明功能说明功能说明</div>
+        </div>
+        <div style="width: 11px;height: 10px; border-radius: 50%; border: 1px solid var(--boxBod); font-size: 10px; color: var(--boxBod);display: flex;justify-content: center;align-items: center;padding: 1px 0 0 0;"> 
+          i 
+        </div>
+        <h style="opacity: 0.6; height: 18px; ">图层工具</h>
+      </div>
+      <div style="display: flex; justify-content: space-between; margin: 4px 0;">
+        <div class="btn-skill"> 整理图层 </div>
+        <div style="margin: 0 var(--btn-gap);"></div>
+        <div class="btn-skill"> 功能名称 </div>
+      </div>
+      <div style="display: flex; justify-content: space-between; margin: 4px 0;">
+        <div class="btn-skill"> 功能名称 </div>
+        <div style="margin: 0 var(--btn-gap);"></div>
+        <div class="btn-skill"> 功能名称 </div>
+      </div>
+      <div style="height: 10px;"></div>
+      <div style="display: flex; gap: 4px; position: relative;  align-items: center; height: 18px;">
+        <div class="tags-search-toast-area" style="left:0px; bottom: -1px;">
+          <div class="tags-search-toast" style="left:0px; width:calc(100vw - 60px);"> 功能说明功能说明功能说明功能说明</div>
+        </div>
+        <div style="width: 11px;height: 10px; border-radius: 50%; border: 1px solid var(--boxBod); font-size: 10px; color: var(--boxBod);display: flex;justify-content: center;align-items: center;padding: 1px 0 0 0;"> 
+          i 
+        </div>
+        <h style="opacity: 0.6; height: 18px; ">命名修改</h>
+      </div>
+      <div style="display: flex; justify-content: space-between; margin: 3px 0;">
+        <div style="width: 54px; min-width: 54px;display: flex;align-items: center;">可添加：</div>
+        <div class="btn-text" style="width: 100px;display: flex;justify-content: center;align-items: center;border: 1px var(--boxBod) solid; border-radius: 4px;"  onclick="addKey('$&')">
+          原文
+        </div>
+        <div style="width: 10px; min-width: 10px;"></div>
+        <div class="input-btn-skill" style="width: 100%; min-width: 120px;" > 
+          <input type="text" class="input-btn-skill" style="border:0px; height: 18px; width: calc(100% - 100px); " value="1"  onKeyPress="if(window.event.keyCode==13) this.blur()"/>
+          <div style="width:100%;border-radius: 0 3px 3px 0; display: flex;justify-content: center;align-items: center; background: #444; color: #fff;">
+            <div class="btn-text" onclick="addKey('$N')"> ↓降序 </div>
+            <div style="width: 10%;"></div>
+            <div class="btn-text" onclick="addKey('$n')"> ↑升序 </div>
+          </div>
+        </div>
+      </div>
+      <div style="display: flex; justify-content: space-between; margin: 3px 0;">
+        <div class="input-btn-skill" style="width: 100%; min-width: 120px;" > 
+          <input type="text" class="input-btn-skill" style=" border:0px; height: 18px; width: calc(100% - 100px); "  onKeyPress="if(window.event.keyCode==13) this.blur()"/>
+        </div>
+        <div style="width: 10px;"></div>
+        <div class="btn-skill" style="width:100px; min-width: 100px;"> 重命名 </div>
+      </div>
+      <div style="display: flex; justify-content: space-between; margin: 3px 0;">
+        <div class="input-btn-skill" style="width: 100%;" > 
+          <input type="text" class="input-btn-skill" style="border:0px; height: 18px; width: 100%; "  onKeyPress="if(window.event.keyCode==13) this.blur()"/>
+        </div>
+        <div style="width: 40px; display: flex;align-items: center;"> ▶ </div>
+        <div class="input-btn-skill" style="width: 100%; " > 
+          <input type="text" class="input-btn-skill" style="border:0px; height: 18px; width: 100%; "  onKeyPress="if(window.event.keyCode==13) this.blur()"/>
+        </div>
+        <div style="width: 10px;"></div>
+        <div class="btn-skill" style="width: 100px;min-width: 100px;"> 匹配替换 </div>
+      </div>
+      <div style="height: 10px;"></div>
+      <div style="display: flex; gap: 4px; position: relative;  align-items: center; height: 18px;">
+        <div class="tags-search-toast-area" style="left:0px; bottom: -1px;">
+          <div class="tags-search-toast" style="left:0px; width:calc(100vw - 60px);"> 功能说明功能说明功能说明功能说明</div>
+        </div>
+        <div style="width: 11px;height: 10px; border-radius: 50%; border: 1px solid var(--boxBod); font-size: 10px; color: var(--boxBod);display: flex;justify-content: center;align-items: center;padding: 1px 0 0 0;"> 
+          i 
+        </div>
+        <h style="opacity: 0.6; height: 18px; ">XX工具</h>
+      </div>
+      <div style="display: flex; justify-content: space-between; margin: 4px 0;">
+        <div class="btn-skill"> 功能名称 </div>
+        <div style="margin: 0 var(--btn-gap);"></div>
+        <div class="btn-skill"> 功能名称 </div>
+      </div>
+      <div style="display: flex; justify-content: space-between; margin: 4px 0;">
+        <div class="btn-skill"> 功能名称 </div>
+        <div style="margin: 0 var(--btn-gap);"></div>
+        <div class="btn-skill"> 功能名称 </div>
+      </div>
+      <div style="height: 10px;"></div>
+      <div style="display: flex; gap: 4px; position: relative;  align-items: center; height: 18px;">
+        <div class="tags-search-toast-area" style="left:0px; bottom: -1px;">
+          <div class="tags-search-toast" style="left:0px; width:calc(100vw - 60px);"> 功能说明功能说明功能说明功能说明</div>
+        </div>
+        <div style="width: 11px;height: 10px; border-radius: 50%; border: 1px solid var(--boxBod); font-size: 10px; color: var(--boxBod);display: flex;justify-content: center;align-items: center;padding: 1px 0 0 0;"> 
+          i 
+        </div>
+        <h style="opacity: 0.6; height: 18px; ">XX工具</h>
+      </div>
+      <div style="display: flex; justify-content: space-between; margin: 4px 0;">
+        <div class="btn-skill"> 功能名称 </div>
+        <div style="margin: 0 var(--btn-gap);"></div>
+        <div class="btn-skill"> 功能名称 </div>
+      </div>
+      <div style="display: flex; justify-content: space-between; margin: 4px 0;">
+        <div class="btn-skill"> 功能名称 </div>
+        <div style="margin: 0 var(--btn-gap);"></div>
+        <div class="btn-skill"> 功能名称 </div>
+      </div>
+      <div style="height: 10px;"></div>
+      <div style="display: flex; gap: 4px; position: relative;  align-items: center; height: 18px;">
+        <div class="tags-search-toast-area" style="left:0px; bottom: -1px;">
+          <div class="tags-search-toast" style="left:0px; width:calc(100vw - 60px);"> 功能说明功能说明功能说明功能说明</div>
+        </div>
+        <div style="width: 11px;height: 10px; border-radius: 50%; border: 1px solid var(--boxBod); font-size: 10px; color: var(--boxBod);display: flex;justify-content: center;align-items: center;padding: 1px 0 0 0;"> 
+          i 
+        </div>
+        <h style="opacity: 0.6; height: 18px; ">XX工具</h>
+      </div>
+      <div style="display: flex; justify-content: space-between; margin: 4px 0;">
+        <div class="btn-skill"> 功能名称 </div>
+        <div style="margin: 0 var(--btn-gap);"></div>
+        <div class="btn-skill"> 功能名称 </div>
+      </div>
+      <div style="display: flex; justify-content: space-between; margin: 4px 0;">
+        <div class="btn-skill"> 功能名称 </div>
+        <div style="margin: 0 var(--btn-gap);"></div>
+        <div class="btn-skill"> 功能名称 </div>
+      </div>
+
+      <div style="height: 20px;"></div>
+    </div>
+  </div>
+    
+  <!--核心按钮-->
+  <div style="height: 40px;width: 100%;">
+    <div id="btn-main-1" class="btn-main" onclick="addframe()">
+      创建画板
+    </div>
+    <div id="btn-main-2" class="btn-main" style="display: none;">
+      导出图片
+    </div>
+    <div id="btn-main-3"  style="display: none;"></div>
+  </div>
+
+  <!--切换主页-->
+  <div class="noscrollbar bottom-box">
+    <div  style="display: flex;">
+      <div id="tab-1" class="btn-text" onclick="viewPage(1)" >创建</div>
+      <div style="opacity: 0.5; margin: 0 calc(25vw/8 + 0px);"> | </div>
+      <div id="tab-2" class="btn-text" onclick="viewPage(2)" >导出</div>
+      <div style="opacity: 0.5;margin: 0 calc(25vw/8 + 0px);"> | </div>
+      <div id="tab-2" class="btn-text" onclick="viewPage(3)" >更多</div>
+
+    </div>
+    <a class="btn-text" style="text-decoration: none; color: #737373;" href="https://ynyu01.github.io/Tools-Help/" target="_blank" onclick="window.cep.util.openURLInDefaultBrowser(this.href)">
+      帮助
+    </a>
+    
+  </div>
+
+  <script src="js/CSInterface.js"></script>
+  <script src="js/main.js"></script>
+  
+  <script src="https://cdn.jsdelivr.net/npm/compressorjs@1.2.1/dist/compressor.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.5/xlsx.full.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.7.1/jszip.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+  <script>
+    const root = document.documentElement;
+    const fileName = document.getElementById('file-name');
+    const exportInfo = document.getElementById('export-info');
+    const editorInfo = document.getElementById('editor-info');
+    const tagsContainer1 = document.getElementById('tags-container-1');
+    const tagsContainer2 = document.getElementById('tags-container-2');
+    const upfileArea = document.getElementById('upfile-area');
+    const dataText = document.getElementById('data-text');
+    const dataTextTips = document.getElementById('data-text-tips');
+    const autoUp = document.getElementById('auto-upfile');
+    const inputExcel = document.getElementById('user-excel');
+    const btnUp = document.getElementById('btn-up');
+    const anotherBtns = document.getElementById('another-btns');
+    const anotherBtns2 = document.getElementById('another-btns-2');
+    const anotherBtns3 = document.getElementById('another-btns-3');
+  
+    var allFrame = [];
+    var finalFrame = [];
+    var imgExportData = [];
+    var loadingData;
+  
+    class userexcel extends HTMLElement {
+          constructor() {
+          super();
+          this.innerHTML = `
+              <svg width="100%" height="100%" viewBox="0 0 42 42" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path fill-rule="evenodd" clip-rule="evenodd" d="M26.0549 10H9C6.79086 10 5 11.7909 5 14V32C5 34.2091 6.79086 36 9 36H31C33.2091 36 35 34.2091 35 32V20C32.8567 20 30.8884 19.2508 29.3427 18H17V12H26.0549C26.0186 11.6717 26 11.338 26 11C26 10.662 26.0186 10.3283 26.0549 10ZM9 12H15V18H7V14C7 12.8954 7.89543 12 9 12ZM7 20H15L15 26H7V20ZM7 28H15V34H9C7.89543 34 7 33.1046 7 32V28ZM17 28V34H31C32.1046 34 33 33.1046 33 32V28H17ZM17 20L17 26H33V20H17Z" fill="var(--mainColor)"/>
+                  <path fill-rule="evenodd" clip-rule="evenodd" d="M35 18C38.866 18 42 14.866 42 11C42 7.13401 38.866 4 35 4C31.134 4 28 7.13401 28 11C28 14.866 31.134 18 35 18ZM35 6C35.5523 6 36 6.44772 36 7V10H39C39.5523 10 40 10.4477 40 11C40 11.5523 39.5523 12 39 12H36V15C36 15.5523 35.5523 16 35 16C34.4477 16 34 15.5523 34 15V12H31C30.4477 12 30 11.5523 30 11C30 10.4477 30.4477 10 31 10L34 10V7C34 6.44772 34.4477 6 35 6Z" fill="var(--mainColor)"/>
+              </svg>
+          `;
+          }
+      }
+    class tagsclose extends HTMLElement {
+        constructor() {
+        super();
+        this.innerHTML = `
+            <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" fill="none" version="1.1" width="100%" height="100%" viewBox="0 0 10 10">
+                <g>
+                    <rect x="0" y="0" width="10" height="10" rx="5" fill="#000000" fill-opacity="0.5"/>
+                    <g transform="matrix(0.7071067690849304,0.7071067690849304,-0.7071067690849304,0.7071067690849304,2.575643857138118,-3.075268943922481)">
+                        <g>
+                            <rect x="7.020312309265137" y="1.5714426040649414" width="0.8081187009811401" height="4.848711967468262" rx="0.40405935049057007" fill="#D8D8D8" fill-opacity="1"/>
+                        </g>
+                        <g transform="matrix(0,1,-1,0,13.4404296875,-6.256994247436523)">
+                            <rect x="9.848711967468262" y="3.5917177200317383" width="0.8081187009811401" height="4.848711967468262" rx="0.40405935049057007" fill="#D8D8D8" fill-opacity="1"/>
+                        </g>
+                    </g>
+                </g>
+            </svg>
+        `;
+        }
+    }
+  
+    customElements.define('user-excel', userexcel);
+    customElements.define('tags-close', tagsclose);
+  
+    window.onload = function(){
+      viewPage(1)
+    }
+    //粘贴上传
+    upFileByInput()
+    function upFileByInput(){
+      dataText.addEventListener('keydown', function(event) {
+        if (event.key === 'Tab') {
+          dataTextTips.style.display = "none";
+          event.preventDefault(); // 阻止默认Tab行为
+          const start = this.selectionStart;
+          const end = this.selectionEnd;
+          const selectedText = this.value.substring(start, end);
+          const before = this.value.substring(0, start);
+          const after = this.value.substring(end, this.value.length);
+          this.value = before + '\t' + selectedText + after; // 用4个空格替换Tab
+          this.selectionStart = this.selectionEnd = start + 4; // 设置光标位置
+        }
+      });
+
+      dataText.addEventListener('input', function() {
+        if (dataText.value == '' ){
+          fileName.innerHTML = '[-- 暂无数据 --]';
+          anotherBtns2.style.display = "none";
+          anotherBtns3.style.display = "none";
+          dataTextTips.style.display = "block";
+        } else if ( dataText.value.includes('name\tw\th') == true ){
+          inputDataText()
+        } else {
+          fileName.innerHTML = '[-- 正在输入 --]';
+          console.log('数据错误')
+          anotherBtns2.style.display = "none";
+          anotherBtns3.style.display = "flex";
+          dataTextTips.style.display = "none";
+        }
+      });
+    }
+
+    function inputDataText(){
+      fileName.innerHTML = '[-- 正在输入 --]';
+      anotherBtns2.style.display = "flex";
+      anotherBtns3.style.display = "none";
+      dataTextTips.style.display = "none";
+    }
+
+    function addDataText(){
+      fileName.innerHTML = '[-- 来自输入数据 --]';
+      var newData = textToList(dataText.value);
+      autoUp.style.display = "none";
+      allFrame = newData;
+      addtag(newData);
+      anotherBtns.style.display = "flex";
+      anotherBtns2.style.display = "none";
+      badData()
+    }
+
+    //将粘贴的内容处理成新数组
+    function textToList(text) {
+      var lines = text.split('\n');
+      var headers = lines[0].split('\t');
+      var data = lines.slice(1).map(line => line.split('\t').map(value => /^\d+\.?\d*$/.test(value) ? parseFloat(value) : value));
+    
+      return data.map(row => headers.reduce((acc, header, index) => {
+        acc[header] = row[index];
+        return acc;
+      }, {}));
+    }
+
+    //拖拽上传列表
+    upFileByDrop()
+    function upFileByDrop(){
+      upfileArea.addEventListener('dragover', function(e) {
+        notag()
+        fileName.innerHTML = '[-- 松手即可上传 --]';
+        e.stopPropagation();
+        e.preventDefault();
+        e.dataTransfer.dropEffect = 'copy';
+        tagsContainer1.style.boxShadow = '0px 0px 4px  rgba(256,256,256,0.5)';
+        autoUp.style.display = "none";
+      });
+
+      upfileArea.addEventListener('dragleave', function(e) {
+        fileName.innerHTML = '[-- 暂无数据 --]';
+        if (autoUp.style.display == "none") {
+        e.stopPropagation();
+        e.preventDefault();
+        e.dataTransfer.dropEffect = 'copy';
+        tagsContainer1.style.boxShadow = '';
+        autoUp.style.display = "block";
+        }
+      });
+    
+      upfileArea.addEventListener('drop', function(e) {
+        e.stopPropagation();
+        e.preventDefault();
+        tagsContainer1.style.boxShadow = '';
+    
+        var file = e.dataTransfer.files[0];
+        var reader = new FileReader();
+    
+        fileName.innerHTML = file.name;
+    
+        reader.onload = function(e) {
+        
+        var data = new Uint8Array(e.target.result);
+        var workbook = XLSX.read(data, {type: 'array'});
+    
+        // 假设我们只读取第一个工作表
+        var wsname = workbook.SheetNames[0];
+        var ws = workbook.Sheets[wsname];
+    
+        // 将工作表转换为JSON
+        var userData = XLSX.utils.sheet_to_json(ws); 
+        allFrame = userData;
+        addtag(userData);
+        anotherBtns.style.display = "flex";
+        badData()
+      };
+      
+      reader.readAsArrayBuffer(file);
+    });
+    }
+
+    //选择文件上传列表
+    function upFileByExcel(){
+      var file = inputExcel.files[0];
+      var reader = new FileReader();
+      
+      fileName.innerHTML = file.name;
+      autoUp.style.display = "none";
+  
+      reader.onload = function(e) {
+        
+        var data = new Uint8Array(e.target.result);
+        var workbook = XLSX.read(data, {type: 'array'});
+    
+        // 只读取第一个工作表
+        var wsname = workbook.SheetNames[0];
+        var ws = workbook.Sheets[wsname];
+    
+        // 将工作表转换为JSON
+        var userData = XLSX.utils.sheet_to_json(ws); 
+        allFrame = userData;
+
+        addtag(userData)
+        anotherBtns.style.display = "flex";
+
+        badData()
+       
+      };
+      
+      reader.readAsArrayBuffer(file);
+  }
+
+    //判断错误数据
+    function badData(){
+      if(tagsContainer1.innerHTML == ""){
+        anotherBtns.style.display = "none";
+        anotherBtns2.style.display = "none";
+        anotherBtns3.style.display = "flex";
+        allFrame = [];
+        finalFrame = [];
+      }
+      for (var i=0 ; i < allFrame.length; i++) {
+        if ( document.getElementById('tag-' + i).innerHTML.includes('undefined')){
+          fileName.innerHTML = '';
+          anotherBtns.style.display = "none";
+          anotherBtns2.style.display = "none";
+          anotherBtns3.style.display = "flex";
+          allFrame = [];
+          finalFrame = [];
+        }
+      }
+    }
+  
+    //生成创建标签
+    function addtag(userData){
+
+      tagsContainer1.innerHTML = "";
+      for(var i = 0; i < userData.length ;i++){
+        var e = i + 1;
+        tagsContainer1.innerHTML += '<div class="tags" id="tag-' + i + '" style="display:block;"><div class="tags-picks">'+ e + '. ' + userData[i].name + ' ' + userData[i].w + '×' + userData[i].h + '</div><tags-close onclick="this.parentNode.style.display = `none`"; class="tags-close"></tags-close></div>';
+      }
+    
+    }
+  
+    
+    //初始化
+    function notag(){
+      inputExcel.value = ''
+      fileName.innerHTML = '[-- 暂无数据 --]';
+      tagsContainer1.innerHTML = '<!--根据列表生成标签-->'
+      autoUp.style.display = "block";
+
+      allFrame = [];
+      finalFrame = [];
+      
+      dataText.value = '';
+      anotherBtns.style.display = "none";
+      anotherBtns2.style.display = "none";
+      anotherBtns3.style.display = "none";
+      dataTextTips.style.display = "block";
+    }
+  
+    //保留全部条目
+    function alltag(){
+    for (var i=0 ; i < allFrame.length; i++) {
+      document.getElementById('tag-' + i).style.display = 'flex';
+    }
+  }
+  
+    //切换tab
+    function viewPage(e){
+      var main = ['top','page','btn']
+      for (var i = 0; i < main.length; i++){
+        document.getElementById(main[i] + "-main-1").style.display = 'none';
+        document.getElementById(main[i] + "-main-2").style.display = 'none';
+        document.getElementById(main[i] + "-main-3").style.display = 'none';
+        document.getElementById(main[i] + "-main-" + e).style.display = 'flex';
+      }
+    }
+  
+    
+
+  </script>
+</body>
+</html>
