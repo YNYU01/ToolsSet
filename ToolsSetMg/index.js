@@ -1,3 +1,5 @@
+main()
+function main() {
 mg.showUI(__html__);
 
 mg.ui.postMessage([mg.themeColor,'setTheme']);
@@ -1737,4 +1739,5 @@ function cutPath(d) {
     }
     */
     
+}
 }
