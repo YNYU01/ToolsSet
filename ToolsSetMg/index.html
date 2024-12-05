@@ -36,6 +36,9 @@
     --map-line-x: 50%;
     --map-line-y: 50%;
     --map-bg: #202020;
+    /*other*/
+    --sidepageW:248px;
+    --sidepageP:14px;
   }
 
 
@@ -60,18 +63,7 @@
     -moz-osx-font-smoothing: grayscale;
     letter-spacing: 0.01em;
     overflow: hidden;
-    transition: background-color 0.5s ease-out,fill 0.5s ease-out,color 0.5s ease-out;
-  }
-
-  .side-page-box {
-    width: 220px;
-    height: auto;
-    padding: 0 14px 10px 14px;
-    display: flex;
-    gap: 2px;
-    flex-direction: column;
-    position: relative;
-
+    /*transition: background-color 0.5s ease-out,fill 0.5s ease-out,color 0.5s ease-out;*/
   }
 
   .top-box {
@@ -149,13 +141,13 @@
     padding: 4px 4px 4px 10px;
     background-color: var(--boxBak);
     color: var(--mainColor);
-    min-height: 200px;
+    /*min-height: 200px;*/
     min-width: 100%;
-    max-height: 260px;
+    /*max-height: 260px;*/
     max-width: 100%;
     outline: none;
     opacity: 0.7;
-    transition: background-color 0.5s ease-out;
+    /*transition: background-color 0.5s ease-out;*/
   }
 
   .input-textarea:focus {
@@ -174,6 +166,17 @@
     gap: 4px;
   }
 
+  .side-page-main-skill {
+    width: calc(var(--sidepageW) - var(--sidepageP)*2);
+    height: auto;
+    padding: 0 var(--sidepageP) 10px var(--sidepageP);
+    display: flex;
+    gap: 2px;
+    flex-direction: column;
+    position: relative;
+
+  }
+
   .side-page {
     position: absolute;
     left: -10px;
@@ -184,8 +187,8 @@
   }
 
 
-  .side {
-    width: 248px;
+  .side-page-main {
+    width: var(--sidepageW);
     height: 100%;
     position: relative;
     background-color: var(--boxBak);
@@ -199,13 +202,13 @@
     }
 
     100% {
-      width: 248px;
+      width: var(--sidepageW);
     }
   }
 
   @keyframes side-close {
     0% {
-      width: 248px;
+      width: var(--sidepageW);
     }
 
     100% {
@@ -228,13 +231,13 @@
     border-radius: 4px;
     padding: 0 2px;
     box-shadow: '';
-    transition: margin-left ease-out 0.5s,background-color 0.5s ease-out;
+    transition: margin-left ease-out 0.5s,/*background-color 0.5s ease-out*/;
     z-index: 2;
   }
 
   .btn-side svg {
     transform: rotate(90deg);
-    transition: transform ease-out 0.5s,background-color 0.5s ease-out;
+    transition: transform ease-out 0.5s,/*background-color 0.5s ease-out*/;
   }
 
   .btn-side svg .jian {
@@ -319,6 +322,49 @@
     outline: none;
   }
 
+  .btn-style {
+    min-width: 8ch;
+    height: 20px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: var(--boxBak);
+    border-radius: 10px;
+    border: var(--boxBak) 1px solid;
+    color: var(--hasnot, --mainColor);
+    position: relative;
+    cursor: pointer;
+  }
+
+  .btn-style::before {
+    content: "";
+    position: absolute;
+    border-radius: 10px;
+    width: 100%;
+    height: 20px;
+    background-color: var(--boxBod);
+    border: var(--mainColor) 1px solid;
+    opacity: 0.15;
+  }
+
+  .btn-style:hover {
+    color: var(--mainColor3);
+    border: var(--mainColor) 1px solid;
+    /*background-color: var(--boxBod);*/
+    background-image: linear-gradient(-90deg, var(--boxBod) 0%, var(--boxBod) 50%, #00000000 50%, #00000000 100%);
+    background-size: 210%;
+    background-position: 100% 0%;
+    opacity: var(--hasnot-op, 0.6);
+  }
+
+  .btn-style:active {
+    color: var(--mainColor3);
+    border: var(--mainColor) 1px solid;
+    background-color: var(--boxBod);
+    opacity: var(--hasnot-op, 0.4);
+    transform: translateY(1px);
+  }
+
   .btn-chk-num {
     width: 100%;
     height: 20px;
@@ -401,9 +447,9 @@
     background-color: var(--boxBod);
   }
 
-  .btn-chk-export {
-    width: 18px;
+  .btn-chk-export { 
     height: 16px;
+    padding: 0 2px;
     display: flex;
     justify-content: center;
     align-items: center;
@@ -455,6 +501,11 @@
 .btn-theme {
   --theme-l:rgba(0,0,0,0);
   --theme-d:var(--boxBod);
+}
+
+.btn-theme:hover {
+  cursor: pointer;
+  opacity: 0.8;
 }
 
 input[type="checkbox"]:checked+.btn-theme {
@@ -535,6 +586,17 @@ input[type="checkbox"]:checked+.btn-theme {
     font-size: 12px;
   }
 
+  .tags-exports {
+    border-radius: 4px;
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 4px 8px;
+    background: var(--boxBak);
+    font-size: 12px;
+  }
+
   .tags-imports {
     border-radius: 4px;
     width: 100%;
@@ -561,12 +623,57 @@ input[type="checkbox"]:checked+.btn-theme {
   input[type="checkbox"]:checked+.tags-editor {
     border: 1px var(--mainColor) solid;
     opacity: 1;
+    transform: translateX(-1px);
   }
 
-  input[type="checkbox"]:checked+.tags-editor::after {
-    content: '▶';
+  .edits{
+    position: relative;
+  }
+
+  .tags-style{
+    width: 100%;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 4px;
+    font-size: 12px;
+    position: relative;
+  }
+
+  .tags-style::before{
+    content: '';
     position: absolute;
-    right: -10px;
+    top:0;
+    left:0;
+    width: 100%;
+    height: 100%;
+    border-bottom: 1px var(--boxBod) solid;
+    opacity: 0.4;
+  }
+
+  .chk-style-key{
+    --has:rgba(0,0,0,0);
+    --must:var(--liColor1);
+  }
+
+  input[type="checkbox"]:checked + .chk-style-key{
+    --has:var(--boxBod);
+    color:var(--boxBod);
+    --must:rgba(0,0,0,0);
+  }
+
+  input[type="checkbox"]:checked + .chk-style-key + div{
+    display: none;
+  }
+
+  .tags-style-edit{
+    width: 100%;
+    display: flex;
+    flex-flow: column;
+    padding: 4px;
+    font-size: 12px;
+    position: relative;
   }
 
   .tags-close {
@@ -956,35 +1063,30 @@ input[type="checkbox"]:checked+.btn-theme {
     <div id="side">
       <!--底部渐变遮罩-->
       <div id="mask2"
-        style="display: none; width: 248px; height: 40px; position: absolute; bottom: 0; background-image: linear-gradient(to top, var(--boxBak) 20%, #00000000 100%); z-index: 2;"
+        style="display: none; width: var(--sidepageW); height: 40px; position: absolute; bottom: 0; background-image: linear-gradient(to top, var(--boxBak) 20%, #00000000 100%); z-index: 2;"
         onmouseenter=" sidePageMove = setInterval(()=>{document.getElementById('side-0').scrollTop += 2},1)" ;
         onmouseleave=" clearInterval(sidePageMove)"></div>
       <!--功能区，默认收起-->
-      <div id="side-0" class="side noscrollbar" style="display: none; ">
+      <div id="side-0" class="side-page-main noscrollbar" style="display: none; ">
 
         <div style="height: 1px;" id="topView"></div>
         <!--搜索框-->
-        <div
-          style="position: sticky; width: 230px; display: flex; z-index: 3; top:10px; left: 10px; background-color: var(--boxBak);"
-          ondblclick="this.parentNode.scrollTop = 0">
+        <div style="position: sticky; width: calc(100% - var(--sidepageP)); display: flex; z-index: 3; top:10px; left: 10px; background-color: var(--boxBak);" ondblclick="this.parentNode.scrollTop = 0">
           <div style="position: absolute; top:2px; width: 12px; margin-left: 2px; z-index: 3">
             <tags-search></tags-search>
           </div>
           <!--清空-->
-          <div style="width: 14px; position: absolute; right: 2px;top:1px; cursor: pointer; z-index: 3;"
-            onclick="document.getElementById('search-box').value = '';">
+          <div style="width: 14px; position: absolute; right: 2px;top:1px; cursor: pointer; z-index: 3;"onclick="document.getElementById('search-box').value = '';">
             <tags-search-close></tags-search-close>
           </div>
           <input id="search-box" class="search-box" style="padding: 0 0 0 16px;width: calc(100% - 16px);" type="text"
-            placeholder="输入关键字搜索（双击回到顶部）" oninput="//searchTo(this.value)"
-            onKeyPress="if(window.event.keyCode==13) this.blur()" />
-          <div
-            style="position: absolute; width: 240px; height: 30px; left:-10px; top: -10px; background-color: var(--boxBak);">
+            placeholder="输入关键字搜索（双击回到顶部）" oninput="//searchTo(this.value)" onKeyPress="if(window.event.keyCode==13) this.blur()" />
+          <div style="position: absolute; width: var(--sidepageW); height: 30px; left:-10px; top: -10px; background-color: var(--boxBak);">
           </div>
         </div>
         <!--功能模块-->
         <!--点击工具类别可收起/展开，默认展开-->
-        <div class="side-page-box" style=" --toastW:220px">
+        <div class="side-page-main-skill" style=" --toastW:calc(var(--sidepageW) - var(--sidepageP)*2)">
           <div style="height: 1px;" id="像素工具"></div>
           <div style="height: 30px;"></div>
 
@@ -1058,7 +1160,7 @@ input[type="checkbox"]:checked+.btn-theme {
                 style="width: 11px;height: 10px; border-radius: 50%; border: 1px solid var(--boxBod); font-size: 10px; color: var(--boxBod);display: flex;justify-content: center;align-items: center;padding: 1px 0 0 0;">
                 i
               </div>
-              <h style="opacity: 0.6; height: 18px; " id="变形工具">变形工具</h>
+              <h style="opacity: 0.6; height: 18px; " id="变形工具">简单变形</h>
             </div>
             <div style="display: flex; justify-content: space-between;align-items: center; gap: 6px; margin: 3px 0;">
               <input type="range" min="-90" max="90" value="0" id="slider-skewW" style="width: calc(100% - 8ch);"
@@ -1083,6 +1185,7 @@ input[type="checkbox"]:checked+.btn-theme {
                   %</div>
               </div>
             </div>
+            <div style="height: 4px;"></div>
             <div style="display: flex; justify-content: space-between; gap: 6px; margin: 3px 0;">
               <input type="range" min="-90" max="90" value="0" id="slider-skewH" style="width: calc(100% - 8ch); "
                 oninput="document.getElementById('input-num-skewH').value = this.value;skew(true);" />
@@ -1112,6 +1215,93 @@ input[type="checkbox"]:checked+.btn-theme {
 
             <div style="height: 18px;"></div>
 
+            <div style="display: flex; gap: 4px; position: relative;  align-items: center; height: 18px;">
+              <div class="tags-search-toast-area" style="left:0px; bottom: -1px; ">
+                <div class="tags-search-toast"> 仅作用于填充属性</div>
+              </div>
+              <div
+                style="width: 11px;height: 10px; border-radius: 50%; border: 1px solid var(--boxBod); font-size: 10px; color: var(--boxBod);display: flex;justify-content: center;align-items: center;padding: 1px 0 0 0;">
+                i
+              </div>
+              <h style="opacity: 0.6; height: 18px; ">填充修改</h>
+            </div>
+            <div style="display: flex; justify-content: space-between; gap: 6px; margin: 3px 0;">
+              <div class="btn-skill" style="--hasnot:var(--boxBod);--hasnot-op:0.15;"> 清理像素 </div>
+              <div class="btn-skill" onclick="parent.postMessage(['reSize','fillChange'], '*');"> 恢复尺寸 </div>
+            </div>
+            <div style="display: flex; justify-content: space-between; gap: 6px; margin: 3px 0;">
+              <div class="btn-skill" style="--hasnot:var(--boxBod);--hasnot-op:0.15;"> 反转颜色 </div>
+              <div class="btn-skill" style="--hasnot:var(--boxBod);--hasnot-op:0.15;"> 反转通道 </div>
+            </div>
+            <div style="display: flex; justify-content: space-between; gap: 6px; margin: 3px 0;">
+              <div class="btn-skill" onclick="parent.postMessage(['fliters','fillChange'],'*')"> 复用调整 </div>
+              <div class="btn-skill" onclick="parent.postMessage(['fillsType','fillChange'],'*')"> 复用填充模式 </div>
+            </div>
+            <div style="display: flex; justify-content: space-between; gap: 6px; margin: 3px 0;">
+              <div class="btn-skill" onclick="parent.postMessage(['yuhua','fillChange'],'*')"> 羽化盒边缘 </div>
+              <div class="btn-skill" style="--hasnot:var(--boxBod);--hasnot-op:0.15;"> 羽化轮廓 </div>
+            </div>
+
+            <div style="height: 18px;"></div>
+
+            <div style="display: flex; gap: 4px; position: relative;  align-items: center; height: 18px;">
+              <div class="tags-search-toast-area" style="left:0px; bottom: -1px;">
+                <div class="tags-search-toast"> 生成单独图层+效果</div>
+              </div>
+              <div
+                style="width: 11px;height: 10px; border-radius: 50%; border: 1px solid var(--boxBod); font-size: 10px; color: var(--boxBod);display: flex;justify-content: center;align-items: center;padding: 1px 0 0 0;">
+                i
+              </div>
+              <h style="opacity: 0.6; height: 18px; ">生成</h>
+            </div>
+            <div style="display: flex; justify-content: space-between; gap: 6px; margin: 3px 0;">
+              <div class="input-btn-skill" style="width: 60px; min-width: 60px;">
+                <input id="input-num-tjzs" type="text" class="input-btn-skill" style="border:0px; height: 18px;"
+                  value="1" onKeyPress="if(window.event.keyCode==13) this.blur()" />
+                <div class="input-btn-skill"
+                  style="border:0px; width:30px; border-radius: 0px ;background-color: var(--boxGry); opacity: 0.8;  color:var(--mainColor1)">
+                  %</div>
+              </div>
+              <div class="btn-skill" style="border: var(--boxBod) 1px solid; "
+                onclick="parent.postMessage(['addNoise','addPixel'],'*'); "> 添加杂色 </div>
+            </div>
+            <div style="display: flex; justify-content: space-between; gap: 6px; margin: 3px 0;">
+              <div class="input-btn-skill" style="width: 60px; min-width: 60px;">
+                <input id="input-num-sbtq" type="text" class="input-btn-skill" style="border:0px; height: 18px;"
+                  value="4" onKeyPress="if(window.event.keyCode==13) this.blur()" />
+                <div class="input-btn-skill"
+                  style="border:0px; width:30px; border-radius: 0px ;background-color: var(--boxGry); opacity: 0.8;  color:var(--mainColor1)">
+                  个</div>
+              </div>
+              <div class="btn-skill" style="border: var(--boxBod) 1px solid; "> 色板提取 </div>
+            </div>
+
+            <div style="display: flex; justify-content: space-between; gap: 6px; margin: 3px 0;">
+              <div class="input-btn-skill" style="width: 60px; min-width: 60px;">
+                <input id="input-num-gfcbl" type="text" class="input-btn-skill" style="border:0px; height: 18px;"
+                  value="50" onKeyPress="if(window.event.keyCode==13) this.blur()" />
+                <div class="input-btn-skill"
+                  style="border:0px; width:30px; border-radius: 0px ;background-color: var(--boxGry); opacity: 0.8;  color:var(--mainColor1)">
+                  %</div>
+              </div>
+              <div class="btn-skill" style="border: var(--boxBod) 1px solid; "> 反差锐化 </div>
+            </div>
+          </div>
+
+          <div style="height: 18px;"></div>
+
+          <div style="height: 1px;" id="容器工具"></div>
+          <div style="height: 20px;"></div>
+
+          <div class="skill-type" style="--skill-type:#1b7fcb;" onclick="if(tool2%2 == 0){this.nextElementSibling.style.display = 'none';}
+          else{this.nextElementSibling.style.display = 'block';}; tool2++; ">
+            📦[容器工具]
+            <div class="tags-search-toast-area" style="width: 80px; left:0px; bottom: -1px;">
+              <div class="tags-search-toast"> 单击收起/展开</div>
+            </div>
+          </div>
+
+          <div>
             <div style="display: flex; gap: 4px; position: relative;  align-items: center; height: 18px;">
               <div class="tags-search-toast-area" style="left:0px; bottom: -1px;">
                 <div class="tags-search-toast"> 按各自轴缩放</div>
@@ -1182,90 +1372,105 @@ input[type="checkbox"]:checked+.btn-theme {
 
             <div style="height: 18px;"></div>
 
-
-            <div style="display: flex; gap: 4px; position: relative;  align-items: center; height: 18px;">
-              <div class="tags-search-toast-area" style="left:0px; bottom: -1px; ">
-                <div class="tags-search-toast"> 仅作用于填充属性</div>
-              </div>
-              <div
-                style="width: 11px;height: 10px; border-radius: 50%; border: 1px solid var(--boxBod); font-size: 10px; color: var(--boxBod);display: flex;justify-content: center;align-items: center;padding: 1px 0 0 0;">
-                i
-              </div>
-              <h style="opacity: 0.6; height: 18px; ">填充修改</h>
-            </div>
-            <div style="display: flex; justify-content: space-between; gap: 6px; margin: 3px 0;">
-              <div class="btn-skill" style="--hasnot:var(--boxBod);--hasnot-op:0.15;"> 清理像素 </div>
-              <div class="btn-skill" onclick="parent.postMessage(['reSize','fillChange'], '*');"> 恢复尺寸 </div>
-            </div>
-            <div style="display: flex; justify-content: space-between; gap: 6px; margin: 3px 0;">
-              <div class="btn-skill" style="--hasnot:var(--boxBod);--hasnot-op:0.15;"> 反转颜色 </div>
-              <div class="btn-skill" onclick="parent.postMessage(['fliters','fillChange'],'*')"> 复用调整 </div>
-            </div>
-            <div style="display: flex; justify-content: space-between; gap: 6px; margin: 3px 0;">
-              <div class="btn-skill" onclick="parent.postMessage(['yuhua','fillChange'],'*')"> 羽化边缘 </div>
-              <div class="btn-skill" style="--hasnot:var(--boxBod);--hasnot-op:0.15;"> 提取轮廓 </div>
-            </div>
-
-            <div style="height: 18px;"></div>
-
-            <div style="display: flex; gap: 4px; position: relative;  align-items: center; height: 18px;">
+            <div
+              style=" display: flex; gap: 4px; position: relative;  align-items: center; height: 18px; flex-wrap: nowrap;">
               <div class="tags-search-toast-area" style="left:0px; bottom: -1px;">
-                <div class="tags-search-toast"> 生成单独图层+效果</div>
+                <div class="tags-search-toast"> 部分参数对非自动布局无效</div>
               </div>
               <div
                 style="width: 11px;height: 10px; border-radius: 50%; border: 1px solid var(--boxBod); font-size: 10px; color: var(--boxBod);display: flex;justify-content: center;align-items: center;padding: 1px 0 0 0;">
                 i
               </div>
-              <h style="opacity: 0.6; height: 18px; ">生成</h>
+              <h style="opacity: 0.6; height: 18px; ">梯度变化工具</h>
             </div>
-            <div style="display: flex; justify-content: space-between; gap: 6px; margin: 3px 0;">
-              <div class="input-btn-skill" style="width: 60px; min-width: 60px;">
-                <input id="input-num-tjzs" type="text" class="input-btn-skill" style="border:0px; height: 18px;"
-                  value="1" onKeyPress="if(window.event.keyCode==13) this.blur()" />
-                <div class="input-btn-skill"
-                  style="border:0px; width:30px; border-radius: 0px ;background-color: var(--boxGry); opacity: 0.8;  color:var(--mainColor1)">
-                  %</div>
+            <div style="height: 4px;"></div>
+            <div style="display: flex;  gap: 6px; margin: 3px 0;position: relative;">
+              <!--下拉选项-->
+              <select id="select-cutMax" class="input-btn-skill" name="最大尺寸"
+                style=" width: 14ch; color: var(--mainColor); font-size: 12;"
+                onchange="parent.postMessage([this.value,'mixKey'],'*');">
+                <option value="keepXY">保持原位置</option>
+                <option value="keepGap">保持间距</option>
+                <option value="autoXY">自动分布</option>
+              </select>
+            </div>
+            <div style="height: 4px;"></div>
+            <div style="display: flex; justify-content: space-between; margin: 3px 0;">
+              <div id="chk-mix-type" style="width: 100%; display: flex; justify-content: space-between; gap: 2px;">
+                <input id="chk-mix-XY" type="checkbox" style="display: none;" onchange="chkMix(this.id.split('-')[2],this.checked)" />
+                <label for="chk-mix-XY" class="btn-chk-num"> 锚点 </label>
+                <input id="chk-mix-WH" type="checkbox" style="display: none;" onchange="chkMix(this.id.split('-')[2],this.checked)" />
+                <label for="chk-mix-WH" class="btn-chk-num"> 大小 </label>
+                <input id="chk-mix-R" type="checkbox" style="display: none;" onchange="chkMix(this.id.split('-')[2],this.checked)" />
+                <label for="chk-mix-R" class="btn-chk-num"> 旋转 </label>
               </div>
-              <div class="btn-skill" style="border: var(--boxBod) 1px solid; "
-                onclick="parent.postMessage(['addNoise','addPixel'],'*'); "> 添加杂色 </div>
             </div>
+            <div style="display: flex; justify-content: space-between; margin: 3px 0;">
+              <div id="chk-mix-type" style="width: 100%; display: flex; justify-content: space-between; gap: 2px;">
+                <input id="chk-mix-Cl" type="checkbox" style="display: none;" onchange="chkMix(this.id.split('-')[2],this.checked)" />
+                <label for="chk-mix-Cl" class="btn-chk-num"> 颜色 </label>
+                <input id="chk-mix-Br" type="checkbox" style="display: none;" onchange="chkMix(this.id.split('-')[2],this.checked)" />
+                <label for="chk-mix-Br" class="btn-chk-num"> 圆角 </label>
+                <input id="chk-mix-Pd" type="checkbox" style="display: none;" onchange="chkMix(this.id.split('-')[2],this.checked)" />
+                <label for="chk-mix-Pd" class="btn-chk-num"> 边距 </label>
+              </div>
+            </div>
+            <div style="display: flex; justify-content: space-between; margin: 3px 0;">
+              <div id="chk-mix-type" style="width: 100%; display: flex; justify-content: space-between; gap: 2px;">
+                <input id="chk-mix-inPd" type="checkbox" style="display: none;" onchange="chkMix(this.id.split('-')[2],this.checked)" />
+                <label for="chk-mix-inPd" class="btn-chk-num"> 内间距 </label>
+                <input id="chk-mix-Op" type="checkbox" style="display: none;" onchange="chkMix(this.id.split('-')[2],this.checked)" />
+                <label for="chk-mix-Op" class="btn-chk-num"> 透明度 </label>
+                <input id="chk-mix-S" type="checkbox" style="display: none;" onchange="chkMix(this.id.split('-')[2],this.checked)" />
+                <label for="chk-mix-S" class="btn-chk-num"> 缩放比 </label>
+              </div>
+            </div>
+            <div style="display: flex; justify-content: space-between; margin: 3px 0;">
+              <div id="chk-mix-type" style="width: 100%; display: flex; justify-content: space-between; gap: 2px;">
+                <input id="chk-mix-Str" type="checkbox" style="display: none;" onchange="chkMix(this.id.split('-')[2],this.checked)" />
+                <label for="chk-mix-Str" class="btn-chk-num"> 描边粗细 </label>
+                <input id="chk-mix-Shd" type="checkbox" style="display: none;" onchange="chkMix(this.id.split('-')[2],this.checked)" />
+                <label for="chk-mix-Shd" class="btn-chk-num"> 投影大小 </label>
+                <input id="chk-mix-isV" type="checkbox" style="display: none;" onchange="chkMix(this.id.split('-')[2],this.checked)" />
+                <label for="chk-mix-isV" class="btn-chk-num"> 显隐数量 </label>
+              </div>
+            </div>
+            <div style="height: 4px;"></div>
             <div style="display: flex; justify-content: space-between; gap: 6px; margin: 3px 0;">
+              <div class="btn-skill" style="border: var(--boxBod) 1px solid; "
+                onclick="parent.postMessage([mixType,'mixNode'],'*')">
+                当前对象变化 
+              </div>
+            </div>
+            <!--div style="display: flex; justify-content: space-between; gap: 6px; margin: 3px 0;">
+              <div class="btn-skill" style="border: var(--boxBod) 1px solid; "
+                onclick="parent.postMessage([[mixType,mixAdd],'mixNodeAdd'],'*');">
+                插入对象变化
+              </div>
               <div class="input-btn-skill" style="width: 60px; min-width: 60px;">
-                <input id="input-num-sbtq" type="text" class="input-btn-skill" style="border:0px; height: 18px;"
-                  value="4" onKeyPress="if(window.event.keyCode==13) this.blur()" />
+                <input id="input-mix-add" type="text" class="input-btn-skill" style="border:0px; height: 18px;" value="1"
+                  oninput="mixAdd = this.value " onKeyPress="if(window.event.keyCode==13) this.blur()" />
                 <div class="input-btn-skill"
                   style="border:0px; width:30px; border-radius: 0px ;background-color: var(--boxGry); opacity: 0.8;  color:var(--mainColor1)">
                   个</div>
               </div>
-              <div class="btn-skill" style="border: var(--boxBod) 1px solid; "> 色板提取 </div>
-            </div>
-
+            </div-->
             <div style="display: flex; justify-content: space-between; gap: 6px; margin: 3px 0;">
+              <div class="btn-skill" style="border: var(--boxBod) 1px solid; "
+                onclick="parent.postMessage([[mixType,mixClone],'mixNodeClone'],'*');">
+                增量对象变化
+              </div>
               <div class="input-btn-skill" style="width: 60px; min-width: 60px;">
-                <input id="input-num-gfcbl" type="text" class="input-btn-skill" style="border:0px; height: 18px;"
-                  value="50" onKeyPress="if(window.event.keyCode==13) this.blur()" />
+                <input id="input-mix-add" type="text" class="input-btn-skill" style="border:0px; height: 18px;" value="1"
+                  oninput="mixClone = this.value " onKeyPress="if(window.event.keyCode==13) this.blur()" />
                 <div class="input-btn-skill"
                   style="border:0px; width:30px; border-radius: 0px ;background-color: var(--boxGry); opacity: 0.8;  color:var(--mainColor1)">
-                  %</div>
+                  个</div>
               </div>
-              <div class="btn-skill" style="border: var(--boxBod) 1px solid; "> 反差锐化 </div>
             </div>
-          </div>
 
-          <div style="height: 18px;"></div>
+            <div style="height: 18px;"></div>
 
-          <div style="height: 1px;" id="容器工具"></div>
-          <div style="height: 20px;"></div>
-
-          <div class="skill-type" style="--skill-type:#1b7fcb;" onclick="if(tool2%2 == 0){this.nextElementSibling.style.display = 'none';}
-          else{this.nextElementSibling.style.display = 'block';}; tool2++; ">
-            📦[容器工具]
-            <div class="tags-search-toast-area" style="width: 80px; left:0px; bottom: -1px;">
-              <div class="tags-search-toast"> 单击收起/展开</div>
-            </div>
-          </div>
-
-          <div>
             <div style="display: flex; gap: 4px; position: relative;  align-items: center; height: 18px;">
               <div class="tags-search-toast-area" style="left:0px; bottom: -1px;">
                 <div class="tags-search-toast"> 功能说明功能说明功能说明功能说明</div>
@@ -1405,7 +1610,7 @@ input[type="checkbox"]:checked+.btn-theme {
                     style="border:0px; height: 18px; cursor: default; pointer-events: none;" value="0" />
                 </div>
                 <div class="btn-skill"
-                  style="border: var(--boxBod) 1px solid;width: 20px; min-width: 20px; font-size: 10px;" onclick="if(document.getElementById('input-search-pick').value < document.getElementById('input-search-all').value){
+                  style="border: var(--boxBod) 1px solid;width: 20px; min-width: 20px; font-size: 10px;" onclick="if(document.getElementById('input-search-pick').value * 1 < document.getElementById('input-search-all').value * 1){
                   document.getElementById('input-search-pick').value++;
                   searchPick++;
                   parent.postMessage([searchPick,'searchPick'],'*');
@@ -1450,27 +1655,11 @@ input[type="checkbox"]:checked+.btn-theme {
               <div class="btn-skill" onclick="parent.postMessage(['pixelToEven','layerSet'],'*')"> 双数像素 </div>
               <div class="btn-skill" onclick="parent.postMessage(['pixelToInt','layerSet'],'*')"> 整数像素 </div>
             </div>
-
-            <div style="height: 18px;"></div>
-
-            <div style="display: flex; gap: 4px; position: relative;  align-items: center; height: 18px;">
-              <div class="tags-search-toast-area" style="left:0px; bottom: -1px;">
-                <div class="tags-search-toast"> 功能说明功能说明功能说明功能说明</div>
-              </div>
-              <div
-                style="width: 11px;height: 10px; border-radius: 50%; border: 1px solid var(--boxBod); font-size: 10px; color: var(--boxBod);display: flex;justify-content: center;align-items: center;padding: 1px 0 0 0;">
-                i
-              </div>
-              <h style="opacity: 0.6; height: 18px; ">AI工具</h>
-            </div>
             <div style="display: flex; justify-content: space-between; gap: 6px; margin: 3px 0;">
-              <div class="btn-skill" style="--hasnot:var(--boxBod);--hasnot-op:0.15;"> 智能抠图 </div>
-              <div class="btn-skill" style="--hasnot:var(--boxBod);--hasnot-op:0.15;"> 高清放大 </div>
+              <div class="btn-skill" onclick="parent.postMessage(['autoLayout','layerSet'],'*')"> 自动排列 </div>
+              <div class="btn-skill" onclick="parent.postMessage(['autoAddComponent','layerSet'],'*')"> 填充组件 </div>
             </div>
-            <div style="display: flex; justify-content: space-between; gap: 6px; margin: 3px 0;">
-              <div class="btn-skill" style="--hasnot:var(--boxBod);--hasnot-op:0.15;"> 自动扩图 </div>
-              <div class="btn-skill" style="--hasnot:var(--boxBod);--hasnot-op:0.15;"> 风格迁移 </div>
-            </div>
+
           </div>
 
           <div style="height: 18px;"></div>
@@ -1769,7 +1958,7 @@ input[type="checkbox"]:checked+.btn-theme {
             <div style="width: 100%; position: relative;">
 
               <textarea id="tableData-text" class="input-textarea noscrollbar"
-                style="height: 160px; min-height: 160px;font-size: 10px;" placeholder="*可在此粘贴表格数据"
+                style="height: 160px;max-height: 280px; min-height: 160px;font-size: 10px;" placeholder="*可在此粘贴表格数据"
                 ondblclick="this.value = 'a1\tb1\tc1\na2\tb2\tc2\na3\tb3\tc3';userTableData = this.value;"
                 onchange="userTableData = this.value; "
                 onfocus="document.getElementById('table-text-tips').style.display = 'none'; this.placeholder = '' "
@@ -1851,6 +2040,7 @@ input[type="checkbox"]:checked+.btn-theme {
             root.style.setProperty('--' + styleKey2[i], styleValue2[i])
           }
         }
+        /*
         document.getElementById('mask').style.display = 'block';
         document.getElementById('mask').style.animation = 'maskup 0.2s ease-out';
         setTimeout(()=>{
@@ -1859,8 +2049,9 @@ input[type="checkbox"]:checked+.btn-theme {
             document.getElementById('mask').style.display = 'none';
           },200)
         },300)
+        */
       "></input>
-        <label for="theme" class="btn-text btn-theme" style="position: relative;">
+        <label for="theme" class="btn-theme" style="position: relative;">
           <div class="tags-search-toast-area" style="right: 0; bottom:0;width: 20px;">
             <div class="tags-search-toast" style="width: 120px;height: 18px; top: 30px; right: 0;"> 亮色/暗色主题</div>
           </div>
@@ -1964,29 +2155,34 @@ input[type="checkbox"]:checked+.btn-theme {
         onclick="
       if (this.checked) {
        document.getElementById('select-export').value = 'toALL';
-       document.getElementById('toAE').checked = false;};
-       document.getElementById('btn-main-2').innerHTML = `导出<span style='font-size: 12px; color: var(--liColor1);'>（json文件）</span>`" />
-      <label for="toPS" class="btn-chk-export"
-        style="font-weight: 700; --color-app: #2386ad; margin: 1px 4px 0 0;">Ps</label>
-      <input id="toAE" type="checkbox" style="display: none;" checked
+       document.getElementById('toAE').checked = false;
+       document.getElementById('toPPT').checked = false;};
+       document.getElementById('btn-main-2').innerHTML = `导出<span style='font-size: 12px;'>（敬请期待~）</span>`" />
+      <label for="toPS" class="btn-chk-export" style="font-weight: 700; --color-app: #2386ad; margin: 1px 4px 0 0;">Ps</label>
+      <input id="toAE" type="checkbox" style="display: none;"
         onclick="
        if (this.checked) {
         document.getElementById('select-export').value = 'toALL';
-        document.getElementById('toPS').checked = false;};
-        document.getElementById('btn-main-2').innerHTML = `导出<span style='font-size: 12px; color: var(--liColor1);'>（素材压缩包）</span>`" />
-      <label for="toAE" class="btn-chk-export" style="font-weight: 700; --color-app: #885cb4; margin: 1px 4px 0 0;"
-        selected>Ae</label>
+        document.getElementById('toPS').checked = false;
+        document.getElementById('toPPT').checked = false;};
+        document.getElementById('btn-main-2').innerHTML = `导出<span style='font-size: 12px;'>（敬请期待~）</span>`" />
+      <label for="toAE" class="btn-chk-export" style="font-weight: 700; --color-app: #885cb4; margin: 1px 4px 0 0;" >Ae</label>
       <!--下拉选项-->
       <select id="select-export" class="select" name="导出类型"
         style="width: 10ch; margin: 1px 0 0 1px; color: var(--mainColor); border: 1px solid var(--boxBod); font-size: 12;"
         onchange="this.blur();
       document.getElementById('toAE').checked = false;
       document.getElementById('toPS').checked = false;"
-        onclick="document.getElementById('btn-main-2').innerHTML = `导出<span style='font-size: 12px; color: var(--liColor1);'>（暂不支持压缩）</span>`">
-        <option value="toALL">全部</option>
-        <option value="toIMG">图片</option>
-        <option value="toPDF">pdf</option>
-        <option value="toFIGMA">figma</option>
+        onclick="if(this.value == 'toIMG'){
+          document.getElementById('btn-main-2').innerHTML = `导出<span style='font-size: 12px; color: var(--liColor1);'>（暂不支持压缩）</span>`;
+        }else {
+          document.getElementById('btn-main-2').innerHTML = `导出<span style='font-size: 12px; '>（敬请期待~）</span>`;
+        }">
+        <option value="toALL" disabled>其他</option>
+        <option value="toIMG" selected>图片</option>
+        <option value="toPDF">PDF</option>
+        <option value="toPPT">PPT</option>
+        <option value="toFIGMA">Figma</option>
       </select>
     </div>
   </div>
@@ -2022,7 +2218,12 @@ input[type="checkbox"]:checked+.btn-theme {
   </div>
   <!--顶栏5-->
   <div id="top-main-5" class="noscrollbar top-box" style="display: none;">
-    <div id="styles-info" style="font-size:10px; opacity:0.5;">[-- 无样式集 --]</div>
+    <div id="styles-info" style="font-size:10px; opacity:0.5;">[-- 辅助管理&切换样式组 --]</div>
+    <div id="styles-re" style="display: flex; gap: 4px; height: 100%;">
+      <div class="btn-text" onclick="parent.postMessage(['noStyle','noStyle'],'*'); ">删除示例</div>
+      <div style="opacity: 0.5;"> | </div>
+      <div class="btn-text" onclick="parent.postMessage(['getStyle','getStyle'],'*'); ">刷新</div>
+    </div>
   </div>
   <!--视窗1-->
   <div class="page-main" id="page-main-1" style="display: flex;">
@@ -2035,17 +2236,38 @@ input[type="checkbox"]:checked+.btn-theme {
     </div>
     <!--用于【拖拽】【粘贴】两种交互式上传操作-->
     <div id="auto-upfile" style="display: block; text-align: center; position: relative;">
-
-      <div>
-        <div style="margin: auto; width: 40px; height: 40px;">
-          <input type="file" id="user-excel" style="display: none;" onchange="upFileByExcel()">
-          <label for="user-excel" class="btn-text"> <user-excel></user-excel> </label>
+      <div>点击 | 拖拽 | 输入</div>
+      <div style="width: calc(100% - 20px); display: flex; gap: 10px;padding: 10px 0 10px 0; margin: 10px auto 10px auto;justify-content: center; align-items: center;border: 1px var(--boxBod) dashed; border-radius: 10px;">
+        <div style="width: 40px; height: 40px; ">
+          <input type="file" multiple="multiple" id="user-img" style="display: none;" onchange="upFileByImg()">
+          <label for="user-img" class="btn-text" style="position: relative; ">
+            <div class="tags-search-toast-area" style="width: 40px; height: 40px; left:0px; bottom: 0px;">
+              <div class="tags-search-toast" style="width: 220px; bottom: 30px;left: -12ch; "> 可多选,支持常见图片格式</div>
+            </div>
+            <user-img style="opacity: 0.6;"></user-img> 
+          </label>
         </div>
-        <div>点击 | 拖拽 | 输入</div>
+        <div style="width: 40px; height: 40px;">
+          <input type="file" id="user-excel" style="display: none;" onchange="upFileByExcel()">
+          <label for="user-excel" class="btn-text" style="position: relative;">
+            <div class="tags-search-toast-area" style="width: 40px; height: 40px; left:0px; bottom: 0px;">
+              <div class="tags-search-toast" style="width: 220px; bottom: 30px;left: -12ch; "> 支持 .xlsx / .csv 表格文件</div>
+            </div>
+            <user-excel style="opacity: 0.6;"></user-excel>
+          </label>
+        </div>
+        <div style="width: 40px; height: 40px;">
+          <input type="file" id="user-files" style="display: none;" onchange="upFileByFiles()">
+          <label for="user-files" class="btn-text" style="position: relative;">
+            <div class="tags-search-toast-area" style="width: 40px; height: 40px; left:0px; bottom: 0px;">
+              <div class="tags-search-toast" style="width: 220px; bottom: 30px;left: -12ch; "> 含图层信息的 .json / .xml 文件</div>
+            </div>
+            <user-files style="opacity: 0.6;"></user-files>
+          </label>
+        </div>
       </div>
-
-      <div style="width: 260px; padding: 4px;">
-        <textarea id="data-text" class="input-textarea noscrollbar" placeholder="*name *w *h s"
+      <div style="width: 80vw; padding: 4px;">
+        <textarea id="data-text" class="input-textarea noscrollbar" style="min-height: 200px; height:40% ; max-height:calc(100% - 140px);" placeholder="*name *w *h s"
           ondblclick="this.value = 'name\tw\th\nkv\t1920\t1080\nbanner#000000\t1200\t300'; inputDataText()"></textarea>
       </div>
 
@@ -2074,20 +2296,14 @@ input[type="checkbox"]:checked+.btn-theme {
     <!--拖拽区域，用于感知拖拽-->
     <div class="btn-upfile-auto">
       <!--预览区域，用于切换视图-->
-      <div class="tags-box" id="tags-container-3"
-        style="display: flex; flex-flow: column;overflow: hidden; width: 100%; height:calc(100% - 40px); position: relative;">
-        <div id="editor-view"
-          style="width: calc(100vw - 40px); height:100%;min-height: 300px;  border: 1px var(--boxBod) dashed; position: relative;">
-
-        </div>
+      <div class="tags-box" id="tags-container-3" style="display: flex; flex-flow: column;overflow: hidden; width: 100%; height:calc(100% - 40px); position: relative;">
+        <div id="editor-view" style="width: calc(100vw - 40px); height:100%;min-height: 300px;  border: 1px var(--boxBod) dashed; position: relative;"></div>
         <div style="width: 100%;height: 20px; display: flex; justify-content: space-between; ">
           <span style="font-size: 10px; opacity: 0.6;">[-调整-]</span>
           <span style="font-size: 10px; opacity: 0.6;">[-属性-]</span>
         </div>
         <div style="display: flex; width: 100%;height:40%;min-height: 140px; border-top: 1px solid var(--boxBod);">
-          <div id="editor-tags" class="noscrollbar"
-            style="width:60%; height:calc(100% - 4px);min-width: 80px; padding: 4px 20px 0 0; display: flex;flex-flow: column;gap: 2px;overflow-x: visible; overflow-y:scroll; border-right: 1px solid var(--boxBod);">
-          </div>
+          <div id="editor-tags" class="noscrollbar"style="width:60%; height:calc(100% - 4px);min-width: 80px; padding: 4px 20px 0 2px; display: flex;  flex-flow: column;gap: 2px;overflow-x: visible; overflow-y:scroll; border-right: 1px solid var(--boxBod);"></div>
           <div id="editor-set" style="width:100%; min-width: 180px; height:calc(100% - 10px);"></div>
         </div>
       </div>
@@ -2133,11 +2349,45 @@ input[type="checkbox"]:checked+.btn-theme {
     <!--拖拽区域，用于感知拖拽-->
     <div class="btn-upfile-auto">
       <!--预览区域，用于切换视图-->
-      <div class="tags-box" id="tags-container-5" style="width: 100%; height:calc(100% - 40px); position: relative;">
+      <div class="tags-box" id=" tags-container-5" style="width: 100%; height:calc(100% - 40px); position: relative;">
         <!--根据列表生成标签-->
-        <div style="display: flex;">
-          无本地变量表，请先创建
-          <div class="btn-skill" onclick="parent.postMessage(['creStyleTable','creStyleTable'],'*')">创建</div>
+        <div class="tags-style">
+          <input id="noStyle" type="checkbox" style="display: none;" disabled/>
+          <label for="noStyle" class="chk-style-key" style="display: flex;align-items: center;gap: 4px;">
+            <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" fill="none" version="1.1" width="14" height="14" viewBox="0 0 10 10">
+                <g transform="matrix(0.8660253882408142,0.5,-0.5,0.8660253882408142,1.3172291698792833,-2.3877065935394057)">
+                  <path fill="var(--has)" d="M8.4255957421875,1.264617919671875L8.4255957421875,6.264129638671875Q8.4255957421875,6.313379638671875,8.4159857421875,6.361679638671875Q8.4063857421875,6.409969638671875,8.3875357421875,6.455469638671875Q8.3686957421875,6.500969638671875,8.3413357421875,6.541909638671875Q8.3139757421875,6.582859638671875,8.2791557421875,6.617679638671875Q8.244325742187499,6.652499638671875,8.2033857421875,6.679859638671875Q8.1624357421875,6.707219638671875,8.1169357421875,6.726069638671875Q8.0714457421875,6.744909638671875,8.0231457421875,6.754519638671875Q7.9748457421875,6.764129638671875,7.9255957421875,6.764129638671875Q7.8640457421875,6.764129638671875,7.8043357421875,6.749199638671875L4.9928757421875,6.046379638671875Q4.9117407421875,6.026099638671875,4.8416217421875,5.980519638671875Q4.7715037421875,5.934939638671875,4.7200357421875,5.869019638671875Q4.6685667421875,5.803099638671875,4.6413517421875,5.724019638671875Q4.6141357421875,5.644939638671875,4.6141357421875,5.561309638671875Q4.6141357421875,5.512059638671875,4.6237427421875,5.463759638671875Q4.6333507421875,5.415469638671875,4.6521957421875,5.369969638671875Q4.6710417421875,5.324469638671875,4.6984007421875,5.283519638671875Q4.7257607421875,5.2425796386718755,4.7605827421875,5.207759638671876Q4.7954047421875,5.172929638671874,4.8363507421875,5.145579638671875Q4.8772967421875,5.118219638671874,4.9227937421875,5.099369638671876Q4.9682907421875,5.080519638671875,5.0165906421875,5.0709196386718745Q5.0648900421875,5.061309638671875,5.1141357421875,5.061309638671875Q5.1756846421875,5.061309638671875,5.2353957421875,5.0762396386718756L5.2358847421875,5.076359638671875L7.4255957421875,5.623749638671875L7.4255957421875,1.264129638671875Q7.4255957421875,1.214883938671875,7.435205742187501,1.166584538671875Q7.4448157421875,1.118284638671875,7.4636557421875,1.0727876386718749Q7.4825057421875005,1.027290638671875,7.5098657421875,0.986344638671875Q7.5372257421875,0.945398638671875,7.5720457421875,0.910576638671875Q7.6068657421875,0.875754638671875,7.6478157421875,0.848394638671875Q7.6887557421874995,0.821035638671875,7.7342557421875,0.802189638671875Q7.7797557421875005,0.783344638671875,7.8280557421875,0.7737366386718749Q7.8763557421875,0.764129638671875,7.9255957421875,0.764129638671875Q7.9748457421875,0.764129638671875,8.0231457421875,0.7737366386718749Q8.0714457421875,0.783344638671875,8.1169357421875,0.802189638671875Q8.1624357421875,0.821035638671875,8.2033857421875,0.848394638671875Q8.244325742187499,0.875754638671875,8.2791557421875,0.910576638671875Q8.3139757421875,0.945398638671875,8.3413357421875,0.986344638671875Q8.3686957421875,1.027290638671875,8.3875357421875,1.0727876386718749Q8.4063857421875,1.118284638671875,8.4159857421875,1.166584538671875Q8.4255957421875,1.214883938671875,8.4255957421875,1.264129638671875L8.4255957421875,1.264617919671875Z" fill-rule="evenodd" fill-opacity="1"/>
+                </g>
+                <rect stroke="var(--boxBod)" x="0.5" y="0.5" width="9" height="9" rx="1.5" fill-opacity="0" stroke-opacity="1"  fill="none" stroke-width="1"/>
+            </svg>
+            创建本地样式<span style="color:var(--must); font-size: 14px;">*</span>
+          </label>
+          <div class="btn-style" onclick="parent.postMessage(['egStyle','egStyle'],'*')">示例</div>
+        </div>
+        <div class="tags-style">
+          <input id="noStyleTable" type="checkbox" style="display: none;" disabled/>
+          <label for="noStyleTable" class="chk-style-key" style="display: flex;align-items: center;gap: 4px;">
+            <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" fill="none" version="1.1" width="14" height="14" viewBox="0 0 10 10">
+                <g transform="matrix(0.8660253882408142,0.5,-0.5,0.8660253882408142,1.3172291698792833,-2.3877065935394057)">
+                  <path fill="var(--has)" d="M8.4255957421875,1.264617919671875L8.4255957421875,6.264129638671875Q8.4255957421875,6.313379638671875,8.4159857421875,6.361679638671875Q8.4063857421875,6.409969638671875,8.3875357421875,6.455469638671875Q8.3686957421875,6.500969638671875,8.3413357421875,6.541909638671875Q8.3139757421875,6.582859638671875,8.2791557421875,6.617679638671875Q8.244325742187499,6.652499638671875,8.2033857421875,6.679859638671875Q8.1624357421875,6.707219638671875,8.1169357421875,6.726069638671875Q8.0714457421875,6.744909638671875,8.0231457421875,6.754519638671875Q7.9748457421875,6.764129638671875,7.9255957421875,6.764129638671875Q7.8640457421875,6.764129638671875,7.8043357421875,6.749199638671875L4.9928757421875,6.046379638671875Q4.9117407421875,6.026099638671875,4.8416217421875,5.980519638671875Q4.7715037421875,5.934939638671875,4.7200357421875,5.869019638671875Q4.6685667421875,5.803099638671875,4.6413517421875,5.724019638671875Q4.6141357421875,5.644939638671875,4.6141357421875,5.561309638671875Q4.6141357421875,5.512059638671875,4.6237427421875,5.463759638671875Q4.6333507421875,5.415469638671875,4.6521957421875,5.369969638671875Q4.6710417421875,5.324469638671875,4.6984007421875,5.283519638671875Q4.7257607421875,5.2425796386718755,4.7605827421875,5.207759638671876Q4.7954047421875,5.172929638671874,4.8363507421875,5.145579638671875Q4.8772967421875,5.118219638671874,4.9227937421875,5.099369638671876Q4.9682907421875,5.080519638671875,5.0165906421875,5.0709196386718745Q5.0648900421875,5.061309638671875,5.1141357421875,5.061309638671875Q5.1756846421875,5.061309638671875,5.2353957421875,5.0762396386718756L5.2358847421875,5.076359638671875L7.4255957421875,5.623749638671875L7.4255957421875,1.264129638671875Q7.4255957421875,1.214883938671875,7.435205742187501,1.166584538671875Q7.4448157421875,1.118284638671875,7.4636557421875,1.0727876386718749Q7.4825057421875005,1.027290638671875,7.5098657421875,0.986344638671875Q7.5372257421875,0.945398638671875,7.5720457421875,0.910576638671875Q7.6068657421875,0.875754638671875,7.6478157421875,0.848394638671875Q7.6887557421874995,0.821035638671875,7.7342557421875,0.802189638671875Q7.7797557421875005,0.783344638671875,7.8280557421875,0.7737366386718749Q7.8763557421875,0.764129638671875,7.9255957421875,0.764129638671875Q7.9748457421875,0.764129638671875,8.0231457421875,0.7737366386718749Q8.0714457421875,0.783344638671875,8.1169357421875,0.802189638671875Q8.1624357421875,0.821035638671875,8.2033857421875,0.848394638671875Q8.244325742187499,0.875754638671875,8.2791557421875,0.910576638671875Q8.3139757421875,0.945398638671875,8.3413357421875,0.986344638671875Q8.3686957421875,1.027290638671875,8.3875357421875,1.0727876386718749Q8.4063857421875,1.118284638671875,8.4159857421875,1.166584538671875Q8.4255957421875,1.214883938671875,8.4255957421875,1.264129638671875L8.4255957421875,1.264617919671875Z" fill-rule="evenodd" fill-opacity="1"/>
+                </g>
+                <rect stroke="var(--boxBod)" x="0.5" y="0.5" width="9" height="9" rx="1.5" fill-opacity="0" stroke-opacity="1"  fill="none" stroke-width="1"/>
+            </svg>
+            创建本地样式&变量表<span style="color:var(--must); font-size: 14px;">*</span>
+          </label>
+          <div class="btn-style " onclick="parent.postMessage(['creStyleTable','creStyleTable'],'*')">创建</div>
+        </div>
+        <div class="tags-style-edit">
+          <input id="reStyleSet" type="checkbox" checked="true" style="display: none;" disabled/>
+          <label for="reStyleSet" class="chk-style-key" style="display: flex;align-items: center;gap: 4px;">
+            选中对象以修改样式组:
+          </label>
+        </div>
+        <div class="tags-style-edit">
+          <input id="reVarSet" type="checkbox" checked="true" style="display: none;" disabled/>
+          <label for="reVarSet" class="chk-style-key" style="display: flex;align-items: center;gap: 4px;">
+            注册变量并更新变量表:
+          </label>
         </div>
       </div>
     </div>
@@ -2149,7 +2399,7 @@ input[type="checkbox"]:checked+.btn-theme {
   </div>
   <div id="btn-main-2" class="btn-main" style="display: none;"
     onclick="parent.postMessage(['exportImg','btnMain'],'*');exportImg()">
-    导出
+    导出<span style='font-size: 12px; color: var(--liColor1);'>（暂不支持压缩）</span>
   </div>
   <div id="btn-main-3" class="btn-main" style="display: none;">
     确认
@@ -2158,7 +2408,7 @@ input[type="checkbox"]:checked+.btn-theme {
     刷新
   </div>
   <div id="btn-main-5" class="btn-main" style="display: none;" onclick=" parent.postMessage(['','reStyle'],'*')">
-    刷新
+    从样式表更新
   </div>
 
 
@@ -2171,7 +2421,7 @@ input[type="checkbox"]:checked+.btn-theme {
 
       <div id="tab-1" class="btn-text" onclick="viewPage(1)" style="position: relative;">
         <div class="tags-search-toast-area" style="left: -2px; bottom: -1px;width: 20px; ">
-          <div class="tags-search-toast" style="  left: 0;z-index: 30;width: 180px;"> 从表格/图片/svg代码创建对象</div>
+          <div class="tags-search-toast" style="  left: 0;z-index: 30;width: 180px;"> 从表格/图片/svg/代码创建对象</div>
         </div>
         创建
       </div>
@@ -2228,11 +2478,19 @@ input[type="checkbox"]:checked+.btn-theme {
     const dataTextTips = document.getElementById('data-text-tips');
     const autoUp = document.getElementById('auto-upfile');
     const inputExcel = document.getElementById('user-excel');
+    const inputImg = document.getElementById('user-img');
+    const inputFiles = document.getElementById('user-files');
     const btnUp = document.getElementById('btn-up');
     const anotherBtns = document.getElementById('another-btns');
     const anotherBtns2 = document.getElementById('another-btns-2');
     const anotherBtns3 = document.getElementById('another-btns-3');
     const anotherBtns4 = document.getElementById('another-btns-4');
+    const editTag = document.getElementById('editor-tags');
+    const editSets = document.getElementById('editor-set');
+
+    const dragSources = document.getElementsByClassName('edits');
+    const dropZones = document.getElementById('editor-tags');
+    var dropStartY,dropEndY;
 
     var allFrame = [], finalFrame = [];
     var imgExportData = [];
@@ -2297,17 +2555,42 @@ input[type="checkbox"]:checked+.btn-theme {
     var tableData;//行列数据
     var userTableData;//填充表格或数据流用的数据
     var tool1 = 0, tool2 = 0, tool3 = 0, tool4 = 0, tool5 = 0, tool6 = 0;//记录侧边栏工具类型标题点击次数，实现checkbox效果
-    var editorNum = 1, editorPick = 1;
+    var editorNum = 1, editorPick = 1,editorCopy = false;
+    var mixType = [],mixAdd = 1,mixClone = 1;
 
     class userexcel extends HTMLElement {
       constructor() {
         super();
         this.innerHTML = `
-              <svg width="100%" height="100%" viewBox="0 0 42 42" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <path fill-rule="evenodd" clip-rule="evenodd" d="M26.0549 10H9C6.79086 10 5 11.7909 5 14V32C5 34.2091 6.79086 36 9 36H31C33.2091 36 35 34.2091 35 32V20C32.8567 20 30.8884 19.2508 29.3427 18H17V12H26.0549C26.0186 11.6717 26 11.338 26 11C26 10.662 26.0186 10.3283 26.0549 10ZM9 12H15V18H7V14C7 12.8954 7.89543 12 9 12ZM7 20H15L15 26H7V20ZM7 28H15V34H9C7.89543 34 7 33.1046 7 32V28ZM17 28V34H31C32.1046 34 33 33.1046 33 32V28H17ZM17 20L17 26H33V20H17Z" fill="var(--mainColor)"/>
-                  <path fill-rule="evenodd" clip-rule="evenodd" d="M35 18C38.866 18 42 14.866 42 11C42 7.13401 38.866 4 35 4C31.134 4 28 7.13401 28 11C28 14.866 31.134 18 35 18ZM35 6C35.5523 6 36 6.44772 36 7V10H39C39.5523 10 40 10.4477 40 11C40 11.5523 39.5523 12 39 12H36V15C36 15.5523 35.5523 16 35 16C34.4477 16 34 15.5523 34 15V12H31C30.4477 12 30 11.5523 30 11C30 10.4477 30.4477 10 31 10L34 10V7C34 6.44772 34.4477 6 35 6Z" fill="var(--mainColor)"/>
-              </svg>
+          <svg width="100%" height="100%" viewBox="0 0 42 42" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path fill="var(--mainColor)" fill-rule="evenodd" clip-rule="evenodd" d="M26.0549 10H9C6.79086 10 5 11.7909 5 14V32C5 34.2091 6.79086 36 9 36H31C33.2091 36 35 34.2091 35 32V20C32.8567 20 30.8884 19.2508 29.3427 18H17V12H26.0549C26.0186 11.6717 26 11.338 26 11C26 10.662 26.0186 10.3283 26.0549 10ZM9 12H15V18H7V14C7 12.8954 7.89543 12 9 12ZM7 20H15L15 26H7V20ZM7 28H15V34H9C7.89543 34 7 33.1046 7 32V28ZM17 28V34H31C32.1046 34 33 33.1046 33 32V28H17ZM17 20L17 26H33V20H17Z" />
+            <path fill="var(--mainColor)" fill-rule="evenodd" clip-rule="evenodd" d="M35 18C38.866 18 42 14.866 42 11C42 7.13401 38.866 4 35 4C31.134 4 28 7.13401 28 11C28 14.866 31.134 18 35 18ZM35 6C35.5523 6 36 6.44772 36 7V10H39C39.5523 10 40 10.4477 40 11C40 11.5523 39.5523 12 39 12H36V15C36 15.5523 35.5523 16 35 16C34.4477 16 34 15.5523 34 15V12H31C30.4477 12 30 11.5523 30 11C30 10.4477 30.4477 10 31 10L34 10V7C34 6.44772 34.4477 6 35 6Z" "/>
+          </svg>
+        `;
+      }
+    }
+    class userimg extends HTMLElement {
+      constructor() {
+        super();
+        this.innerHTML = `
+          <svg width="100%" height="100%" viewBox="0 0 42 42" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path fill="var(--mainColor)" d="M35,18C38.866,18,42,14.866,42,11C42,7.13401,38.866,4,35,4C31.134,4,28,7.13401,28,11C28,14.866,31.134,18,35,18ZM35,6C35.5523,6,36,6.44772,36,7L36,10L39,10C39.5523,10,40,10.447700000000001,40,11C40,11.552299999999999,39.5523,12,39,12L36,12L36,15C36,15.5523,35.5523,16,35,16C34.4477,16,34,15.5523,34,15L34,12L31,12C30.4477,12,30,11.552299999999999,30,11C30,10.447700000000001,30.4477,10,31,10L34,10L34,7C34,6.44772,34.4477,6,35,6Z" fill-rule="evenodd" fill-opacity="1"/>
+            <path fill="var(--mainColor)" d="M5,14L5,32C5,34.2091,6.79086,36,9,36L31,36C33.2091,36,35,34.2091,35,32L35,20L33,20L33,29.5L31.4848,29.5Q30.9924,29.5,30.6922,29.1097L27.5916,25.0789Q26.7999,24.0497,25.5076,23.9225Q24.2154,23.795299999999997,23.2382,24.6503L21.7345,25.966L18.7349,21.0576Q17.8134,19.54967,16.047800000000002,19.624670000000002Q14.28213,19.69966,13.4918,21.2803L9.15836,29.9472Q8.881969999999999,30.5,8.26393,30.5L7,30.5L7,14Q7,13.17159,7.585789999999999,12.585799999999999Q8.17158,12,9,12L26.0549,12L26.0549,10L9,10C6.79086,10,5,11.7909,5,14ZM7.0359,32.5Q7.26795,34,9,34L31,34Q33,34,33,32L33,31.5L31.4848,31.5Q30.0076,31.5,29.1069,30.3291L26.0063,26.2983Q25.7424,25.9553,25.3117,25.9129Q24.8809,25.8705,24.5552,26.1555L21.2655,29.034L17.028399999999998,22.1005Q16.7212,21.5979,16.1326,21.6229Q15.5441,21.6479,15.2807,22.174799999999998L10.94721,30.8416Q10.11804,32.5,8.26393,32.5L7.0359,32.5ZM27,17.5C27,19.433,25.433,21,23.5,21C21.567,21,20,19.433,20,17.5C20,15.567,21.567,14,23.5,14C25.433,14,27,15.567,27,17.5Z" fill-rule="evenodd" fill-opacity="1"/>
+          </svg>
           `;
+      }
+    }
+    class userfiles extends HTMLElement {
+      constructor() {
+        super();
+        this.innerHTML = `
+          <svg width="100%" height="100%" viewBox="0 0 42 42" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path fill="var(--mainColor)" d="M35,18C38.866,18,42,14.866,42,11C42,7.13401,38.866,4,35,4C31.134,4,28,7.13401,28,11C28,14.866,31.134,18,35,18ZM35,6C35.5523,6,36,6.44772,36,7L36,10L39,10C39.5523,10,40,10.447700000000001,40,11C40,11.552299999999999,39.5523,12,39,12L36,12L36,15C36,15.5523,35.5523,16,35,16C34.4477,16,34,15.5523,34,15L34,12L31,12C30.4477,12,30,11.552299999999999,30,11C30,10.447700000000001,30.4477,10,31,10L34,10L34,7C34,6.44772,34.4477,6,35,6Z" fill-rule="evenodd" fill-opacity="1"/>
+            <path fill="var(--mainColor)" d="M5,14L5,32C5,34.2091,6.79086,36,9,36L31,36C33.2091,36,35,34.2091,35,32L35,20L33,20L33,32Q33,34,31,34L9,34Q7,34,7,32L7,14Q7,13.17159,7.585789999999999,12.585799999999999Q8.17158,12,9,12L24.0549,12L26.0549,12L26.0549,10L9,10C6.79086,10,5,11.7909,5,14Z" fill-opacity="1"/>
+            <path fill="var(--mainColor)" d="M8,19.47754L8,21.15603L9.64144,21.15603L9.64144,19.47754L8,19.47754ZM10.75148,13L10.75148,14.17021L12.2394,14.17021L12.2394,13L10.75148,13ZM9.70048,21.735219999999998L9.70048,23L10.3854,23C10.97585,23,11.42458,22.846330000000002,11.755230000000001,22.51537C12.074069999999999,22.19622,12.2394,21.735219999999998,12.2394,21.13239L12.2394,15.00946L10.7869,15.00946L10.7869,21.03782C10.7869,21.28605,10.73967,21.46336,10.645199999999999,21.56974C10.55072,21.687939999999998,10.39721,21.735219999999998,10.19646,21.735219999999998L9.70048,21.735219999999998ZM13.939879999999999,20.71868C14.365,21.06147,14.920020000000001,21.226950000000002,15.62856,21.226950000000002C16.360709999999997,21.226950000000002,16.95115,21.06147,17.4117,20.71868C17.86044,20.37589,18.096600000000002,19.89125,18.096600000000002,19.25295C18.096600000000002,18.74468,17.9431,18.34279,17.63607,18.04728C17.32904,17.76359,16.86849,17.574469999999998,16.25443,17.47991L15.53408,17.37352C15.25067,17.33806,15.04992,17.26714,14.93183,17.16076C14.81374,17.06619,14.7547,16.92435,14.7547,16.735219999999998C14.7547,16.5461,14.82555,16.38061,14.99088,16.26241C15.14439,16.14421,15.36876,16.08511,15.67579,16.08511C15.97102,16.08511,16.20719,16.14421,16.37252,16.26241C16.53784,16.38061,16.63231,16.5461,16.63231,16.75886L16.63231,16.79433L17.99034,16.79433L17.99034,16.723399999999998C17.99034,16.39244,17.884059999999998,16.08511,17.69512,15.81324C17.506169999999997,15.54137,17.234569999999998,15.3286,16.8803,15.17494C16.52603,15.02128,16.12453,14.93853,15.67579,14.93853C15.00268,14.93853,14.447669999999999,15.11584,14.02254,15.45863C13.59742,15.80142,13.38486,16.26241,13.38486,16.84161C13.38486,17.3617,13.52657,17.75177,13.82179,18.02364C14.10521,18.30733,14.565750000000001,18.49645,15.17982,18.59102L15.82931,18.697400000000002C16.13634,18.74468,16.360709999999997,18.82742,16.50242,18.92199C16.63231,19.02837,16.70317,19.17021,16.70317,19.35934C16.70317,19.59574,16.6087,19.76123,16.431559999999998,19.87943C16.242620000000002,19.99764,15.99463,20.04492,15.67579,20.04492C15.36876,20.04492,15.13258,19.98582,14.94364,19.85579C14.7547,19.72577,14.67203,19.54846,14.67203,19.31206L14.67203,19.288420000000002L13.3022,19.288420000000002L13.3022,19.3357C13.3022,19.91489,13.514759999999999,20.37589,13.939879999999999,20.71868ZM19.6672,20.60047C20.1159,21.026,20.7182,21.226950000000002,21.4976,21.226950000000002C22.2534,21.226950000000002,22.855600000000003,21.026,23.304299999999998,20.60047C23.741300000000003,20.18676,23.965600000000002,19.53664,23.965600000000002,18.65012L23.965600000000002,17.50355C23.965600000000002,16.62884,23.741300000000003,15.99054,23.304299999999998,15.565010000000001C22.855600000000003,15.151299999999999,22.2534,14.93853,21.4976,14.93853C20.7182,14.93853,20.1159,15.151299999999999,19.6672,15.565010000000001C19.2185,15.99054,19.0059,16.62884,19.0059,17.50355L19.0059,18.65012C19.0059,19.53664,19.2185,20.18676,19.6672,20.60047ZM22.513199999999998,18.6383C22.513199999999998,19.501179999999998,22.1707,19.92671,21.4976,19.92671C20.8009,19.92671,20.458399999999997,19.501179999999998,20.458399999999997,18.6383L20.458399999999997,17.52719C20.458399999999997,16.67612,20.8009,16.23877,21.4976,16.23877C22.1707,16.23877,22.513199999999998,16.67612,22.513199999999998,17.52719L22.513199999999998,18.6383ZM25,15.00946L25,21.156010000000002L26.4642,21.156010000000002L26.4642,17.32623C26.4642,16.98344,26.5469,16.71159,26.7358,16.52246C26.9248,16.33334,27.161,16.23877,27.4445,16.23877C27.7279,16.23877,27.964,16.33334,28.1411,16.52246C28.3064,16.71159,28.4009,16.98344,28.4009,17.32623L28.4009,21.156010000000002L29.8652,21.156010000000002L29.8652,17.14893C29.8652,16.46335,29.6882,15.93143,29.3457,15.52954C28.9914,15.13947,28.5072,14.93854,27.8813,14.93854C27.5979,14.93854,27.3382,14.99762,27.0784,15.104C26.8186,15.21039,26.606,15.36406,26.4288,15.565L26.4288,15.00946L25,15.00946Z"  fill-opacity="1"/>
+            <path fill="var(--mainColor)" d="M8,30.14783L8,32L9.70403,32L9.70403,30.14783L8,30.14783ZM14.105080000000001,32L15.68652,32L13.749559999999999,28.45217L15.57618,25.21739L13.98249,25.21739L13.03853,27.14783L11.98424,25.21739L10.39054,25.21739L12.19264,28.50435L10.28021,32L11.87391,32L12.9282,29.86087L14.105080000000001,32ZM16.458849999999998,25.21739L16.458849999999998,32L17.97899,32L17.97899,27.77391C17.97899,27.39565,18.064799999999998,27.09565,18.2609,26.886960000000002C18.4448,26.67826,18.689999999999998,26.57391,18.996499999999997,26.57391C19.2907,26.57391,19.523600000000002,26.67826,19.7075,26.886960000000002C19.8914,27.09565,19.9895,27.38261,19.9895,27.77391L19.9895,32L21.5096,32L21.5096,27.73478C21.5096,27.39565,21.595399999999998,27.1087,21.7793,26.9C21.9632,26.6913,22.208399999999997,26.57391,22.5271,26.57391C22.8214,26.57391,23.054299999999998,26.67826,23.2382,26.886960000000002C23.4221,27.09565,23.5201,27.38261,23.5201,27.77391L23.5201,32L25.0403,32L25.0403,27.57826C25.0403,26.82174,24.8441,26.23478,24.4641,25.7913C24.0841,25.36087,23.5569,25.13913,22.8827,25.13913C22.171599999999998,25.13913,21.5709,25.42609,21.0806,25.98696C20.700499999999998,25.42609,20.161099999999998,25.13913,19.4501,25.13913C19.155900000000003,25.13913,18.886200000000002,25.204349999999998,18.616500000000002,25.32174C18.3468,25.45217,18.1261,25.62174,17.94221,25.83043L17.94221,25.21739L16.458849999999998,25.21739ZM26.8669,31.465220000000002C27.2102,31.83043,27.6883,32,28.3012,32L29,32L29,30.60435L28.4851,30.60435C28.2645,30.60435,28.1173,30.55217,28.0193,30.43478C27.9212,30.31739,27.8844,30.12174,27.8844,29.834780000000002L27.8844,23L26.3643,23L26.3643,29.93913C26.3643,30.60435,26.5236,31.113039999999998,26.8669,31.465220000000002Z" fill-opacity="1"/>
+          </svg>
+        `;
       }
     }
     class tagsclose extends HTMLElement {
@@ -2372,6 +2655,8 @@ input[type="checkbox"]:checked+.btn-theme {
     }
 
     customElements.define('user-excel', userexcel);
+    customElements.define('user-img', userimg);
+    customElements.define('user-files', userfiles);
     customElements.define('tags-close', tagsclose);
     customElements.define('tags-search', tagssearch);
     customElements.define('tags-search-close', tagssearchclose);
@@ -2399,7 +2684,7 @@ input[type="checkbox"]:checked+.btn-theme {
       }
 
       if (info == 'sidePage') {
-        if (document.getElementById("page-main-4").style.display !== 'flex' && document.getElementById("zzz").style.display !== 'block') {
+        if (document.getElementById("page-main-1").style.display == 'flex' && document.getElementById("zzz").style.display !== 'block'  ) {
           document.getElementById("btn-side-0").checked = true
           sidePage()
         }
@@ -2411,11 +2696,9 @@ input[type="checkbox"]:checked+.btn-theme {
       }
 
       if (type == 'imgURLtoWH') {
-        var imgs = imgURLtoWH(info)
-        //console.log(imgs)
-        setTimeout(() => {
-          parent.postMessage([imgs, 'imgWH'], '*')
-        }, 100)
+        imgURLtoWH(info)
+        //console.log(imgURLtoWH(info))
+          //parent.postMessage([imgURLtoWH(info), 'imgWH'], '*')
       }
 
       if (type == 'noiseWH') {
@@ -2547,6 +2830,28 @@ input[type="checkbox"]:checked+.btn-theme {
         document.getElementById('input-search-all').value = info;
         document.getElementById('input-search-pick').value = 1;
       }
+    
+      if (type == 'hasStyle') {
+        if(info){
+          document.getElementById('noStyle').checked = true;
+        } else {
+          document.getElementById('noStyle').checked = false;
+        }
+        
+      }
+
+      if (type == 'hasStyleTable') {
+        if(info){
+          document.getElementById('noStyleTable').checked = true;
+        } else {
+          document.getElementById('noStyleTable').checked = false;
+        }
+        
+      }
+    
+      if (type == 'toTab'){
+        viewPage(info)
+      }
     }
 
 
@@ -2570,6 +2875,7 @@ input[type="checkbox"]:checked+.btn-theme {
       if (document.getElementById("btn-side-0").checked) {
         sideClose = setTimeout(() => {
           if (!document.getElementById('side').contains(event.target) && document.activeElement) {
+            console.log('close sidepage')
             document.getElementById("btn-side-0").checked = false
             sidePage()
             document.getElementById('btn-side-text-0').style.pointerEvents = '';
@@ -2702,7 +3008,8 @@ input[type="checkbox"]:checked+.btn-theme {
         importNum = files.length;
         parent.postMessage([importNum, "importNum"], '*')
         for (var i = 0; i < files.length; i++) {
-          if (imgType.some(type => type.includes(files[i].name.split(".")[1].toLowerCase()))) {
+          var names = files[i].name.split(".")
+          if (imgType.some(type => type.includes(names[names.length - 1].toLowerCase()))) {
             if (e.dataTransfer.files.length > 1) {
               fileName.innerHTML = files[0].name.substring(0, 20) + '...等<span style="color:var(--liColor1)">' + e.dataTransfer.files.length + '</span>个文件';
             } else {
@@ -2726,7 +3033,7 @@ input[type="checkbox"]:checked+.btn-theme {
             notag()
 
 
-          } else if (excelType.some(type => type.includes(files[i].name.split(".")[1].toLowerCase()))) {
+          } else if (excelType.some(type => type.includes(names[names.length - 1].toLowerCase()))) {
             fileName.innerHTML = files[0].name;
             var reader = new FileReader();
             reader.readAsArrayBuffer(files[0]);
@@ -2747,8 +3054,13 @@ input[type="checkbox"]:checked+.btn-theme {
               badData()
             };
           } else {
-            fileName.innerHTML = '<span style=-"color:var(--liColor1)">未知格式/来源';
-          }
+            fileName.innerHTML = '<span style=-"color:var(--liColor1)">含错误格式/来源';
+            console.log(files[i].name)
+            addImg([files[i].name])
+            anotherBtns.style.display = "none";
+            anotherBtns2.style.display = "none";
+            anotherBtns3.style.display = "flex";
+        }
         }
 
 
@@ -2786,6 +3098,55 @@ input[type="checkbox"]:checked+.btn-theme {
       };
 
       reader.readAsArrayBuffer(file);
+    }
+
+    function upFileByImg() {
+      //autoUp.style.display = "none";
+      var reader = new FileReader();
+      imgsName = []
+      imgsNameNew = []
+      importImg = []
+      importNum = 0;
+
+      var files = inputImg.files;
+      var imgType = ["png", "jpg", "jpeg", "webp"]
+      importNum = files.length;
+      parent.postMessage([importNum, "importNum"], '*')
+      for (var i = 0; i < files.length; i++) {
+        var names = files[i].name.split(".")
+        if (imgType.some(type => type.includes(names[names.length - 1].toLowerCase()))) {
+          
+          if (files.length > 1) {
+            fileName.innerHTML = files[0].name.substring(0, 20) + '...等<span style="color:var(--liColor1)">' + inputImg.files[0].length + '</span>个文件';
+          } else {
+            fileName.innerHTML = files[0].name.substring(0, 20);
+          }
+          if (files[i].name.length > 30) {
+            imgsName.push({ name: files[i].name.split('.')[0].substring(0, 30) + "..." })
+            imgsNameNew.push({ name: files[i].name.split('.')[0].substring(0, 30) + "..." })
+            cutImg(files[i], files[i].name.split('.')[0].substring(0, 30) + "...")
+          } else {
+            imgsName.push({ name: files[i].name.split('.')[0] })
+            imgsNameNew.push({ name: files[i].name.split('.')[0] })
+            cutImg(files[i], files[i].name.split('.')[0])
+          }
+          if (i == files.length - 1) {
+            parent.postMessage([importImg, "createrImage"], '*')
+          }
+          //console.log(imgsName)
+          //addImg(imgsName)
+          //anotherBtns4.style.display = "flex";
+          notag()
+        } else {
+          fileName.innerHTML = '<span style=-"color:var(--liColor1)">含错误格式/来源';
+            console.log(files[i].name)
+          addImg([files[i].name])
+          autoUp.style.display = "none";
+          anotherBtns.style.display = "none";
+          anotherBtns2.style.display = "none";
+          anotherBtns3.style.display = "flex";
+        }
+        }
     }
 
     //判断错误数据
@@ -2834,38 +3195,31 @@ input[type="checkbox"]:checked+.btn-theme {
       tagsContainer1.innerHTML = "";
       var icon = `
       <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" fill="none" version="1.1" width="20" height="16" viewBox="0 0 16 13.75732421875">
-        <g>
-          <g>
-            <rect x="0" y="11.75732421875" width="16" height="2" rx="0" fill="#6E6E6E" fill-opacity="1"/>
-          </g>
-          <g transform="matrix(0.7071067690849304,-0.7071067690849304,0.7071067690849304,0.7071067690849304,-2.3430887013528263,2.8286348765686853)">
-            <g>
-              <rect x="2.242919921875" y="4.24267578125" width="6" height="9" rx="0" fill="#6E6E6E" fill-opacity="1"/>
-            </g>
-            <g>
-              <path d="M5.242919921875,10.24267578125L6.727839921875,11.75775578125L8.242919921875,13.24267578125L6.727839921875,14.727595781249999L5.242919921875,16.24267578125L3.757999921875,14.727595781249999L2.242919921875001,13.24267578125L3.757999921875,11.75775578125L5.242919921875,10.24267578125Z" fill="#6E6E6E" fill-opacity="1"/>
-            </g>
-          </g>
+        <rect x="0" y="11.75732421875" width="16" height="2" rx="0" fill="#6E6E6E" fill-opacity="1"/>
+        <g transform="matrix(0.7071067690849304,-0.7071067690849304,0.7071067690849304,0.7071067690849304,-2.3430887013528263,2.8286348765686853)">
+          <rect x="2.242919921875" y="4.24267578125" width="6" height="9" rx="0" fill="#6E6E6E" fill-opacity="1"/>
+          <path d="M5.242919921875,10.24267578125L6.727839921875,11.75775578125L8.242919921875,13.24267578125L6.727839921875,14.727595781249999L5.242919921875,16.24267578125L3.757999921875,14.727595781249999L2.242919921875001,13.24267578125L3.757999921875,11.75775578125L5.242919921875,10.24267578125Z" fill="#6E6E6E" fill-opacity="1"/>
         </g>
       </svg>
       `
-
       for (var i = 0; i < imgsName.length; i++) {
-        tagsContainer1.innerHTML += '<div class="tags-imports">' + icon + '<div style="width:4px"></div><input id="imgName-' + i + '" class="input-btn-skill" style="border: 0;text-align: left;" type="text" value="' + imgsName[i].name + '" onchange="imgsNameNew[' + i + '].name = this.value; if (!this.value){this.value = imgsName[' + i + '].name;console.log(`恢复原命名`,imgsName[' + i + ']) }"/></div>';
+        //tagsContainer1.innerHTML += '<div class="tags-imports">' + icon + '<div style="width:4px"></div><input id="imgName-' + i + '" class="input-btn-skill" style="border: 0;text-align: left;" type="text" value="' + imgsName[i].name + '" onchange="imgsNameNew[' + i + '].name = this.value; if (!this.value){this.value = imgsName[' + i + '].name;console.log(`恢复原命名`,imgsName[' + i + ']) }"/></div>';
+        tagsContainer1.innerHTML += '<div class="tags-imports"><div style="width:4px">' + (i + 1) + '.' + imgsName[i] + '</div>';
+
       }
     }
 
     //生成编辑标签
-    function addEdit(type) {
-
-      var editTag = document.getElementById('editor-tags');
-      var editSets = document.getElementById('editor-set');
-      //console.log(editTag.children.length)
-      if (editTag.children.length == 0) {
-        var chk = '<input id="chk-editor-' + editorNum + '" type="checkbox" checked=" true" style="display:none" onchange="editorChk(this,' + editorNum + ')"/>'
+    function addEdit(type,copynode) {
+      if(copynode){
+        copyEdit = copynode.parentNode
       } else {
-        var chk = '<input id="chk-editor-' + editorNum + '" type="checkbox" style="display:none" onchange="editorChk(this,' + editorNum + ')"/>'
+        editTag.scrollTop = 0;
       }
+      if ( editTag.children.length !== 0){
+        document.getElementById('chk-editor-' + editorPick).checked = false
+      }
+      var chk = '<input id="chk-editor-' + editorNum + '" type="checkbox" checked=" true" style="display:none" onchange="editorChk(this,' + editorNum + ')"/>'
       var main = type;
       var close = '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" fill="none" version="1.1" width="100%" height="100%" viewBox="0 0 17 17"><g><g><rect x="3.5" y="7.5" width="10" height="2" rx="0" fill="var(--mainColor)" fill-opacity="1"/></g><g><ellipse cx="8.5" cy="8.5" rx="8" ry="8" fill-opacity="0" stroke-opacity="1" stroke="var(--mainColor)" fill="none" stroke-width="1"/></g></g></svg>';
       var set = '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" fill="none" version="1.1" width="100%" height="100%" viewBox="0 0 18 18"><g><path d="M3.59452,1.67756L6.80722,3.70617L7.6445,0L10.3555,0L11.1928,3.70617L14.4055,1.67756L16.3224,3.59452L14.2938,6.80722L18,7.64451L18,10.3555L14.2938,11.1928L16.3224,14.4055L14.4055,16.3224L11.1928,14.2938L10.3555,18L7.64451,18L6.80722,14.2938L3.59452,16.3224L1.67756,14.4055L3.70617,11.1928L0,10.3555L0,7.64451L3.70617,6.80722L1.67756,3.59452L3.59452,1.67756ZM13.5,9C13.5,11.4853,11.4853,13.5,9,13.5C6.51472,13.5,4.5,11.4853,4.5,9C4.5,6.51472,6.51472,4.5,9,4.5C11.4853,4.5,13.5,6.51472,13.5,9ZM9.00006,11.9999C10.6569,11.9999,12.0001,10.6568,12.0001,8.99994C12.0001,7.34308,10.6569,5.99994,9.00006,5.99994C7.34321,5.99994,6.00006,7.34308,6.00006,8.99994C6.00006,10.6568,7.34321,11.9999,9.00006,11.9999Z" fill-rule="evenodd" fill="var(--mainColor)" fill-opacity="1"/></g></svg>';
@@ -2885,22 +3239,79 @@ input[type="checkbox"]:checked+.btn-theme {
       if (type == '变形') {
 
       }
-      editTag.innerHTML += '<div class="edits">' + chk + '<label for="chk-editor-' + editorNum + '" class="tags-editor"><div class="btn-text" style="width:10px;height:10px" onclick="if(this.parentNode.parentNode.firstChild.checked !== true) { this.parentNode.parentNode.parentNode.removeChild(this.parentNode.parentNode)};">' + close + '</div>' + type + '<div class="btn-text" style="width:10px;height:10px" onclick="editorNum++;addEdit(this.parentNode.innerText);">' + copy + '</div></label></div>'
+      var newEdit = document.createElement('div')
+      newEdit.id = 'edits-'+ editorNum;
+      newEdit.className = 'edits';
+      newEdit.draggable = true;
+      newEdit.innerHTML = chk + '<label for="chk-editor-' + editorNum + '" class="tags-editor"><div class="btn-text" style="width:10px;height:10px" onclick="if(this.parentNode.parentNode.firstChild.checked !== true) { this.parentNode.parentNode.parentNode.removeChild(this.parentNode.parentNode)};">' + close + '</div>' + type + '<div class="btn-text" style="width:10px;height:10px"></div></label>' +  '<div class="btn-text" style="width:10px;height:10px;position: absolute;top:7px;right:-8px;" onclick="addEdit(this.parentNode.innerText,this);">' + copy + '</div>'
+      if ( editTag.children.length == 0 ){
+        editTag.appendChild(newEdit)
+      } else {
+        if (copynode){
+          editTag.insertBefore(newEdit,copyEdit)
+        } else {
+          editTag.insertBefore(newEdit,editTag.children[0])
+        }
+      }
+      
+      editorPick = editorNum;
       editorNum++;
-
+      editsID()
     }
     //
-    function editorChk(node, e) {
-      if (e !== editorPick) {
-        document.getElementById('chk-editor-' + editorPick).checked = false;
-        node.checked = true;
-        editorPick = e;
-        console.log("new", editorPick, e)
-      } else {
-        node.checked = true;
-        console.log("old", editorPick, e)
+    function editorChk(node,e) {
+        if (e !== editorPick) {
+          document.getElementById('chk-editor-' + editorPick).checked = false;
+          node.checked = true;
+          editorPick = e;
+          console.log("new", editorPick, e)
+        } else {
+            //node.checked = false;
+            //console.log("copy", editorPick, e)
+            node.checked = true;
+            console.log("old", editorPick, e)
+
       }
     }
+
+    //拖拽编辑标签
+    function editsID(){  
+      for (var i = 0; i < dragSources.length; i++) {
+        dragSources[i].addEventListener('dragstart', function(event) {
+          event.dataTransfer.setData("text/plain", event.target.id); 
+          dropStartY = event.clientY;
+        });
+      
+        dragSources[i].addEventListener('dragend', function(event) {
+          event.dataTransfer.clearData("text/plain");
+          dropEndY = event.clientY;
+        });
+      }
+    }
+      
+    dropZones.addEventListener('dragover', function(event) {
+      event.preventDefault();
+      event.dataTransfer.dropEffect = 'move';
+    });
+    
+    dropZones.addEventListener('drop', function(event) {
+      event.preventDefault();
+      var id = event.dataTransfer.getData("text/plain");
+      var draggedElement = document.getElementById(id);
+      var dropZone = event.target;
+      if ( dropZone.tagName == 'LABEL' && dropZone.parentNode.id.split('-')[0] == 'edits' ){
+        //var index = dropZone.parentNode.id.split('-')[1]
+        //console.log(index)
+        if ( dropEndY < dropStartY){
+          dropZone.parentNode.parentNode.insertBefore(draggedElement,dropZone.parentNode);
+        } else {
+          dropZone.parentNode.parentNode.insertBefore(draggedElement,dropZone.parentNode.nextElementSibling);
+        }
+        
+      }
+      
+      //dropZones.appendChild(draggedElement);
+    });
 
     //初始化
     function notag() {
@@ -2954,6 +3365,20 @@ input[type="checkbox"]:checked+.btn-theme {
       }
     }
 
+    //梯度变化类型
+    function chkMix(type,checked){
+      if (checked){
+        mixType.push(type)
+        console.log(mixType)
+      } else {
+
+        if(mixType.includes(type)){
+          mixType = mixType.filter(item => item !== type)
+          console.log(mixType)
+        }
+      }
+    }
+
     //查找并选中
     function searchToRe(info) {
       parent.postMessage([{ area: searchArea, type: searchType, info: info }, 'searchToRe'], '*')
@@ -3002,7 +3427,7 @@ input[type="checkbox"]:checked+.btn-theme {
       log1.innerHTML = document.getElementById('input-num-2').value;
     }
 
-    //重置输入颜色
+    //重置输入色值
     function reColorText(e) {
       //var rehex = document.getElementById("input-hex-wmb");
       //var recolor = document.getElementById("input-color-wmb");
@@ -3112,35 +3537,6 @@ input[type="checkbox"]:checked+.btn-theme {
         parent.postMessage([finalFrame, "createrframe"], '*')
         finalFrame = [];
       }
-      if (createrType == "image") {//已弃用
-        var imgsInfo = [];
-        var imgWH = []
-        var getimgWH = [];
-        for (var i = 0; i < importImg.length; i++) {
-          getimgWH.push(imgURLtoWH([{ imgURL: URL.createObjectURL(new Blob([importImg[i]], { type: 'image/png' })) }]));
-        }
-
-        setTimeout(() => {
-          console.log(getimgWH[0])
-          if (getimgWH[0].length == 1) {
-            for (var i = 0; i < getimgWH[0].length; i++) {
-              imgsInfo.push([imgsNameNew[i].name, getimgWH[i], [{ cuts: [importImg[i]] }]])
-            }
-            console.log(imgsInfo)
-            parent.postMessage([imgsInfo, "createrImage"], '*')
-          } else {
-            for (var i = 0; i < getimgWH.length; i++) {
-              //console.log(getimgWH[i])//w:getimgWH[i].width,h:getimgWH[i].height,cuts:getimgWH[i].cuts,
-              imgsInfo.push([imgsNameNew[i].name, getimgWH[i]], getimgWH[i])
-            }
-            console.log(imgsInfo)
-            //return imgsInfo
-            //console.log(imgWH)
-            parent.postMessage([imgsInfo, "createrImage"], '*')
-          }
-
-        }, 200)
-      }
 
     }
 
@@ -3154,24 +3550,11 @@ input[type="checkbox"]:checked+.btn-theme {
 
     //返回图片宽高信息和分段，恢复图片原尺寸
     function imgURLtoWH(e) {
-      var imgs = []
-      for (var i = 0; i < e.length; i++) {
-        var img = new Image();
-        img.src = e[i].imgURL;
-        img.onload = function () {
-          var cut
-          var cutW, cutH;
-          var lastCutW, lastCutH;
-          var cutImgs = [];
-          if (img.width < 4096 && img.height < 4096) {
-            var imgWHS = { width: img.width, height: img.height, cutW: img.width, cutH: img.height, }
-            imgs.push(imgWHS)
-          }
-        }
-
+      var img = new Image();
+      img.src = e.imgURL;
+      img.onload = function () {
+        parent.postMessage([{ w:img.width, h:img.height,index:e.index}, 'imgWH'], '*')
       }
-      return (imgs)
-      //parent.postMessage([imgs,'imgWH'],'*')
     }
 
     //添加噪点
@@ -3612,9 +3995,13 @@ input[type="checkbox"]:checked+.btn-theme {
     //最大化窗口
     function big(e) {
       if (e.checked) {
-        parent.postMessage([true, 'big'], '*')
+        parent.postMessage([true, 'big'], '*');
+        root.style.setProperty('--sidepageW', '380px');
+        root.style.setProperty('--sidepageP', '20px');
       } else {
-        parent.postMessage([false, 'big'], '*')
+        parent.postMessage([false, 'big'], '*');
+        root.style.setProperty('--sidepageW', '248px');
+        root.style.setProperty('--sidepageP', '14px');
       }
     }
 
@@ -3647,7 +4034,9 @@ input[type="checkbox"]:checked+.btn-theme {
       document.getElementById("top").style.display = 'flex';
       document.getElementById("side-main-1").style.display = 'flex';
       document.getElementById("zzz").style.display = 'none';
-
+      if(document.getElementById("btn-side-0").checked == true){
+        sidePage();
+      }
       parent.postMessage([false, "sleep"], "*");
     })
 
