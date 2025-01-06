@@ -1,5 +1,123 @@
-mg.showUI(__html__);
+/**
+ * [ToolsSet 工具集1.0]
+ * ©版权所有：2024-2025 YNYU @lvynyu2.gmail.com
+ * 禁止未授权的商用及二次编辑
+ * 禁止用于违法行为，如有，与作者无关
+ * 二次编辑需将引用部分开源
+ * 引用开源库的部分应遵循对应许可
+ */
+if ( mg.command == 'open' ){
+    mg.showUI(__html__);
+} else if ( mg.command == 'pixel' ){ 
+    //覆盖栅格化
+    var info = 1;
+    var a = mg.document.currentPage;
+    var b = a.selection;
+    console.log("原地栅格化：",info,"倍")
 
+    var loading =  mg.notify("生成中，请稍后",{
+        position:"bottom",
+        isLoading: true,
+        timeout: 6000,
+    });
+    setTimeout(() =>{
+        for (var i = 0; i < b.length; i++){
+            intXY(b[i]);
+            cutNode(a,b[i],info);
+            b[i].remove();  
+        }
+        loading.cancel();
+        pickBefore(a.selection);
+    },100)
+} else if ( mg.command == 'yuhua' ){
+    var a = mg.document.currentPage;
+    var b = a.selection;
+    for (var i = 0; i < b.length; i++){
+        var group = mg.group([b[i]]);
+        group.name = b[i].name;
+        var min = Math.min(b[i].absoluteRenderBounds.width,b[i].absoluteRenderBounds.height);
+        var yuhua = Math.ceil(0.044 * min + 6);//蒙版向内缩进值，模糊值则为yuhua*0.8
+        //console.log(min,yuhua);
+        var mask = mg.createRectangle();
+        mask.x = b[i].absoluteRenderBounds.x + yuhua;
+        mask.y = b[i].absoluteRenderBounds.y + yuhua;
+        mask.width = b[i].absoluteRenderBounds.width - yuhua * 2;
+        mask.height = b[i].absoluteRenderBounds.height - yuhua * 2;
+        mask.effects = [{
+            "type": "LAYER_BLUR",
+            "isVisible": true,
+            "radius": yuhua * 0.8,
+            "blendMode": "PASS_THROUGH"
+        }]
+        group.insertChild(0,mask);
+        var maskG = mg.group([b[i].parent.children[0]]);
+        maskG.name = '羽化蒙版';
+        maskG.isMask = true;
+        maskG.isMaskOutline = false;
+        b[i].parent.insertChild(0,b[i].clone());
+        b[i].parent.children[0].effects = [{
+            "type": "LAYER_BLUR",
+            "isVisible": true,
+            "radius": yuhua * 0.8,
+            "blendMode": "PASS_THROUGH"
+        }]
+        b[i].parent.children[0].isVisible = false
+    }
+} else if ( mg.command == 'lineTable' ){
+    var a = mg.document.currentPage;
+    var b = a.selection;
+    var info = 'line'
+    easePickTable(info,a,b)  
+} else if ( mg.command == 'areaTable' ){
+    var a = mg.document.currentPage;
+    var b = a.selection;
+    var info = 'area'
+    easePickTable(info,a,b)  
+} else if ( mg.command == 'help' ){
+    mg.showUI(__html__);
+    mg.ui.hide();
+    mg.ui.postMessage(['help','tolink'])//https://ynyu01.github.io/Tools-Help
+
+} else if ( mg.command == 'getnew' ){
+    mg.showUI(__html__);
+    mg.ui.hide();
+    mg.ui.postMessage(['new','tolink'])
+
+} else if ( mg.command == 'tableToArea'){
+    var a = mg.document.currentPage;
+    var b = a.selection;
+    var X = b.map(item => item.absoluteBoundingBox.x)
+    var W = b.map(item => item.absoluteBoundingBox.width)
+    var XX = [...new Set(X)]
+    var WW = [...new Set(W)]
+    var Y = b.map(item => item.absoluteBoundingBox.y)
+    var H = b.map(item => item.absoluteBoundingBox.height)
+    var YY = [...new Set(Y)]
+    var HH = [...new Set(H)]
+    if ( b.some( node => node.componentProperties[1].value == false || node.componentProperties[2].value == false || node.componentProperties[3].value == false || node.componentProperties[4].value == false)){
+        mg.notify("含已合并的表格 / 非全描边表格",{
+            type: "error",
+            position: "bottom",
+            timeout: 3000,
+            isLoading: false,
+        });
+    } else {
+        if ( (XX.length == 1 && WW.length == 1 && Math.max(...Y.map((value,index) => value + H[index])) - Math.min(...Y) == H.reduce((acc,item)=> acc + item,0)) ) {
+            console.log('竖向合并表格')
+            tableToArea(b,'l')        
+        } else if ( (YY.length == 1 && HH.length == 1 && Math.max(...X.map((value,index) => value + W[index])) - Math.min(...X) == W.reduce((acc,item)=> acc + item,0))) {
+            console.log('横向合并表格')
+            tableToArea(b,'h')
+        } else if ( XX.length * YY.length == b.length){
+            console.log([YY.length,XX.length])
+            tableToArea(b,'hl',[YY.length,XX.length])    
+        } else {
+            console.log('无法合并表格')
+        }
+    }
+}
+    
+//console.log(mg.currentUser)
 mg.ui.postMessage([mg.themeColor,'setTheme']);
 //console.log(mg.viewport.rulerVisible)
 var rulerH = 0;
@@ -28,7 +146,7 @@ mg.on('layoutchange',function(){
 
 var tabInfo;
 var importNum = 1,xx = 0,yy = 0,time = 0,ww = 0,hh = 0;
-var find = [];
+var find = [],searchTime = 0,seaechOldNodes = [];
 var cutMax = 4096;
 var stylePage = '附录/变量&样式表';
 var mixType = {
@@ -38,12 +156,14 @@ var mixType = {
     "S":mixS,
     "isV":mixisV,
 }
+var searchType = "Text",searchArea = "Page";
+var diffStyleNode = []
+var diffColorTime = 0;
+var pickTableArea = false;
 
 
-
-mg.ui.onmessage = (message) => {
-
-    
+//核心功能
+mg.ui.onmessage = (message) => { 
     const info = message[0]
     const type = message[1]
 
@@ -86,7 +206,7 @@ mg.ui.onmessage = (message) => {
             console.log("当前节点信息：")
             console.log(mg.document.currentPage.selection[0])
         } else {
-            console.log(mg.document.currentPage.parent)
+            //console.log(mg.document.currentPage.parent)
             console.log("未选中对象")
         }
     }
@@ -95,6 +215,14 @@ mg.ui.onmessage = (message) => {
         console.log("创建画板：",info.length,"个");
         var a = mg.document.currentPage;
         var b = a.selection;
+        //反传对象尺寸信息
+        if ( info == 0 && b.length > 0){
+            var frameInfo = [];
+            b.forEach(item => {
+                frameInfo.push(item.name.split(item.width)[0].trim() + '\t' + item.width + '\t' + item.height + '\n')
+            })
+            mg.ui.postMessage([frameInfo,'getFrame'])
+        }
         var gap = 30;
         var maxW ,maxH ;
         var viewX = mg.viewport.center.x - ((mg.viewport.bound.width/2  - 300)* mg.viewport.zoom)/// mg.viewport.bound.width/2 + 300;
@@ -122,14 +250,17 @@ mg.ui.onmessage = (message) => {
             if (info[i].name.toLowerCase().split("kv").length > 1 ) {
                 console.log("含KV");
                 var addframe = mg.createFrame()
-                addframe.name = info[i].name + " " + info[i].w + "×" + info[i].h;        
+                if( info[i].s !== undefined){
+                    addframe.setPluginData('s',info[i].s.replace(/[kK]/g,''));
+                    addframe.name = info[i].name + " "  + info[i].s  + " " + info[i].w + "×" + info[i].h; 
+                } else {
+                    addframe.name = info[i].name + " " + info[i].w + "×" + info[i].h; 
+                }      
                 addframe.x = x;
                 addframe.y = y;
                 addframe.width = info[i].w;
                 addframe.height = info[i].h;
-                if( info[i].s !== undefined){
-                    addframe.setPluginData('s',info[i].s)
-                }
+                
                 if ( b.length == 1){
                     if ( b[0].type == "COMPONENT" || b[0].type == "INSTANCE"){
                         var scale = addframe.height/ b[0].height;
@@ -154,17 +285,30 @@ mg.ui.onmessage = (message) => {
                 if ( info[i].w / info[i].h > 1){
                     allH.push(info[i].h);
                     var addframe = mg.createFrame()
-                    addframe.name = info[i].name + " " + info[i].w + "×" + info[i].h;         
+                    if( info[i].s !== undefined){
+                        addframe.setPluginData('s',info[i].s.replace(/[kK]/g,''));
+                        addframe.name = info[i].name + " "  + info[i].s  + " " + info[i].w + "×" + info[i].h; 
+                    } else {
+                        addframe.name = info[i].name + " " + info[i].w + "×" + info[i].h; 
+                    }       
                     addframe.x = x;
                     addframe.y = y;
                     addframe.width = info[i].w;
                     addframe.height = info[i].h;
-                    if( info[i].s !== undefined){
-                        addframe.setPluginData('s',info[i].s)
-                    }
+                    
                     if ((info[i].w == 1333 && info[i].h == 275 )|| info[i].name.split("按钮").length > 1){
                         addframe.fills = []
                     }
+
+                    if ((info[i].w == 1200 && info[i].h == 300 )){
+                        /*
+                        var nodes = mg.createRectangle()
+                        addframe.appendChild(nodes)
+                        nodes.x = 100
+                        nodes.y = 100
+                        */
+                    }
+
                     if ( b.length == 1){
                         if ( b[0].type == "COMPONENT" || b[0].type == "INSTANCE"){
                             var scale = addframe.height/ b[0].height;                        
@@ -205,14 +349,17 @@ mg.ui.onmessage = (message) => {
                 if ( info[i].w / info[i].h < 1){
                     allW.push(info[i].w);
                     var addframe = mg.createFrame()
-                    addframe.name = info[i].name + " " + info[i].w + "×" + info[i].h;        
+                    if( info[i].s !== undefined){
+                        addframe.setPluginData('s',info[i].s.replace(/[kK]/g,''));
+                        addframe.name = info[i].name + " "  + info[i].s  + " " + info[i].w + "×" + info[i].h; 
+                    } else {
+                        addframe.name = info[i].name + " " + info[i].w + "×" + info[i].h; 
+                    }    
                     addframe.x = x;
                     addframe.y = y;
                     addframe.width = info[i].w;
                     addframe.height = info[i].h;
-                    if( info[i].s !== undefined){
-                        addframe.setPluginData('s',info[i].s)
-                    }
+                    
                     if ((info[i].w == 580 && info[i].h == 870 )|| info[i].name.split("弹窗").length > 1 ){
                         addframe.fills = []
                     }
@@ -254,14 +401,16 @@ mg.ui.onmessage = (message) => {
                 if ( info[i].w / info[i].h == 1){
                     allW.push(info[i].w);
                     var addframe = mg.createFrame()
-                    addframe.name = info[i].name + " " + info[i].w + "×" + info[i].h;        
+                    if( info[i].s !== undefined){
+                        addframe.setPluginData('s',info[i].s.replace(/[kK]/g,''));
+                        addframe.name = info[i].name + " "  + info[i].s  + " " + info[i].w + "×" + info[i].h; 
+                    } else {
+                        addframe.name = info[i].name + " " + info[i].w + "×" + info[i].h; 
+                    }     
                     addframe.x = x;
                     addframe.y = y;
                     addframe.width = info[i].w;
                     addframe.height = info[i].h;
-                    if( info[i].s !== undefined){
-                        addframe.setPluginData('s',info[i].s)
-                    }
                     addframe.fills = []
     
                     //按换行标准换行
@@ -439,7 +588,8 @@ mg.ui.onmessage = (message) => {
                 intXY(b[i]);
                 cutNode(a,b[i],info);
             }
-            loading.cancel()
+            loading.cancel();
+            pickBefore(a.selection);
         },100)
     }
         
@@ -462,7 +612,8 @@ mg.ui.onmessage = (message) => {
                 cutNode(a,b[i],info);
                 b[i].remove();  
             }
-            loading.cancel()
+            loading.cancel();
+            pickBefore(a.selection);
         },100)
         
     }
@@ -616,7 +767,7 @@ mg.ui.onmessage = (message) => {
         //pixels.effects = [{type: 'LAYER_BLUR', isVisible: true, radius: 0.25, blendMode: 'PASS_THROUGH'}];
         b[0].insertChild(b[0].children.length,pixels)
     }
-
+    //按行拆分文案
     if ( info == 'textByLine'){
         console.log('按行拆分')
         var a = mg.document.currentPage;
@@ -625,7 +776,43 @@ mg.ui.onmessage = (message) => {
         //var texts = mg.createText()
         for (var i = 0; i < b.length; i++){
             if (b[i].type == 'TEXT'){
-                lines.push(b[i].characters.split('\n'));
+                var parentnode = b[i].parent;
+                var x = 0;
+                var y = 0;
+                var lineheight = b[i].textStyles[0].textStyle.lineHeightByPx;
+                var X = [],Y = [];
+                var nameCut = b[i].name.substring(0,10) +  '...' ;
+                var index = parentnode.children.findIndex(item => item === b[i]);
+
+                lines = b[i].characters.split('\n');
+                var addframe = mg.createFrame();
+                cloneMain(addframe,b[i])
+                
+                
+                addframe.fills = [];
+                addframe.name = nameCut;
+
+                lines.forEach(item => {
+                    var texts = b[i].clone()//mg.createText()
+                    texts.characters = item
+                    X.push(x)
+                    Y.push(y)
+                    y += lineheight
+                    addframe.appendChild(texts)
+                    if (item.trim() == ''){
+                        texts.remove()
+                    }
+                })
+                    
+                //console.log(X,Y)
+
+                parentnode.insertChild(index + 1,addframe)
+                for ( var e = 0; e < addframe.children.length; e++){
+                    addframe.children[e].x = X[e];
+                    addframe.children[e].y = Y[e];
+                }
+
+                b[i].remove()
             } else {
                 mg.notify('所选对象非文本', {
                     type: "error",
@@ -634,40 +821,117 @@ mg.ui.onmessage = (message) => {
                     isLoading: false,
                   });
             }
-        }
-        for (var i = 0; i < b.length; i++){
-            if (b[i].type == 'TEXT'){
-                var parentnode = b[i].parent;
-                var index = parentnode.children.findIndex(item => item === b[i]);
-                var addframe = mg.createFrame();
-                var x = b[i].absoluteRenderBounds.x;
-                var y = b[i].absoluteRenderBounds.y - b[i].listStyles[0].end;
-                addframe.width = b[i].width;
-                addframe.height = b[i].height;
-                addframe.x = x;
-                addframe.y = y;
-                addframe.fills = [];
-                addframe.name = b[i].name[0] + b[i].name[1] + b[i].name[2] + b[i].name[3]+ b[i].name[4]+ b[i].name[5]+ b[i].name[6]+ b[i].name[7] +  '...' ;
-                if (b[i].type == 'TEXT'){ 
-                    //console.log(lines[0][0],lines.length)
-                    for(var e = 0;e < lines[i].length;e++){
-                        var texts = mg.createText()
-                        texts.characters = lines[i][e]
-                        texts.textStyles = b[i].textStyles[0]
-                        texts.x = x;
-                        texts.y = y;
-                        y = y + b[i].textStyles[0].textStyle.lineHeightByPx
-                        addframe.appendChild(texts)
-                        if (lines[i][e] == ''){
-                            texts.remove()
-                        }
-                    }
+        }   
+    }
+    //按自动布局合并文案
+    if ( info == 'textByLayout'){
+        var a = mg.document.currentPage;
+        var b = a.selection;
+        b.forEach(item => {
+            if ( item.layoutPositioning && item.layoutPositioning == 'AUTO'){
+                var characters = '';
+                var c = item.findAll((node) => node.type == 'TEXT');
+                if ( item.flexMode == 'VERTICAL'){
+                    c.forEach( node => {
+                        characters += node.characters + '\n';
+                    })
+                } else {
+                    c.forEach( node => {
+                        characters += node.characters;
+                    })
                 }
-                parentnode.insertChild(index + 1,addframe)
-                b[i].isVisible = false;
+                
+                var newText = c[0].clone();
+                var index = item.parent.children.findIndex( node => node == item);
+                item.parent.insertChild( (index + 1),newText);
+                if ( item.flexMode == 'VERTICAL'){
+                    newText.y = item.y;
+                    newText.x += item.absoluteBoundingBox.width + 20;
+                } else {
+                    newText.x = item.x;
+                    newText.y += item.absoluteBoundingBox.height + 20;
+                }
+                newText.characters = characters.trim()
+                
+                
+                
             }
-        }
-        
+        })
+    }
+    //按x、X、颜色拆分文案
+    if ( info == 'textEaseCut'){
+        var a = mg.document.currentPage;
+        var b = a.selection;
+        b.forEach(node => {
+            if ( node.type == 'TEXT'){
+                if ( node.textStyles.length == 1){
+                    var text = node.characters.replace(/\s*([xX]+)\s*/gi,'$1').split(/([xX]+)/gi).filter( item => item.trim() !== '').map(item => item.trim())
+                    //console.log(text)
+                    var cuts = mg.createFrame();
+                    cuts.name = "span";
+                    cuts.clipsContent = false;
+                    cuts.layoutPositioning = "AUTO";
+                    cuts.flexGrow = 0;
+                    cuts.flexMode = "HORIZONTAL";
+                    cuts.flexWrap = "NO_WRAP";
+                    cuts.itemSpacing = 8;
+                    cuts.mainAxisAlignItems = "FLEX_START";
+                    cuts.mainAxisSizingMode = "AUTO";
+                    cuts.crossAxisAlignItems = "FLEX_START"; 
+                    cuts.crossAxisSizingMode = "AUTO";
+                    cuts.crossAxisSpacing = 0;
+                    cuts.paddingTop = 0;
+                    cuts.paddingBottom = 0;
+                    cuts.paddingLeft = 0;
+                    cuts.paddingRight= 0;
+                    cuts.fills = [];
+                    text.forEach( item => {
+                        var textnode = node.clone();
+                        textnode.characters = item;
+                        cuts.appendChild(textnode);
+                    })
+                    
+                    var index = node.parent.children.findIndex( item => item == node);
+                    node.parent.insertChild(index,cuts);
+                    cuts.x = node.x;
+                    cuts.y = node.y;
+                    node.remove();
+                } else {
+                    var oldText = node.characters;
+                    var cuts = mg.createFrame();
+                    cuts.name = "span";
+                    cuts.clipsContent = false;
+                    cuts.layoutPositioning = "AUTO";
+                    cuts.flexGrow = 0;
+                    cuts.flexMode = "HORIZONTAL";
+                    cuts.flexWrap = "NO_WRAP";
+                    cuts.itemSpacing = 8;
+                    cuts.mainAxisAlignItems = "FLEX_START";
+                    cuts.mainAxisSizingMode = "AUTO";
+                    cuts.crossAxisAlignItems = "FLEX_START"; 
+                    cuts.crossAxisSizingMode = "AUTO";
+                    cuts.crossAxisSpacing = 0;
+                    cuts.paddingTop = 0;
+                    cuts.paddingBottom = 0;
+                    cuts.paddingLeft = 0;
+                    cuts.paddingRight= 0;
+                    cuts.fills = [];
+                    node.textStyles.forEach( text => {
+                        var textnode = node.clone()
+                        textnode.characters = oldText.substring(text.start,text.end);
+                        textnode.fills = text.fills;
+                        textnode.fillStyleId = text.fillStyleId;
+                        cuts.appendChild(textnode);
+                    })
+                    var index = node.parent.children.findIndex( item => item == node);
+                    node.parent.insertChild(index,cuts);
+                    cuts.x = node.x;
+                    cuts.y = node.y;
+                    node.remove();
+                }
+            }
+            
+        })
     }
     //建立线性流程
     if ( info == 'buildFlow'){
@@ -884,6 +1148,7 @@ mg.ui.onmessage = (message) => {
             var list = mg.createFrame()
             list.name = "#列";
             list.layoutPositioning = "AUTO";
+            list.clipsContent = false;
             list.flexGrow = 0;
             list.flexMode = "VERTICAL";
             list.flexWrap = "NO_WRAP";
@@ -894,6 +1159,7 @@ mg.ui.onmessage = (message) => {
             list.paddingLeft = 0;
             list.paddingRight= 0;
             list.fills = [];
+            list.itemReverseZIndex = true;//正向堆叠，方便伪合并表格
             if ( H > 2){
                 list.appendChild(node1.clone());
                 for ( var e = 1; e < H; e++){
@@ -932,6 +1198,7 @@ mg.ui.onmessage = (message) => {
             table.paddingLeft = 0;
             table.paddingRight= 0;
             table.fills = [];
+            table.itemReverseZIndex = true;//正向堆叠，方便伪合并表格
             if ( L > 0 ){
                 table.appendChild(list);
                 for ( var e = 1; e < L; e++){
@@ -942,6 +1209,9 @@ mg.ui.onmessage = (message) => {
                 table.appendChild(list.clone());
                 table.appendChild(list.clone());
             }
+            setStroke(table,'CENTER',[1,1,1,1])
+            //setRadius(table,[16,16,16,16])
+            table.fills = [{type:"SOLID",color:{r:0.175,g:0.175,b:0.175,a:1,}}]
 
         }
         if ( b.length == 2){
@@ -1035,6 +1305,9 @@ mg.ui.onmessage = (message) => {
                     table.appendChild(list.clone());
                     table.appendChild(list.clone());
                 }
+                setStroke(table,'CENTER',[1,1,1,1])
+                //setRadius(table,[16,16,16,16])
+                table.fills = [{type:"SOLID",color:{r:0.175,g:0.175,b:0.175,a:1,}}]
             }
             /*
             if( b[0].name.split("#table").length !== 1 && b[1].type == "TEXT" || b[1].name.split("#table").length !== 1 && b[0].type == "TEXT" ){
@@ -1065,15 +1338,66 @@ mg.ui.onmessage = (message) => {
         var b = a.selection;
         if (b.length == 1 && b[0].name.split("#table").length !== 1 && b[0].children[0].name.split('数据流').length == 1){
             
-            var data = tableToData(info.trim(),true) 
+            if ( b[0].name.split("-横").length > 1){
+                var datas = tableToData(info.trim(),true);
+                var data = datas[0].map((col, i) => datas.map(row => row[i]))
+            } else {
+                var data = tableToData(info.trim(),true) 
+            }
             var H = data[0].length - b[0].children[0].children.length;
             var L = data.length - b[0].children.length;
+
             addTable(b,H,L)
-            
             for(var i = 0; i < b[0].children.length; i++){
                 
                 if (b[0].children[i].name.split('#列').length !== 1){
                     var c = b[0].children[i].children;
+                    for (var ii = 0; ii < c.length; ii++){
+                        //console.log(c[ii].name + ':' + data[i][ii])
+                        var id = []
+                        if ( c[ii].componentProperties.length >= 6){
+                            for (var e = 5; e < c[ii].componentProperties.length; e++){//默认前五个是固定的组件属性：区分色、上右下左描边
+                                if ( c[ii].componentProperties[e].name.split('字').length !== 1){
+                                    //console.log("含字段" + ii)
+                                    id.push( c[ii].componentProperties[e].id)//收集字段/文字属性ii
+                                }
+                            } 
+                            //console.log(111)
+                            var maxText = data[i][ii].split("|")
+
+                            
+                            if (id.length == maxText.length){
+                                //console.log(id.length + ":" + maxText)
+                                for (var iii = 0; iii < id.length; iii++){
+                                    c[ii].setProperties({[id[iii]]:maxText[iii]})//按顺序修改字段属性
+                                }  
+                            } else {
+                                c[ii].setProperties({[id[0]]:data[i][ii]})
+                            }
+                            
+                        }
+                    }  
+                }  
+            } 
+        }
+        if (b.length == 1 && b[0].findAll((node) => node.name.split("#table").length > 1).length == 1){
+            var table = b[0].findAll((node) => node.name.split("#table").length > 1)[0]
+            a.selection = [table]
+
+            if ( table.name.split("-横").length > 1){
+                var datas = tableToData(info.trim(),true);
+                var data = datas[0].map((col, i) => datas.map(row => row[i]))         
+            } else {
+                var data = tableToData(info.trim(),true) 
+            }
+            var H = data[0].length -table.children[0].children.length;
+                var L = data.length - table.children.length;
+
+            addTable([table],H,L)
+            for(var i = 0; i < table.children.length; i++){
+                
+                if (table.children[i].name.split('#列').length !== 1){
+                    var c = table.children[i].children;
                     for (var ii = 0; ii < c.length; ii++){
                         //console.log(c[ii].name + ':' + data[i][ii])
                         var id = []
@@ -1099,7 +1423,7 @@ mg.ui.onmessage = (message) => {
                 }  
             } 
         }
-        if (b.length == 1 && b[0].name.split("#table").length !== 1 && b[0].children[0].name.split('数据流').length !== 1){
+        if (b.length == 1 && b[0].name.split("数据流").length !== 1 || b[0].children[0].name.split('数据流').length !== 1){
             var data = tableToData(info.trim(),false)
                 var H = 0;
                 var L = data.length - b[0].children.length;
@@ -1220,6 +1544,33 @@ mg.ui.onmessage = (message) => {
             }
         }
     }
+    //从表格文本命名
+    if ( type == 'reTableName'){
+        var a = mg.document.currentPage;
+        var b = a.selection;
+
+        if (b.length == 1 && b[0].name.split("#table").length !== 1 ){
+            var data = tableToData(info.trim(),true)
+                var H = data[0].length - b[0].children[0].children.length;
+                var L = data.length - b[0].children.length;
+                console.log(data)
+                addTable(b,H,L)
+                for(var i = 0; i < b[0].children.length; i++){
+                    for(var ii = 0; ii < b[0].children[i].children.length; ii++){
+                        b[0].children[i].children[ii].name = data[i][ii]
+                    }   
+                }         
+        }
+        if (b.length == 1 &&  b[0].name.split('数据流').length !== 1){
+            var data = tableToData(info.trim(),false)
+                var H = 0;
+                var L = data.length - b[0].children.length;
+                addTable(b,H,L)
+                for(var i = 0; i < b[0].children.length; i++){
+                    b[0].children[i].name = data[i][0]
+                }         
+        }
+    }
     //添加表格属性
     if ( type == 'asTable'){
         var a = mg.document.currentPage;
@@ -1228,12 +1579,17 @@ mg.ui.onmessage = (message) => {
             //var text = []
 
             if ( b[i].type == "COMPONENT"){
-                if (  b[i].componentPropertyValues.length == 0){
-                    if (b[b[i].children.length - 1].layoutPositioning !== "ABSOLUTE"){
+                if (  b[i].componentPropertyValues.length !== 6){
+                    if (b[i].children.length == 1){
                         b[i].itemReverseZIndex = true;
                         var colorLayer = mg.createRectangle();
-                        cloneMain(colorLayer,b[i])
-                        colorLayer.fills = [{type:"SOLID",color:{r:0.7,g:0.7,b:0.7,a:1,}}];   
+                        cloneMain(colorLayer,b[i]);
+                        if (b[i].children[0].characters == "表头文案" || b[i].characters == "表头"){
+                            colorLayer.fills = [{type:"SOLID",color:{r:0.4,g:0.4,b:0.4,a:1,}}];
+                        } else {
+                            colorLayer.fills = [{type:"SOLID",color:{r:0.4,g:0.4,b:0.4,a:0.5,}}];
+                        }
+
                         var strokeTop = mg.createRectangle();
                         cloneMain(strokeTop,b[i]);
                         setStroke(strokeTop,"CENTER",[1,0,0,0]);
@@ -1253,7 +1609,7 @@ mg.ui.onmessage = (message) => {
                         var strokeB = mg.group([strokeBottom]);
                         var strokeL = mg.group([strokeLeft]);
 
-                        if (b[i].children[0].characters == "表头文案" | b[i].characters == "表头"){
+                        if (b[i].children[0].characters == "表头文案" || b[i].characters == "表头"){
                             addAbsolute(b[i],diffC,"区分色",true)
                         } else {
                             addAbsolute(b[i],diffC,"区分色",false)
@@ -1266,20 +1622,8 @@ mg.ui.onmessage = (message) => {
                         b[i].itemReverseZIndex = false;
                     }
                 }
-                for ( var ii = 0; ii < b[i].children.length; ii++){
-                    
-                    if ( b[i].children[ii].type == "TEXT"){
-                        b[i].children[ii].flexGrow = 1;
-                        b[i].children[ii].textAutoResize = "HEIGHT"
-                        //console.log(Object.keys(b[i].children[ii].componentPropertyReferences).length )
-                        if (Object.keys(b[i].children[ii].componentPropertyReferences).length === 0){
-                            //text.push([b[i].children[ii].characters,])
-                            var addTextSet = b[i].addComponentProperty("字段1", "TEXT", b[i].children[ii].characters);
-                            //console.log(addTextSet)
-                            b[i].children[ii].componentPropertyReferences = {characters:addTextSet};
-                            
-                        }
-                    }
+                
+                for ( var ii = b[i].children.length - 1; ii >= 0 ; ii--){  
                     if ( b[i].children[ii].layoutPositioning == "ABSOLUTE"){
                         b[i].children[ii].children[0].constraints = {
                             horizontal: "STARTANDEND",
@@ -1290,6 +1634,20 @@ mg.ui.onmessage = (message) => {
                             var addLayerSet = b[i].addComponentProperty(b[i].children[ii].name,"BOOLEAN",false);
                             //console.log(addLayerSet)
                             b[i].children[ii].componentPropertyReferences = {isVisible:addLayerSet};
+                        }
+                    }
+                }
+                for ( var ii = b[i].children.length - 1; ii >= 0 ; ii--){          
+                    if ( b[i].children[ii].type == "TEXT"){
+                        b[i].children[ii].flexGrow = 1;
+                        b[i].children[ii].textAutoResize = "HEIGHT"
+                        //console.log(Object.keys(b[i].children[ii].componentPropertyReferences).length )
+                        if (Object.keys(b[i].children[ii].componentPropertyReferences).length === 0){
+                            //text.push([b[i].children[ii].characters,])
+                            var addTextSet = b[i].addComponentProperty("字段1", "TEXT", b[i].children[ii].characters);
+                            //console.log(addTextSet)
+                            b[i].children[ii].componentPropertyReferences = {characters:addTextSet};
+                            
                         }
                     }
                 }
@@ -1319,7 +1677,11 @@ mg.ui.onmessage = (message) => {
                     node.fills = [];
                     var colorLayer = mg.createRectangle();
                     cloneMain(colorLayer,node)
-                    colorLayer.fills = [{type:"SOLID",color:{r:0.7,g:0.7,b:0.7,a:1,}}];   
+                    if (b[i].children[0].characters == "表头文案" || b[i].characters == "表头"){
+                        colorLayer.fills = [{type:"SOLID",color:{r:0.4,g:0.4,b:0.4,a:1,}}];
+                    } else {
+                        colorLayer.fills = [{type:"SOLID",color:{r:0.4,g:0.4,b:0.4,a:0.5,}}];
+                    }
                     var strokeTop = mg.createRectangle();
                     cloneMain(strokeTop,node);
                     setStroke(strokeTop,"CENTER",[1,0,0,0]);
@@ -1373,6 +1735,9 @@ mg.ui.onmessage = (message) => {
                     
                 }
             }
+            if ( b[i].children && b[i].children[b[i].children.length - 1].type == 'TEXT'){
+
+            }
             
             
         }
@@ -1386,78 +1751,118 @@ mg.ui.onmessage = (message) => {
         var L = Number(info[1]);
         addTable(b,H,L) 
     }
-    //表格间隔区分色
-    if ( type == "diffColorTable"){
-        
+    //表格区分色
+    if ( type == "diffColorTable"){      
         var a = mg.document.currentPage;
         var b = a.selection;
-        for (var i = 0; i < b.length; i++){
-            if ( b[i].name.split("#table").length !== 1){
-                var c = b[i].children;
-                if ( b[i].name.split("-横").length !== 1){
-                    console.log('横向表格')
-                    for ( var ii = 0; ii < c.length; ii++){
-                        if (c[ii].name.split('#列').length !== 1){
-                            var d = c[ii].children;
-                            if ( (ii + 1) % 2 == 0){
-                                for ( var iii = 0; iii < d.length; iii++){
-                                    if ( d[iii].componentProperties[0].name !== "区分色"){
+        if ( info == 'diffLine'){
+            for (var i = 0; i < b.length; i++){
+                if ( b[i].name.split("#table").length !== 1){
+                    var c = b[i].children;
+                    if ( b[i].name.split("-横").length !== 1){
+                        console.log('横向表格')
+                        for ( var ii = 0; ii < c.length; ii++){
+                            if (c[ii].name.split('#列').length !== 1){
+                                var d = c[ii].children;
+                                if ( (ii + 1) % 2 == 0){
+                                    for ( var iii = 0; iii < d.length; iii++){
+                                        if ( d[iii].componentProperties[0].name !== "区分色"){
+                                            mg.notify("请检查组件属性中“区分色”是否是第一个",{
+                                                type: "error",
+                                                position: "bottom",
+                                                timeout: 6000,
+                                                isLoading: false,
+                                            });
+                                        } else {
+                                            d[iii].setProperties({[d[iii].componentProperties[0].id]:false})
+                                        }
+                                    }
+                                } else {
+                                    for ( var iii = 0; iii < d.length; iii++){
+                                        if ( d[iii].componentProperties[0].name !== "区分色"){
+                                            mg.notify("请检查组件属性中“区分色”是否是第一个",{
+                                                type: "error",
+                                                position: "bottom",
+                                                timeout: 6000,
+                                                isLoading: false,
+                                            });
+                                        } else {
+                                            d[iii].setProperties({[d[iii].componentProperties[0].id]:true})
+                                        }
+                                    }
+                                }
+                                
+                            
+                            }
+                        }
+
+                    }else{
+                        console.log('竖向表格')
+                        for ( var ii = 0; ii < c.length; ii++){
+                            if (c[ii].name.split('#列').length !== 1){
+                                var d = c[ii].children;
+                                for ( var iii = 1; iii < d.length; iii++){
+                                    if ( (iii + 1) % 2 !== 0 && d[iii].componentProperties[0].name !== "区分色"){
                                         mg.notify("请检查组件属性中“区分色”是否是第一个",{
                                             type: "error",
                                             position: "bottom",
                                             timeout: 6000,
                                             isLoading: false,
                                         });
+                                    }
+                                    if ( (iii + 1) % 2 !== 0 && d[iii].componentProperties[0].name == "区分色"){
+                                        d[iii].setProperties({[d[iii].componentProperties[0].id]:true})
                                     } else {
                                         d[iii].setProperties({[d[iii].componentProperties[0].id]:false})
                                     }
                                 }
-                            } else {
-                                for ( var iii = 0; iii < d.length; iii++){
-                                    if ( d[iii].componentProperties[0].name !== "区分色"){
-                                        mg.notify("请检查组件属性中“区分色”是否是第一个",{
-                                            type: "error",
-                                            position: "bottom",
-                                            timeout: 6000,
-                                            isLoading: false,
-                                        });
-                                    } else {
-                                        d[iii].setProperties({[d[iii].componentProperties[0].id]:true})
-                                    }
-                                }
-                            }
                             
-                        
-                        }
-                    }
-
-                }else{
-                    console.log('竖向表格')
-                    for ( var ii = 0; ii < c.length; ii++){
-                        if (c[ii].name.split('#列').length !== 1){
-                            var d = c[ii].children;
-                            for ( var iii = 1; iii < d.length; iii++){
-                                if ( (iii + 1) % 2 !== 0 && d[iii].componentProperties[0].name !== "区分色"){
-                                    mg.notify("请检查组件属性中“区分色”是否是第一个",{
-                                        type: "error",
-                                        position: "bottom",
-                                        timeout: 6000,
-                                        isLoading: false,
-                                    });
-                                }
-                                if ( (iii + 1) % 2 !== 0 && d[iii].componentProperties[0].name == "区分色"){
-                                    d[iii].setProperties({[d[iii].componentProperties[0].id]:true})
-                                } else {
-                                    d[iii].setProperties({[d[iii].componentProperties[0].id]:false})
-                                }
                             }
-                        
                         }
                     }
                 }
+                
+            }
+        }
+        if ( info == 'all'){
+ 
+            if ( diffColorTime%2 == 0){
+                b.forEach(node =>{
+                    if ( node.componentProperties[0].name !== "区分色"){
+                        mg.notify("请检查组件属性中“区分色”是否是第一个",{
+                            type: "error",
+                            position: "bottom",
+                            timeout: 6000,
+                            isLoading: false,
+                        });
+                    } else {
+                        node.setProperties({[node.componentProperties[0].id]:false})
+                    }
+                })
+                diffColorTime++
+            } else {
+                b.forEach(node =>{
+                    if ( node.componentProperties[0].name !== "区分色"){
+                        mg.notify("请检查组件属性中“区分色”是否是第一个",{
+                            type: "error",
+                            position: "bottom",
+                            timeout: 6000,
+                            isLoading: false,
+                        });
+                    } else {
+                        node.setProperties({[node.componentProperties[0].id]:true})
+                    }
+                })
+                diffColorTime++
             }
             
         }
+    }
+    //连选中间格
+    if ( type == "easePickTable"){
+        var a = mg.document.currentPage;
+        var b = a.selection;
+        easePickTable(info,a,b)  
     }
     //反转表格行列
     if ( type == "translateTable"){
@@ -1488,12 +1893,8 @@ mg.ui.onmessage = (message) => {
                     for ( var ii = 0; ii < b[i].children[0].children.length; ii++){
                         L++
                     }
-                } else {
-                    L = 3
                 }
                 
-                
-
                 var table = b[i].parent.insertChild(0,b[i].clone());
                 
                 var c =  b[i].parent.children[0];
@@ -1514,14 +1915,75 @@ mg.ui.onmessage = (message) => {
                     }
                     
                 }
+                reTableStroke(c,H,L)
+                b[i].remove();
+                loading.cancel();
+                a.selection = [c];
                 
-                b[i].remove()
-                loading.cancel()
-                a.selection = [c]
+                
+
             }
         }
         },100);
         
+    }
+    //表格描边
+    if ( type == "strokeTable"){
+        var a = mg.document.currentPage;
+        var b = a.selection;
+        if ( info == 'diff'){
+            var X = b.map(item => item.absoluteBoundingBox.x)
+            var W = b.map(item => item.absoluteBoundingBox.width)
+            var XX = [...new Set(X)]
+            var WW = [...new Set(W)]
+            var Y = b.map(item => item.absoluteBoundingBox.y)
+            var H = b.map(item => item.absoluteBoundingBox.height)
+            var YY = [...new Set(Y)]
+            var HH = [...new Set(H)]
+            if ( b.some( node => node.componentProperties[1].value == false || node.componentProperties[2].value == false || node.componentProperties[3].value == false || node.componentProperties[4].value == false)){
+                mg.notify("含已合并的表格 / 非全描边表格",{
+                    type: "error",
+                    position: "bottom",
+                    timeout: 3000,
+                    isLoading: false,
+                });
+            } else {
+                if ( (XX.length == 1 && WW.length == 1 && Math.max(...Y.map((value,index) => value + H[index])) - Math.min(...Y) == H.reduce((acc,item)=> acc + item,0)) ) {
+                    console.log('竖向合并表格')
+                    tableToArea(b,'l')
+                    
+                } else if ( (YY.length == 1 && HH.length == 1 && Math.max(...X.map((value,index) => value + W[index])) - Math.min(...X) == W.reduce((acc,item)=> acc + item,0))) {
+                    console.log('横向合并表格')
+                    tableToArea(b,'h')
+                } else if ( XX.length * YY.length == b.length){
+                    console.log([YY.length,XX.length])
+                    tableToArea(b,'hl',[YY.length,XX.length])
+                    
+                    //console.log(b.map( node => node.componentProperties[5]))
+                    
+                } else {
+                    console.log('无法合并表格')
+                }
+            }
+        }
+        if ( info == 'all'){
+            var stroke;
+            
+            for ( var i = 0; i < b.length; i++){
+                if ( b[i].mainComponent.componentPropertyValues[1].defaultValue == true ){
+                    stroke = true;
+                } else {
+                    stroke = false;
+                }
+                for ( var ii = 1; ii < 5; ii++){
+                    console.log(stroke)
+                    b[i].setProperties({[b[i].componentProperties[ii].id]:stroke})
+                }
+            }
+        }
+       
+        
+
     }
     //刷新小地图
     if ( type == "reMap"){
@@ -1540,14 +2002,10 @@ mg.ui.onmessage = (message) => {
     if (type == "hasMap"){
         var a = mg.document.currentPage;
         var b = a.children;
-        if(b[0].name == "创建快照"){
-            b[0].remove()
+        if(b[b.length - 1].name == "创建快照"){
+            b[b.length - 1].remove()
         } else {
-            for ( var i = 0; i < b.length; i++){
-                if(b[i].name == "创建快照"){
-                    b[i].remove()
-                }
-            }
+            a.findChild((node) => node.name == "创建快照")[0].remove()
         }
         
     }
@@ -1577,37 +2035,42 @@ mg.ui.onmessage = (message) => {
     if ( type == "reCenterAuto"){
         var a = mg.document.currentPage;
         var b = a.findChild((item)=> item.absoluteBoundingBox.x <= info.x && item.absoluteBoundingBox.y <= info.y && item.absoluteBoundingBox.x + item.absoluteBoundingBox.width >= info.x && item.absoluteBoundingBox.y + item.absoluteBoundingBox.height >= info.y);
-            if (b){
-                a.selection = [b];
-                mg.viewport.scrollAndZoomIntoView(a.selection);
-                if ( b.type !== "FRAME" || b.type !== "GROUP" || b.type !== "COMPONENT_SET" || b.type !== "COMPONENT" || b.type !== "INSTANCE"  ){
-                    var textArea = mg.createFrame();
-                    textArea.name = "临时选区"
-                    textArea.fills = [];
-                    cloneMain(textArea,b);
-                    a.insertChild(0,textArea);  
-                    mg.viewport.scrollAndZoomIntoView([a.children[0]]);
-                    mg.ui.postMessage(["","hasView"]);
-                    console.log('sendHasView')
-                }
-                if (b.children){
-                    var pick = b.findAll((item)=> item.absoluteBoundingBox.x <= info.x && item.absoluteBoundingBox.y <= info.y && item.absoluteBoundingBox.x + item.absoluteBoundingBox.width >= info.x && item.absoluteBoundingBox.y + item.absoluteBoundingBox.height >= info.y );
-                    if (pick){
-                        a.selection = [pick[Math.floor(pick.length/2)]];
-                        mg.viewport.scrollAndZoomIntoView(a.selection);
-                        console.log("目标区域有子图层");  
-                    }                  
-                }
-                
-            } else {
-                a.selection = []
-                mg.viewport.center = {x:info.x,y:info.y}
-                mg.viewport.zoom = 0.6
+        //var b = mg.getNodeByPosition({x:info.x,y:info.y})
+        //console.log(b)
+        if (b){
+            a.selection = [b];
+            //mg.viewport.scrollAndZoomIntoView([b])
+            ///*
+            mg.viewport.scrollAndZoomIntoView(a.selection);
+            if ( b.type !== "FRAME" || b.type !== "GROUP" || b.type !== "COMPONENT_SET" || b.type !== "COMPONENT" || b.type !== "INSTANCE"  ){
+                var textArea = mg.createFrame();
+                textArea.name = "临时选区"
+                textArea.fills = [];
+                cloneMain(textArea,b);
+                a.insertChild(0,textArea);  
+                mg.viewport.scrollAndZoomIntoView([a.children[0]]);
+                mg.ui.postMessage(["","hasView"]);
+                console.log('sendHasView')
             }
+            if (b.children){
+                var pick = b.findAll((item)=> item.absoluteBoundingBox.x <= info.x && item.absoluteBoundingBox.y <= info.y && item.absoluteBoundingBox.x + item.absoluteBoundingBox.width >= info.x && item.absoluteBoundingBox.y + item.absoluteBoundingBox.height >= info.y );
+                if (pick.length > 0){
+                    //a.selection = [pick[Math.floor(pick.length/2)]];
+                    mg.viewport.scrollAndZoomIntoView([pick[Math.floor(pick.length/2)]]);
+                    console.log("目标区域有子图层");  
+                }                  
+            }
+            //*/
+            
+        } else {
+            a.selection = []
+            mg.viewport.center = {x:info.x,y:info.y}
+            mg.viewport.zoom = 0.6
+        }
 
         
     }
-    //拆分路径/*
+    //拆分路径
     if ( info == "reSVG"){
         var a = mg.document.currentPage;
         var b = a.selection;
@@ -1625,8 +2088,7 @@ mg.ui.onmessage = (message) => {
         }
     }
     //提取色号
-    if ( type == "getColor"){
-        
+    if ( type == "getColor"){    
         var a = mg.document.currentPage;
         var b = a.selection;
         for (var i = 0; i < b.length; i++){
@@ -1644,6 +2106,29 @@ mg.ui.onmessage = (message) => {
             } else {
                 setTextMain(node,0,color.length,22);
                 node.y -= node.height + 4
+            }  
+        }
+    }
+    //提取命名
+    if ( info == 'nameToText'){
+        var a = mg.document.currentPage;
+        var b = a.selection.filter(item => item.name.split('#no').length == 1);
+        //console.log(b)
+        for (var i = 0; i < b.length; i++){
+            var node = mg.createText();
+            node.x = b[i].absoluteBoundingBox.x;
+            node.y = b[i].absoluteBoundingBox.y;
+            node.characters = b[i].name;
+            b[i].parent.appendChild(node)
+            if (b[i].width > 2560 || b[i].height > 1920){
+                setTextMain(node,0,b[i].name.length,36);
+                node.y -= 50
+            } else if ( b[i].width < 500 || b[i].height < 500 ) {
+                setTextMain(node,0,b[i].name.length,14);
+                node.y -= 20
+            } else {
+                setTextMain(node,0,b[i].name.length,28);
+                node.y -= 38
             }  
         }
     }
@@ -1735,6 +2220,7 @@ mg.ui.onmessage = (message) => {
                 "radius": yuhua * 0.8,
                 "blendMode": "PASS_THROUGH"
             }]
+            b[i].parent.children[0].isVisible = false
         }
     }
     //拆分图层到画板
@@ -1767,6 +2253,103 @@ mg.ui.onmessage = (message) => {
             }
         }
     }
+    //添加到画板
+    if ( info == 'toFrame'){
+        var a = mg.document.currentPage;
+        var b = a.selection;
+        for (var i = 0; i < b.length; i++){
+            var index = b[i].parent.children.findIndex(item => item === b[i]);
+            var newframe = mg.createFrame();
+            cloneMain(newframe,b[i]);
+            b[i].parent.insertChild(index,newframe)
+            newframe.name = b[i].name;
+            newframe.appendChild(b[i]);
+            newframe.fills = [];  
+        }
+    }
+    //简单设置约束
+    if ( info == 'easePosition'){
+        var a = mg.document.currentPage;
+        var b = a.selection;
+        for (var i = 0; i < b.length; i++){
+            if ( (b[i].type == 'FRAME' || b[i].type == 'COMPONENT') && b[i].children ){
+                
+                //var c = b[i].findAll( (node) => node.type == 'RECTANGLE')
+                var c = b[i].children.filter(node => node.name.split('#no').length == 1)
+                var x1 = b[i].absoluteBoundingBox.x,y1 = b[i].absoluteBoundingBox.y,w1 = b[i].absoluteBoundingBox.width,h1 = b[i].absoluteBoundingBox.height;
+                var axisX,axisY;
+                
+                for ( var e = 0; e < c.length; e++){
+                    var x2 = c[e].absoluteBoundingBox.x ,y2 = c[e].absoluteBoundingBox.y ,w2 = c[e].absoluteBoundingBox.width ,h2 = c[e].absoluteBoundingBox.height;
+                    var xc2 = x2 + w2/2,yc2 = y2 + h2/2;
+                    console.log(c[e].name)
+                    if ( h2 <= h1 * 6/8){
+                        if ( yc2 < y1 + h1/2){
+                            axisY = 'START'
+                        } else if (yc2 > y1 + h1/2) {
+                            axisY = 'END'
+                        } else {
+                            axisY = 'CENTER'
+                        }
+                    } else {
+                        //console.log('超高')
+                        if (y2 <= y1 && y2 + h2 >= y1 + h1){
+                            //console.log('高超出')
+                            axisY = 'STARTANDEND'
+                        } else {
+                            if ( yc2 <= y1 + h1 * 3/8){
+                                axisY = 'START'
+                            } else if (yc2 >= y1 + h1 * 5/8) {
+                                axisY = 'END'
+                            } else {
+                                axisY = 'CENTER'
+                            }
+                        }
+                       
+                    }
+
+                    if ( w2 <= w1 * 4/8){
+                        if ( xc2 < x1 + w1/2){
+                            axisX = 'START'
+                        } else if (xc2 > x1 + w1/2) {
+                            axisX = 'END'
+                        } else {
+                            axisX = 'CENTER'
+                        }
+                    } else {
+                        //console.log('超宽')
+                        if (x2 <= x1 && x2 + w2 >= x1 + w1){
+                            //console.log('宽超出')
+                            axisX = 'STARTANDEND'
+                        } else {
+                            if ( xc2 <= x1 + w1 * 3/8){
+                                axisX = 'START'
+                            } else if (xc2 >= x1 + w1 * 5/8) {
+                                axisX = 'END'
+                            } else {
+                                axisX = 'CENTER'
+                            }
+                        }
+                    }
+                    console.log(axisX,axisY)
+                    if ( c[e].children ){
+                        c[e].findAll((node) => node.name.split('#no').length == 1).forEach(item => {
+                            item.constraints = {
+                                horizontal:axisX,
+                                vertical:axisY,
+                            }
+                        })
+                    } else {
+                        c[e].constraints = {
+                            horizontal:axisX,
+                            vertical:axisY,
+                        }
+                    }
+                    
+                }
+            }
+        }
+    }
     //批量转为组件
     if ( info == 'toComponent'){
         var a = mg.document.currentPage;
@@ -1794,16 +2377,53 @@ mg.ui.onmessage = (message) => {
     if ( info == 'newComponent'){
         var a = mg.document.currentPage;
         var b = a.selection;
+        var keytype = [
+            'clipsContent',
+            'strokes',
+            'strokeStyleId',
+            'strokeStyle',
+            'strokeWeight',
+            'fills',
+            'fillsStyle',
+            'cornerRadius',
+            'effects',
+            'layoutPositioning',
+            'flexMode',
+            'itemReverseZIndex',
+            'itemSpacing',
+            'crossAxisSpacing',
+            'mainAxisAlignItems',
+            'crossAxisAlignItems',
+            'mainAxisSizingMode',
+            'crossAxisSizingMode',
+            'crossAxisAlignContent',
+            'strokesIncludedInLayout',
+            'paddingTop',
+            'paddingRight',
+            'paddingBottom',
+            'paddingLeft',
+            'componentPropertyValues'
+
+        ]
         for (var i = 0; i < b.length; i++){
             if ( b[i].type == 'COMPONENT'){
                 var component = mg.createComponent();
                 component.name = b[i].name + "拷贝";
-                cloneMain(component,b[i]);
-                component.fills = b[i].fills;
+                cloneMain(component,b[i],true)
+                keytype.forEach( item => {
+                    if ( component[item] ){
+                        component[item] =  b[i][item]
+                    }
+                    
+                })
                 for ( var ii = 0; ii < b[i].children.length; ii++){
                     component.appendChild(b[i].children[ii].clone());
                 } 
-                component.y += b[i].height + 20
+                for ( var ii = 0; ii < b[i].children.length; ii++){
+                    component.children[ii].x = b[i].children[ii].x
+                    component.children[ii].y = b[i].children[ii].y
+                }
+                component.y += b[i].absoluteBoundingBox.height + 20
             }
         }
     }
@@ -1836,19 +2456,152 @@ mg.ui.onmessage = (message) => {
     }
     //查找替换
     if ( type == "searchToRe"){
+        find = [];
+        //console.log(info)
         if(info.info !== ''){
             var a = mg.document.currentPage;
             var b = a.selection;
+            var d = a.findAll((node) => isVall(node))
             if ( info.area == 'Page'){
                 if ( info.type == 'Text'){
-                    find = a.findAll((node) => node.type === 'TEXT' && node.isVisible == true && node.characters.split(info.info).length > 1);
-                    //&& (node.parent.isVisible == true || node.parent.type == 'PAGE') && (node.parent.parent.isVisible == true || node.parent.parent.type == 'PAGE') && (node.parent.parent.parent.isVisible == true || node.parent.parent.parent.type == 'PAGE') && (node.parent.parent.parent.parent.isVisible == true || node.parent.parent.parent.parent.type == 'PAGE')
+                    for ( var ii = 0; ii < d.length; ii++){
+                        find.push(...d[ii].findAll((node) => node.type === 'TEXT' && node.characters.split(info.info).length > 1)) 
+                    }
+
+                    mg.ui.postMessage([find.length,'getFind'])
+                    a.selection = [find[0]]
+                    mg.viewport.scrollAndZoomIntoView(find); 
+                }
+                if ( info.type == 'Name' ){
+                    var c = a.findAll((node) => node.isVisible == true)
+                    c.forEach( item => {
+                        if ( item.name == info.info){
+                            find.push(item)
+                        }
+                    })
+                    mg.ui.postMessage([find.length,'getFind'])
+                    a.selection = [find[0]]
+                    mg.viewport.scrollAndZoomIntoView(find); 
+                }    
+            }
+            if ( info.area == 'Select' && b.length > 0 && b.map(nodes => nodes.isVisible == true )){
+                if (searchTime == 0){
+                    ///console.log(111)
+                    seaechOldNodes = b
+
+                    if ( info.type == 'Text'){
+                        for ( var i = 0; i < b.length; i++){
+                            if ( b[i].children ){
+                                seaechOldNodes = b;
+                                find.push(...b[i].findAll((node) => node.type === 'TEXT' && node.isVisible == true && node.characters.split(info.info).length > 1));
+                            } else {
+                                if ( b[i].type == 'TEXT' && b[i].characters.split(info.info).length > 1){
+                                    find.push(b[i]);
+                                } else {
+                                    mg.notify("部分选中对象无效~",{
+                                        type: "error",
+                                        position: "bottom",
+                                        timeout: 3000,
+                                        isLoading: false,
+                                    });
+                                }
+                            }
+                        }
+                        
+                        mg.ui.postMessage([find.length,'getFind'])
+                        a.selection = [find[0]]
+                        
+                    }
+                    if ( info.type == 'Name' ){
+                        var c  = [];
+                        b.forEach( item => {
+                            c.push(...item.findAll((node) => node.isVisible == true))
+                        })
+                         
+                        c.forEach( item => {
+                            if ( item.name == info.info){
+                                find.push(item)
+                            }
+                        })
+                        mg.ui.postMessage([find.length,'getFind'])
+                        a.selection = [find[0]]
+                        //mg.viewport.scrollAndZoomIntoView(find); 
+                    } 
+                } else {
+                    if (seaechOldNodes.some(nodes => nodes.findAll((node) => node == b[0]).length > 0)){
+                        //console.log(333,seaechOldNodes[0].name,b[0].name)
+                        a.selection = seaechOldNodes;
+                        var c = seaechOldNodes;
+                        if ( info.type == 'Text'){
+                            for ( var i = 0; i < c.length; i++){
+                                find.push(...c[i].findAll((node) => node.type === 'TEXT' && node.isVisible == true && node.characters.split(info.info).length > 1))
+                            }                          
+                            mg.ui.postMessage([find.length,'getFind'])
+                            a.selection = [find[0]]                            
+                        }
+
+                    } else {
+
+                        if ( info.type == 'Text'){
+                            for ( var i = 0; i < b.length; i++){
+                                
+                                if ( b[i].children ){
+                                    seaechOldNodes = b;
+                                    find.push(...b[i].findAll((node) => node.type === 'TEXT' && node.isVisible == true && node.characters.split(info.info).length > 1));
+                                } else {
+                                    if ( b[i].type == 'TEXT' && b[i].characters.split(info.info).length > 1){
+                                        find.push(b[i]);
+                                    } else {
+                                        mg.notify("没有符合要求的选中对象~",{
+                                            type: "error",
+                                            position: "bottom",
+                                            timeout: 3000,
+                                            isLoading: false,
+                                        });
+                                    }
+                                }              
+                            }                          
+                            mg.ui.postMessage([find.length,'getFind'])
+                            a.selection = [find[0]]                           
+                        }
+                    }                                 
+                }
+                
+                searchTime++
+                
+            }
+            if ( info.type == 'Same' && b.length > 0 ){
+                //console.log(666)
+                
+                if ( info.info == 'Font' && b[0].type === 'TEXT'){
+                    var fontName = b[0].textStyles[0].textStyle.fontName.family
+                    console.log(fontName)
+                    for ( var ii = 0; ii < d.length; ii++){
+                        find.push(...a.findAll((node) => node.type === 'TEXT' && node.textStyles[0].textStyle.fontName.family == fontName))
+                    }
+                    console.log(find)
                     mg.ui.postMessage([find.length,'getFind'])
                     a.selection = [find[0]]
                     mg.viewport.scrollAndZoomIntoView(find); 
                 }
             }
-
+            
+        }
+        
+        function isVall(node){
+            if (node.parent !== mg.document.currentPage){
+                if (node.isVisible == true){
+                    isVall(node.parent)
+                } else {
+                    return false
+                }
+            } else {
+                if (node.isVisible == true){
+                    return true
+                } else {
+                    return false
+                }
+            }
         }
     }
     //将定位的对象替换成指定内容
@@ -1858,21 +2611,19 @@ mg.ui.onmessage = (message) => {
             var a = mg.document.currentPage;
             var b = a.selection;
             for (var i = 0; i < b.length; i++){
-                console.log(info)
+                //console.log(info)
                 if (b[i].type == 'TEXT'){
                     var style = b[i].textStyles;
-                    var text = b[i].characters.split(info[1])
-                    b[i].characters = '';
-                    for(var ii = 0; ii < text.length - 1; ii++){
-                        b[i].characters += text[ii] + info[0]
-                    }
-                    
-                    if(b[i].fillStyleId == ''){
+                    var text = b[i].characters
+                    b[i].characters = text.replace(new RegExp(info[1],'g') ,info[0]);
+
+                    if(b[i].fills.length > 0 && b[i].fillStyleId == ''){
                         for (var e = 0; e < style.length; e++){
                             //console.log(style[e].start,style[e].end,style[e].fills[0])
                             b[i].setRangeFills(style[e].start,style[e].end,[style[e].fills[0]])
                         }
                     }
+
                 }
             }
         }
@@ -1892,39 +2643,81 @@ mg.ui.onmessage = (message) => {
             }
         }
     }
-    //获取本地样式
-    if ( info == 'getStyle'){
-        var style = mg.getLocalPaintStyles()
-        if ( style.length !== 0){
-            mg.ui.postMessage([true,'hasStyle'])
-        } else {
-            mg.ui.postMessage([false,'hasStyle'])
-        }
-        if ( mg.document.children.some(items => items.name == stylePage) ){
-            mg.ui.postMessage([true,'hasStyleTable'])
-        } else {
-            mg.ui.postMessage([false,'hasStyleTable'])
-        }
-        //console.log(style)
-        var styles = [];
-        var name = style.map(items => items.name)
-        var color = style.map(items => mg.RGBAToHex(items.paints[0].color))
-        for ( var i = 0; i < name.length; i++){
-            //styles.push({name:name[i],color:color[i]})
-            if ( i == name.length - 1){
-                //console.log(styles)
-                //mg.ui.postMessage([styles,'sendStyle'])
+    //更新查找类型
+    if ( type == "reSearchType"){
+        searchType = info;
+        var a = mg.document.currentPage;
+        var b = a.selection;
+        if (b[0] !== undefined){
+            if (info == 'Same') {
+                if ( b.length == 1){
+                    mg.ui.postMessage([b[0].name,'searchInfo']);
+                } else {
+                    mg.ui.postMessage(['noOnly','searchInfo']);
+                }
             }
         }
         
     }
+    //更改查找范围
+    if ( type == "reSearchArea"){
+        searchArea = info;
+    }
+
     //创建..附录/变量&样式表
     if ( type == "creStyleTable"){
-        var styles = mg.getLocalPaintStyles()
+        var styles = mg.getLocalPaintStyles().sort((a,b) => Number(a.id.replace(':','')) - Number(b.id.replace(':','')))
+        console.log(styles)
         if ( styles.length !== 0 ){
-            var page = mg.createPage()
-            page.name = stylePage
-            mg.ui.postMessage([true,'hasStyleTable'])
+            if ( styles.some(item => item.name.split('#样式组').length > 1)){
+                if (!mg.document.children.some(items => items.name == stylePage) ){
+                    //addStyleTable(stylePage,styles,'old') 
+                } else {
+                    if ( mg.document.children.filter(item => item.name == '附录/变量&样式表').length == 1){
+                        var c = mg.document.children.filter(item => item.name == '附录/变量&样式表')[0]
+                        var eg = c.findAll( (node) => node.name.split('本地样式集').length > 1)[0]
+                        if ( eg ){
+                            addStyleTable(stylePage,styles,'re',eg) 
+                        } else {
+                            mg.notify("未识别到本地样式表",{
+                                type: "error",
+                                position: "bottom",
+                                timeout: 3000,
+                                isLoading: false,
+                            });
+                        }
+                        
+                    } else {
+                        mg.notify("变量&样式表只能生效一个",{
+                            type: "error",
+                            position: "bottom",
+                            timeout: 3000,
+                            isLoading: false,
+                        });
+                    }
+                    
+                }
+            } else {
+                if (!mg.document.children.some(items => items.name == stylePage) ){
+                    addStyleTable(stylePage,styles,'new')  
+                } else {
+                    var c = mg.document.children.filter(item => item.name == '附录/变量&样式表')[0]
+                    var eg = c.findAll( (node) => node.name.split('本地样式集').length > 1)[0]
+                        if ( eg ){
+                            addStyleTable(stylePage,styles,'re',eg) 
+                        } else {
+                            mg.notify("未识别到本地样式表",{
+                                type: "error",
+                                position: "bottom",
+                                timeout: 3000,
+                                isLoading: false,
+                            });
+                        }
+                }
+                
+            }
+                
+
         } else {
             mg.notify("请先创建本地样式~",{
                 type: "error",
@@ -1932,6 +2725,136 @@ mg.ui.onmessage = (message) => {
                 timeout: 3000,
                 isLoading: false,
             });
+        }
+    }
+    //将样式表移动到新页
+    if ( type == "moveStyleTable"){
+        //console.log(mg.document.children)
+        var styles = mg.getLocalPaintStyles()
+        //console.log(styles)
+        var a = mg.document.currentPage;
+        var c = mg.document.children.filter(item => item.name == '附录/变量&样式表')[0];
+        
+        if ( info == 'new' || info == 'old'){
+            var table = a.findChild((node) => node.name == '变量表' && node.type == 'GROUP');
+            //console.log(c)
+            var num = table.children.length
+            for ( var i = 0; i < num; i++){
+                c.appendChild(table.children[0])
+            }
+            if ( info == 'new'){
+                
+                var style = styles.filter( item => item.name.split('/')[0] == '#样式组 示例2')
+                //console.log(style)
+                var eg = c.findAll( (node) => node.name.split('本地样式集').length > 1)[0]
+                if ( eg.children[2] ){
+                    for ( var i = 1; i < eg.children[2].children.length; i++){
+                        eg.children[2].children[i].children[5].fillStyleId = style[i - 1].id
+                    }
+            
+                }
+            } else {
+                console.log('设置样式表')
+                var eg = c.findAll( (node) => node.name.split('本地样式集').length > 1)[0]
+                for ( var i = 1; i < eg.children.length; i++){
+                    for ( var e = 1; e < eg.children[i].children.length; e++){
+                        //eg.children[i].children[e].children[5].fillStyleId = styles.filter(item => item.name.split(eg.children[0]) )
+                        if ( eg.children[i].children[e].children[5].fillStyleId == ''){
+                            //console.log( eg.children[0].children[e].componentProperties)
+                            var key1 = eg.children[i].children[0].componentProperties[5].value
+                            var key2 = eg.children[0].children[e].componentProperties[5].value
+                            eg.children[i].children[e].children[5].fillStyleId = styles.filter(item => item.name.split('/').includes('#样式组 ' + key1) && item.name.split('/')[item.name.split('/').length - 1] == key2)[0].id
+                        }
+                    }
+                }
+            }
+        }
+
+        if ( info == 're'){
+            console.log('更新样式表')
+            var eg = c.findAll( (node) => node.name.split('本地样式集').length > 1)[0]
+                for ( var i = 1; i < eg.children.length; i++){
+                    for ( var e = 1; e < eg.children[i].children.length; e++){
+                        //eg.children[i].children[e].children[5].fillStyleId = styles.filter(item => item.name.split(eg.children[0]) )
+                        if ( eg.children[i].children[e].children[5].fillStyleId == ''){
+                            //console.log( eg.children[0].children[e].componentProperties)
+                            var key1 = eg.children[i].children[0].componentProperties[5].value
+                            var key2 = eg.children[0].children[e].componentProperties[5].value
+                            eg.children[i].children[e].children[5].fillStyleId = styles.filter(item => item.name.split('/').includes('#样式组 ' + key1) && item.name.split('/')[item.name.split('/').length - 1] == key2)[0].id
+                        }
+                    }
+                }
+        }
+        
+        
+        
+    }
+     //从样式表更新
+     if ( type == "reStyleFromTable"){
+        var styles = mg.getLocalPaintStyles()
+        var a = mg.document.currentPage;
+        var b = a.selection;
+
+       if (a.name == stylePage){
+        var eg = a.findAll( (node) => node.name.split('本地样式集').length > 1)[0];
+        for ( var i = 1; i < eg.children.length; i++){
+            for ( var e = 1; e < eg.children[i].children.length; e++){
+                if ( eg.children[i].children[e].children[5].fillStyleId == ''){
+                    var key1 = eg.children[i].children[0].componentProperties[5].value
+                    var key2 = eg.children[0].children[e].componentProperties[5].value
+                    
+                    if ( styles.filter(item => item.name.split('/').includes('#样式组 ' + key1) && item.name.split('/')[item.name.split('/').length - 1] == key2).length > 0){
+                        styles.filter(item => item.name.split('/').includes('#样式组 ' + key1) && item.name.split('/')[item.name.split('/').length - 1] == key2)[0].paints = eg.children[i].children[e].children[5].fills;
+                    } else {
+                        mg.createFillStyle({id:eg.children[i].children[e].children[5].id,name:styles.filter(item => item.name.split('/')[item.name.split('/').length - 1] == key2)[0].name.replace(/^[^\/]+/,'#样式组 ' + key1)})
+                    }
+                }
+                if ( i == eg.children.length - 1 && e == eg.children[i].children.length - 1){
+                    console.log('从表更新样式')
+                    mg.ui.postMessage(['re','hasStyleTable'])
+                }
+            }
+        }
+       }
+        
+     }
+    //切换样式组
+    if ( type == "reStyleGroup"){
+        //console.log(info)
+        var a = mg.document.currentPage;
+        var b = a.selection;
+        var styles = mg.getLocalPaintStyles()
+        var c = []
+        for (var i = 0; i < b.length; i++){
+                
+            if (b[i].children){
+                if ( b[i].fillStyleId !== ''){
+                    var name2 = mg.getStyleById(b[i].fillStyleId).name
+                    //console.log(name2.replace(/^[^\/]+/,info))
+                    b[i].fillStyleId = styles.filter(item => item.name == name2.replace(/^[^\/]+/,'#样式组 ' + info))[0].id
+                }
+                var allnode = b[i].findAll((node) => node.fillStyleId !== '');
+                allnode.forEach( item => {
+                    var name2 = mg.getStyleById(item.fillStyleId).name
+                    if ( styles.filter(item => item.name == name2.replace(/^[^\/]+/,'#样式组 ' + info))[0]) {
+                        item.fillStyleId = styles.filter(item => item.name == name2.replace(/^[^\/]+/,'#样式组 ' + info))[0].id
+                    } else {
+                        mg.notify("存在未同步样式，可更新本地样式表后重试",{
+                            type: "error",
+                            position: "top",
+                            timeout: 3000,
+                            isLoading: false,
+                        });
+                    }
+                    
+                })
+            } else {
+                if ( b[i].fillStyleId !== ''){
+                    var name2 = mg.getStyleById(b[i].fillStyleId).name
+                    console.log(name2.replace(/^[^\/]+/,info))
+                    b[i].fillStyleId = styles.filter(item => item.name == name2.replace(/^[^\/]+/,'#样式组 ' + info))[0].id
+                }
+            }
         }
     }
     //清空示例样式
@@ -1947,7 +2870,7 @@ mg.ui.onmessage = (message) => {
         } else {
             mg.ui.postMessage([false,'hasStyle'])
         }
-
+        send()
     }
     //示例样式
     if ( info == 'egStyle'){
@@ -1955,6 +2878,183 @@ mg.ui.onmessage = (message) => {
         addColorStyle('test2','E18C31');
         addColorStyle('test3','D23535');
         mg.ui.postMessage([true,'hasStyle']);
+        send()
+    }
+    //重链样式
+    if ( type == "linkStyle"){
+        var style = mg.getLocalPaintStyles()
+        if ( info == 'all'){
+            var loading =  mg.notify("重链中，请耐心等待",{
+                position:"bottom",
+                isLoading: true,
+                timeout: 6000,
+            });
+            setTimeout(() => {
+            diffStyleNode.forEach( item => {
+                if (item.fillStyleId !== ''){
+                    var name2 = mg.getStyleById(item.fillStyleId).name;
+                    if ( style.filter( item => item.name == name2).length > 0){
+                        item.fillStyleId = style.filter( item => item.name == name2)[0].id;
+                    }
+                }
+                if (item.strokeStyleId !== ''){
+                    var name2 = mg.getStyleById(item.strokeStyleId).name;
+                    if ( style.filter( item => item.name == name2).length > 0){
+                        item.strokeStyleId = style.filter( item => item.name == name2)[0].id;
+                    }
+                }
+             })
+             mg.ui.postMessage(['hasLinkStyle','hasLinkStyle'])
+             loading.cancel()
+            },100)
+        } else {
+         diffStyleNode.forEach( item => {
+            if (item.fillStyleId !== '' && item.fillStyleId == info){
+                var name2 = mg.getStyleById(info).name;
+                //console.log(style.filter( item => item.name == name2)[0].id)
+                item.fillStyleId = style.filter( item => item.name == name2)[0].id;
+            }
+            if ( item.strokeStyleId !== '' && item.strokeStyleId == info){
+                var name2 = mg.getStyleById(info).name;
+                item.strokeStyleId = style.filter( item => item.name == name2)[0].id;
+            }
+         })
+         mg.ui.postMessage(['hasLinkStyle','hasLinkStyle']);
+        }
+    }
+    //覆盖样式
+    if ( type == "setDiffStyle"){
+        var style = mg.getLocalPaintStyles()
+        if ( info == 'all'){
+            var loading =  mg.notify("覆盖中，请耐心等待",{
+                position:"bottom",
+                isLoading: true,
+                timeout: 6000,
+            });
+            setTimeout(() => {
+                diffStyleNode.forEach( item => {
+                    if (item.fillStyleId !== ''){
+                        var name2 = mg.getStyleById(item.fillStyleId).name;
+                        if ( style.filter( item => item.name == name2).length > 0){
+                            if ( style.filter( item => item.name == name2)[0].paints !== item.fills){
+                                style.filter( item => item.name == name2)[0].paints = item.fills;
+                            }  
+                        }
+                    }
+                    if (item.strokeStyleId !== ''){
+                        var name2 = mg.getStyleById(item.strokeStyleId).name;
+                        if ( style.filter( item => item.name == name2).length > 0){
+                            if ( style.filter( item => item.name == name2)[0].paints !== item.strokes){
+                                style.filter( item => item.name == name2)[0].paints = item.strokes;
+                            }  
+                        }
+                    }
+                 })
+                 mg.ui.postMessage(['all','hasSetLinkStyle'])
+                 loading.cancel()
+            },100)
+            
+        } else {
+            diffStyleNode.forEach( item => {
+                if ( item.fillStyleId !== '' && item.fillStyleId == info){
+                    var name2 = mg.getStyleById(info).name;
+                    if ( style.filter( item => item.name == name2)[0].paints !== item.fills){
+                        style.filter( item => item.name == name2)[0].paints = item.fills;
+                    } 
+                }
+                if ( item.strokeStyleId !== '' && item.strokeStyleId == info){
+                    var name2 = mg.getStyleById(info).name;
+                    if ( style.filter( item => item.name == name2)[0].paints !== item.strokes){
+                        style.filter( item => item.name == name2)[0].paints = item.strokes;
+                    }  
+                }
+            })
+            mg.ui.postMessage([info,'hasSetLinkStyle']);
+        }
+    }
+    //选中要重链的图层
+    if ( type == "diffStylePick"){
+        //console.log(info)
+        //console.log(diffStyleNode.filter( item => item.fillStyleId == info))
+        var a = mg.document.currentPage;
+        a.selection = diffStyleNode.filter( item => item.fillStyleId == info || item.strokeStyleId == info)
+    }
+    //新建样式
+    if ( type == "newStyle"){
+        //console.log(info)
+        var style = mg.getLocalPaintStyles()
+        if ( info == 'all'){
+            var loading =  mg.notify("新建中，请耐心等待",{
+                position:"bottom",
+                isLoading: true,
+                timeout: 6000,
+            });
+            setTimeout(() => {
+                var ids = []
+                diffStyleNode.forEach( item => {
+                    if (item.fillStyleId !== ''){
+                        ids.push(mg.getStyleById(item.fillStyleId).id)
+                    }
+                    if (item.strokeStyleId !== ''){
+                        ids.push(mg.getStyleById(item.strokeStyleId).id)
+                    }
+                }) 
+                var news = [...new Set(ids)] 
+                news.forEach( ID => {
+                    var name2 = mg.getStyleById(ID).name;
+                    var node = mg.createRectangle();
+                    node.fills = mg.getStyleById(ID).paints.reverse();//样式层有颠倒bug
+                    
+                    var id2 = node.id;
+                    mg.createFillStyle({id:id2,name:name2});
+                    node.remove();
+                })
+                mg.ui.postMessage([info,'hasNewStyle'])
+                loading.cancel()
+            },100)
+        } else {
+
+            var name2 = mg.getStyleById(info).name;
+            var node = mg.createRectangle();
+            node.fills = mg.getStyleById(info).paints.reverse();
+            var id2 = node.id;
+            mg.createFillStyle({id:id2,name:name2});
+            node.remove();
+            mg.ui.postMessage([name2,'hasNewStyle'])
+             
+        }
+    }
+    //更新离线样式为新建样式
+    if ( type == "reNewStyle"){
+        //console.log(info)
+        var style = mg.getLocalPaintStyles()
+        //console.log(style)
+        if ( info == 'all'){
+            diffStyleNode.forEach( item => {
+                if ( item.fillStyleId !== ''){
+                    //console.log(style.filter( item => item.name == info))
+                    var name2 = mg.getStyleById(item.fillStyleId).name
+                    item.fillStyleId = style.filter( items => items.name == name2)[0].id
+                }
+                if (item.strokeStyleId !== ''){
+                    var name2 = mg.getStyleById(item.strokeStyleId).name
+                    item.strokeStyleId = style.filter( items => items.name == name2)[0].id
+                }
+            })
+            send()
+        } else {
+            diffStyleNode.forEach( item => {
+                if ( item.fillStyleId !== '' && mg.getStyleById(item.fillStyleId).name == info){
+                    //console.log(style.filter( item => item.name == info))
+                    item.fillStyleId = style.filter( items => items.name == info)[0].id
+                }
+                if (item.strokeStyleId !== '' && mg.getStyleById(item.strokeStyleId).name == info){
+                    item.strokeStyleId = style.filter( items => items.name == info)[0].id
+                }
+            })
+            send()
+        }
+        
     }
     //选中对象进行梯度变化
     if ( type == "mixNode"){
@@ -1962,16 +3062,8 @@ mg.ui.onmessage = (message) => {
         var b = a.selection;
         
         if ( b.length > 2){
-            if ( b[0].name.split('#mix').length > 1 && b[b.length - 1].name.split('#mix').length > 1){
-                for ( i = 1; i < b.length - 1; i++){
-                    info.forEach( mix => {
-                        if ( mixType[mix]){
-                            var func = mixType[mix];
-                            func([b[0]],[b[i]],[b[b.length - 1]],b.length - 1,i);
-                        }
-                    })
-                }
-            } else {
+            //if ( b[0].name.split('#mix').length > 1 && b[b.length - 1].name.split('#mix').length > 1){
+            if ( b[0].children && b[0].findAll((nodes) => nodes.name.split('#mix').length > 1).length > 0){
                 var starMix = b[0].findAll((items) => items.name.split('#mix').length > 1);
                 var endMix = b[b.length - 1].findAll((items) => items.name.split('#mix').length > 1);
                 var reMix
@@ -1986,6 +3078,16 @@ mg.ui.onmessage = (message) => {
                         })
                         //mixPd(starMix,reMix,endMix,b.length)
                     }
+                }
+                
+            } else {
+                for ( i = 1; i < b.length - 1; i++){
+                    info.forEach( mix => {
+                        if ( mixType[mix]){
+                            var func = mixType[mix];
+                            func([b[0]],[b[i]],[b[b.length - 1]],b.length - 1,i);
+                        }
+                    })
                 }
             }
             
@@ -2004,8 +3106,30 @@ mg.ui.onmessage = (message) => {
         var a = mg.document.currentPage;
         var b = a.selection;
         if ( b.length == 2){
-            if ( b[0].name.split('#mix').length > 1 && b[1].name.split('#mix').length > 1){
-               // console.log(info[1]*1 + 1)
+            //if ( b[0].name.split('#mix').length > 1 && b[1].name.split('#mix').length > 1){
+            if ( b[0].children && b[0].findAll((nodes) => nodes.name.split('#mix').length > 1).length > 0){
+                var starMix = b[0].findAll((items) => items.name.split('#mix').length > 1);
+                var endMix = b[1].findAll((items) => items.name.split('#mix').length > 1);
+                var reMix
+                if ( starMix.length = endMix.length){
+                    for ( i = 1; i < (info[1]*1 + 1 ); i++){
+                        if ( info[0].length > 0){
+                            if ( info[0].some( item => mixType[item])){
+                                var node = b[1].clone();
+                                reMix = node.findAll((items) => items.name.split('#mix').length > 1);
+                                info[0].forEach( mix => {
+                                    if ( mixType[mix]){   
+                                        var func = mixType[mix];
+                                        func(starMix,reMix,endMix,1,i + 1);
+                                    }
+                                })
+                            } 
+                        }
+                        
+                    }
+                }
+                
+            } else {
                 for ( i = 1; i < (info[1]*1 + 1 ); i++){
                     //console.log(b[0].rotation,b[1].rotation)
                     if ( info[0].length > 0){
@@ -2031,6 +3155,97 @@ mg.ui.onmessage = (message) => {
             });
         }
     }
+    //复用组件
+    if ( type == "componentSet"){
+        var a = mg.document.currentPage;
+        var b = a.selection;
+        if ( info == 'copy'){
+            for ( var i = 1; i < b.length; i++){
+                if ( b[i].componentProperties && b[0].componentProperties){
+                    console.log("含文字属性")
+                    var text = []
+                    b[i].componentProperties.forEach(item => {
+                        if(item.type == 'TEXT')
+                        text.push(item.value)
+                    })
+                    b[i].mainComponent =  JSON.parse( JSON.stringify(b[0].mainComponent) )
+                    mg.ui.postMessage([[text,b[i].id],'hasreComponent'])
+                    
+                        
+                } else {
+                    b[i].mainComponent =  JSON.parse( JSON.stringify(b[0].mainComponent) )
+                }
+            
+            }
+        }
+        if ( info == 'copyByGoup'){
+            for ( var i = 0; i < b.length; i++){
+                if ( b[i].type == 'INSTANCE')
+                var componentKey = b[i].findAll((node) => node.mainComponent && node.mainComponent.parent.componentPropertyDefinitions )[0];
+                if ( componentKey ){
+                    //console.log(componentKey.variantProperties)
+                    var componentGroup = componentKey.mainComponent.parent.children.map(node => node.variantProperties[0].value)//componentPropertyDefinitions[0].values;
+                    componentGroup.forEach(item => {
+                        var news = b[i].clone();
+                        var keys = news.findAll((node) => node.mainComponent && node.mainComponent.parent.componentPropertyDefinitions )[0];
+                        keys.setVariantPropertyValues({[keys.variantProperties[0].property]:item})
+                    })
+                    b[i].remove()
+                } else {
+                    mg.notify("所选对象不含嵌套变体",{
+                        type: "error",
+                        position: "bottom",
+                        timeout: 3000,
+                        isLoading: false,
+                    });
+                }
+            }
+                
+        }
+    }
+    //修改组件属性
+    if ( type == "reComponentText"){
+        var a = mg.document.currentPage;
+        var b = mg.getNodeById(info[1]).findAll((node) => node.componentPropertyReferences.characters);
+        b.forEach(item => {
+            item.characters = info[0][0]
+        })
+       
+    }
+    //重新拉取
+    if ( type == "reSend"){
+        send()
+        console.log('刷新')
+    }
+    //提取色板
+    if ( type == "creColor"){
+        var a = mg.document.currentPage;
+        var b = a.selection;
+        var colorBox = mg.createFrame();
+        cloneMain(colorBox,b[0]);
+        colorBox.x += b[0].width + 20;
+        colorBox.layoutPositioning = "AUTO";
+        colorBox.flexGrow = 0;
+        colorBox.flexMode = "HORIZONTAL";
+        colorBox.flexWrap = "NO_WRAP";
+        colorBox.fills = []
+        console.log(info)
+        info.forEach(item => {
+            var box = mg.createRectangle()
+            box.width = 20
+            box.height = 20
+            box.fills = [{
+                type:"SOLID",
+                color:{
+                    r:item[0]/255,
+                    g:item[1]/255,
+                    b:item[2]/255,
+                    a:1,
+                }
+            }]
+            colorBox.appendChild(box)
+        })
+    }
 }
   
 //初始化
@@ -2047,6 +3262,7 @@ mg.on('currentpagechange',function(){
 mg.on('selectionchange', function(){
     //console.log('所选对象发生变化')
     send()
+    pickTableArea = false;
 })
 
 function send(){
@@ -2058,11 +3274,11 @@ function send(){
     //var sidePage = true;
     if (b[0] !== undefined){
         
-        if ( b[0].type == "FRAME" || b[0].type == "COMPONENT" || b[0].type == "INSTANCE" || b[0].type == "GROUP" ){
-            if (b[0].name.split("table").length !== 1 || b[0].name.split("#列").length !== 1 || b[0].name.split("表").length !== 1 || b[0].name.split("数据组").length !== 1){
+        if ( b.some(node => (node.type == "FRAME" ||  node.type == "GROUP" ) && (node.name.split("#table").length !== 1 || node.name.split("#列").length !== 1 || node.name.split("数据流").length !== 1) && searchType !== 'Same' && searchArea !== 'Select' ) ){
+
                 mg.ui.postMessage(['sidePage','changeUI']);
                 mg.ui.postMessage(["table","toTool"])
-            }
+
         } else if ( b[0].type == "RECTANGLE"  ) {
             if ( b[0].fills[0] !== undefined){
                 if ( b.length == 1 && b[0].fills[0].type == "IMAGE"){
@@ -2070,11 +3286,11 @@ function send(){
                 } 
             }
                 
-        } else if ( b[0].type == "TEXT" && tabInfo !== 'tab-2' && tabInfo !== 'tab-3' ){
+        } else if ( b[0].type == "TEXT" && tabInfo !== 'tab-2' && tabInfo !== 'tab-3' && searchType !== 'Same' && searchArea !== 'Select' ){
             
             if ( b[1] == undefined){
-                mg.ui.postMessage(['sidePage','changeUI']);
-                mg.ui.postMessage(["text","toTool"])
+                //mg.ui.postMessage(['sidePage','changeUI']);
+                //mg.ui.postMessage(["text","toTool"])
             } else {
                 if ( b[1].name.split("table").length !== 1){
                     mg.ui.postMessage(['sidePage','changeUI']);
@@ -2083,80 +3299,238 @@ function send(){
             }
 
         } else {
-            mg.ui.postMessage([b[0].type,"toTool"])
+            //mg.ui.postMessage([b[0].type,"toTool"])
         }
          
-        if(b.length > 1){
-            var effects = []
-            for ( var i = 0; i < b.length; i++){
-                
-                if ( b[i].effects.length !== 0 ){
-                    if ( b[i].effects[0].type == "DROP_SHADOW") {
-                        effects.push([mg.RGBAToHex(b[i].effects[0].color).substring(0,7),b[i].effects.length,Math.max(b[i].effects[0].offset.x,b[i].effects[0].offset.y )] )  
-                    }
-                    if ( i == b.length - 1){
-                        mg.ui.postMessage([effects,'wmbEffects'])
-                        //console.log(effects)
+        var effects = []
+        for ( var i = 0; i < b.length; i++){
+            
+            if (b[0].effects && b[i].effects.length !== 0 ){
+                if ( b[i].effects[0].type == "DROP_SHADOW") {
+                    effects.push([mg.RGBAToHex(b[i].effects[0].color).substring(0,7),b[i].effects.length,Math.max(b[i].effects[0].offset.x,b[i].effects[0].offset.y )] )  
                 }
-                }
-                
-            }
-        }else{
-            if ( b[0].effects.length !== 0 ){
-                if ( b[0].effects[0].type == "DROP_SHADOW" ){
-                    var effects = []
-                    effects.push([mg.RGBAToHex(b[0].effects[0].color).substring(0,7),b[0].effects.length,Math.max(b[0].effects[0].offset.x,b[0].effects[0].offset.y )] )
+                if ( i == b.length - 1){
                     mg.ui.postMessage([effects,'wmbEffects'])
-                }
             }
+            }
+            
         }
 
         if (b[0].getPluginData('skewInfo')){
             //console.log(JSON.parse(b[0].getPluginData('skewInfo')))
             mg.ui.postMessage([JSON.parse(b[0].getPluginData('skewInfo')),'skewData']);
-            mg.ui.postMessage(["skew","toTool"])
-        }else{
+            //mg.ui.postMessage(["skew","toTool"])
+        } else {
             mg.ui.postMessage([{x:0,y:0,w:100,h:100},'skewData']);
         }
 
         if (tabInfo == 'tab-2'){
+            var parents = b.map(item => item.parent.name)
+            if ( [...new Set(parents)].length == 1){
+                mg.ui.postMessage([[a.parent.name,a.name,b[0].parent.name],'docInfo'])
+            } else {
+                mg.ui.postMessage([[a.parent.name,a.name],'docInfo'])
+            }
+            
             var frameData = []
             for (var i = 0; i < b.length; i++){
-                if (b[i].fills == '' | b[i].bottomLeftRadius !== 0 | b[i].bottomRightRadius !== 0 | b[i].topLeftRadius !== 0 | b[i].topRightRadius !== 0) {
-                    var type = "png"
-                }else{
-                    var type = "jpg"
-                }
-                if (b[i].getPluginData('s') !== ''){
-                    frameData.push({name:b[i].name,s:b[i].getPluginData('s'),type:type})
-                } else {
-                    if ( b[i].name.length > 40){
-                        frameData.push({name:b[i].name.substring(0, 40).replace(/[\/\?<>\\:\*\|":]/g, '_').replace(/\s+/g, ' ').replace(/_+/g, '_'),s:'',type:type})
-                        mg.notify("图层名过长，已省略",{
-                            type: "error",
-                            position: "bottom",
-                            timeout: 3000,
-                            isLoading: false,
-                        });
+                if ( b[i].isVisible == true && b[i].width * b[i].height < 4096*4096){
+                    if (b[i].fills == '' | b[i].bottomLeftRadius !== 0 | b[i].bottomRightRadius !== 0 | b[i].topLeftRadius !== 0 | b[i].topRightRadius !== 0) {
+                        var type = "png"
+                    }else{
+                        var type = "jpg"
+                    }
+                    if (b[i].getPluginData('s') !== ''){
+                        frameData.push({name:b[i].name,s:b[i].getPluginData('s'),type:type})
                     } else {
-                        frameData.push({name:b[i].name.replace(/[\/\?<>\\:\*\|":]/g, '_').replace(/\s+/g, ' ').replace(/_+/g, '_'),s:'',type:type})
+                        if ( b[i].name.length > 40){
+                            frameData.push({name:b[i].name.substring(0, 40).replace(/[\/\?<>\\:\*\|":]/g, '_').replace(/\s+/g, ' ').replace(/_+/g, '_'),s:'',type:type})
+                            mg.notify("图层名过长，已省略",{
+                                type: "error",
+                                position: "bottom",
+                                timeout: 3000,
+                                isLoading: false,
+                            });
+                        } else {
+                            frameData.push({name:b[i].name.replace(/[\/\?<>\\:\*\|":]/g, '_').replace(/\s+/g, ' ').replace(/_+/g, '_'),s:'',type:type})
+                        }
+                    }  
+                    if ( i == b.length - 1){
+                        var loading = mg.notify("加载中，请耐心等待~",{
+                            position: "top",
+                            timeout: 30000,
+                            isLoading: true,
+                        });
+                        mg.ui.postMessage([frameData,"frameExport"]) 
+                        setTimeout(function(){
+                            var imgData = [];
+                            for (var i = 0; i < b.length; i++){
+                                if ( b[i].isVisible == true && b[i].width * b[i].height < 4096*4096){
+                                    imgData.push( b[i].export({ format: 'PNG',constraint:{type:'SCALE',value:1} }) );
+                                }  
+                            };
+                            mg.ui.postMessage([imgData,"imgExport"]);
+                            loading.cancel()
+                        },100)
                     }
                 }  
+            }    
+        }
+            
+        if (searchType == 'Same') {
+            if ( b.length == 1){
+                mg.ui.postMessage([b[0].name,'searchInfo']);
+            } else {
+                mg.ui.postMessage(['noOnly','searchInfo']);
+            }
+            
+        }
+
+        if ( tabInfo == 'tab-5'){
+            diffStyleNode = []
+            var styles = mg.getLocalPaintStyles().sort((a,b) => Number(a.id.replace(':','')) - Number(b.id.replace(':','')));
+            //console.log(styles[0])
+            if ( styles.length !== 0){
+                mg.ui.postMessage([true,'hasStyle'])
+                mg.ui.postMessage([false,'hasStyleTable'])
+            } else {
+                mg.ui.postMessage([false,'hasStyle'])  
+                mg.ui.postMessage([true,'hasStyleTable'])
+            }
+            var name1 = styles.map(item => item.name);
+            var nameGroup = []
+            name1.forEach( item => {
+                nameGroup.push(item.split('/')[0].split('#样式组 ')[1])
+            })
+            var styleGroup =  [...new Set(nameGroup)]
+            if ( styleGroup.some(item => item !== undefined)){
+                console.log(styleGroup)
+                if ( styleGroup.some(item => item == undefined)){
+                    mg.notify("部分样式不在样式组内，可能无法正常切换样式组！",{
+                        position: "top",
+                        timeout: 3000,
+                        isLoading: false,
+                    });
+                    var last = []
+                    styleGroup.forEach( item => {
+                        if ( item !== undefined){
+                            last.push(item)
+                        }
+                    })
+                    mg.ui.postMessage([last,'getStyleGroup'])
+                } else if ( !styleGroup.some(item => item == undefined) ) {
+                    mg.ui.postMessage([styleGroup,'getStyleGroup'])
+                }
+            }
+            
+            
+            var id1 = styles.map(item => item.id)
+            var name2 = [];
+            var type;
+            for (var i = 0; i < b.length; i++){
+                if ( b[i].fillStyleId !== ''){
+                    var NAME = mg.getStyleById(b[i].fillStyleId).name;
+                    var ID = mg.getStyleById(b[i].fillStyleId).id;
+                    if ( name1.includes(NAME) && id1.includes(ID)){
+                        type = 'OLD'
+                    }
+                    if ( name1.includes(NAME) && !id1.includes(ID)){
+                        type = 'DIFF'
+                        if ( !diffStyleNode.includes(b[i])){
+                            diffStyleNode.push(b[i])
+                        }  
+                    }
+                    if ( !name1.includes(NAME) && !id1.includes(ID)){
+                        type = 'NEW'
+                        if ( !diffStyleNode.includes(b[i])){
+                            diffStyleNode.push(b[i])
+                        }  
+                    }
+                    name2.push([NAME.split('/')[NAME.split('/').length - 1],mg.getStyleById(b[i].fillStyleId).id,type])
+                }
+                if (  b[i].strokeStyleId !== ''){
+                    var NAME2 = mg.getStyleById(b[i].strokeStyleId).name;
+                    var ID2 = mg.getStyleById(b[i].strokeStyleId).id;
+                    if ( name1.includes(NAME2) && id1.includes(ID2)){
+                        type = 'OLD'
+                    }
+                    if ( name1.includes(NAME2) && !id1.includes(ID2)){
+                        type = 'DIFF'
+                        if ( !diffStyleNode.includes(b[i])){
+                            diffStyleNode.push(b[i])
+                        }  
+                    }
+                    if ( !name1.includes(NAME2) && !id1.includes(ID2)){
+                        type = 'NEW'
+                        if ( !diffStyleNode.includes(b[i])){
+                            diffStyleNode.push(b[i])
+                        }  
+                    }
+                    name2.push([NAME2.split('/')[NAME2.split('/').length - 1],mg.getStyleById(b[i].strokeStyleId).id,type])
+                }
+                if (b[i].children && b[i].name.split('样式集').length == 1){
+                    
+                    var allnode = b[i].findAll((node) => node.fillStyleId !== '' || node.strokeStyleId !== '')
+                    allnode.forEach( item => {
+                        
+                        if ( item.fillStyleId !== ''){
+                            
+                            var NAME = mg.getStyleById(item.fillStyleId).name;
+                            var ID = mg.getStyleById(item.fillStyleId).id;
+                            if ( name1.includes(NAME) && id1.includes(ID)){
+                                type = 'OLD'
+                            }
+                            if ( name1.includes(NAME) && !id1.includes(ID)){
+                                type = 'DIFF'
+                                if ( !diffStyleNode.includes(item)){
+                                    diffStyleNode.push(item)
+                                }  
+                            }
+                            if ( !name1.includes(NAME) && !id1.includes(ID)){
+                                //console.log(mg.getStyleById(item.fillStyleId).name,item.fillStyleId)
+                                type = 'NEW'
+                                if ( !diffStyleNode.includes(item)){
+                                    diffStyleNode.push(item)
+                                } 
+                            }
+                            name2.push([NAME.split('/')[NAME.split('/').length - 1],mg.getStyleById(item.fillStyleId).id,type])
+                        }
+                        if ( item.strokeStyleId !== ''){
+                            var NAME2 = mg.getStyleById(item.strokeStyleId).name;
+                            var ID2 = mg.getStyleById(item.strokeStyleId).id;
+                            if ( name1.includes(NAME2) && id1.includes(ID2)){
+                                type = 'OLD'
+                            }
+                            if ( name1.includes(NAME2) && !id1.includes(ID2)){
+                                type = 'DIFF'
+                                if ( !diffStyleNode.includes(item)){
+                                    diffStyleNode.push(item)
+                                }  
+                            }
+                            if ( !name1.includes(NAME2) && !id1.includes(ID2)){
+                                type = 'NEW'
+                                if ( !diffStyleNode.includes(item)){
+                                    diffStyleNode.push(item)
+                                } 
+                            }
+                            name2.push([NAME2.split('/')[NAME2.split('/').length - 1],mg.getStyleById(item.strokeStyleId).id,type])
+                        }
+                    })
+                } 
+
                 if ( i == b.length - 1){
-                    mg.ui.postMessage([frameData,"frameExport"]) 
-                    setTimeout(function(){
-                        var imgData = [];
-                        for (var i = 0; i < b.length; i++){
-                            imgData.push( b[i].export({ format: 'PNG',constraint:{type:'SCALE',value:1} }) );
-                        };
-                        mg.ui.postMessage([imgData,"imgExport"]);
-                    },200)
+                    //console.log([...new Set( name2.map(JSON.stringify))].map(JSON.parse))
+                    var nameLast = [...new Set( name2.map(JSON.stringify))].map(JSON.parse)
+                    mg.ui.postMessage([nameLast,'getNodeStyle'])
+                    if (nameLast.some(item => item[2] == 'DIFF' || item[2] == 'NEW')){
+                        mg.ui.postMessage([true,'styleLinkAndNew'])
+                    } else {
+                        mg.ui.postMessage([false,'styleLinkAndNew'])
+                    }
                 }
             }
             
         }
-            
-           
         
         
     } else {
@@ -2164,6 +3538,19 @@ function send(){
         mg.ui.postMessage(['noSidePage','changeUI']);
         mg.ui.postMessage([[],"frameExport"]) 
         mg.ui.postMessage([[["#000000",4,1]],'wmbEffects'])
+        mg.ui.postMessage([false,'searchInfo']);
+        mg.ui.postMessage([[],'getNodeStyle'])
+        mg.ui.postMessage([false,'styleLinkAndNew'])
+
+            var styles = mg.getLocalPaintStyles();
+            if ( styles.length !== 0){
+                mg.ui.postMessage([true,'hasStyle'])
+                mg.ui.postMessage([false,'hasStyleTable'])
+            } else {
+                mg.ui.postMessage([false,'hasStyle'])  
+                mg.ui.postMessage([true,'hasStyleTable'])
+            }
+
 
     }
 
@@ -2220,11 +3607,17 @@ function tableToData(text,dataToList){
     
 }
 
-function cloneMain(newnode,oldnode){
+function cloneMain(newnode,oldnode,boundingBox){
     newnode.width = oldnode.width;
     newnode.height = oldnode.height;
-    newnode.x = oldnode.absoluteRenderBounds.x;
-    newnode.y = oldnode.absoluteRenderBounds.y;
+    if ( boundingBox ){
+        newnode.x = oldnode.absoluteBoundingBox.x;
+        newnode.y = oldnode.absoluteBoundingBox.y;
+    } else {
+        newnode.x = oldnode.absoluteRenderBounds.x;
+        newnode.y = oldnode.absoluteRenderBounds.y;
+    }
+    
 }
 
 function cloneKey(key,newnode,oldnode){
@@ -2243,6 +3636,13 @@ function setStroke(node,align,trbl){
     node.strokeAlign = align
 }
 
+function setRadius(node,trbl){
+    node.topLeftRadius = trbl[0];
+    node.topRightRadius = trbl[1];
+    node.bottomRightRadius= trbl[2];
+    node.bottomLeftRadius = trbl[3];
+}
+
 function addAbsolute(parent,absoluteNode,names,view){
     parent.appendChild(absoluteNode);
     absoluteNode.name = names;
@@ -2253,9 +3653,28 @@ function addAbsolute(parent,absoluteNode,names,view){
     absoluteNode.componentPropertyReferences = {isVisible:addLayerSet};
 }
 
+function reTableStroke(table,H,L){
+    for ( var i = 0; i < L; i++){
+        for ( var ii = 0; ii < H; ii++){
+            var c = table.children[i].children[ii]
+            if ( c.componentProperties[1].name == '上描边' && c.componentProperties[4].name == '左描边'){
+                var l = c.componentProperties[4].value;
+                var r = c.componentProperties[2].value;
+                var t = c.componentProperties[1].value;
+                var b = c.componentProperties[3].value;
+                c.setProperties({[c.componentProperties[4].id]:t});
+                c.setProperties({[c.componentProperties[2].id]:b});
+                c.setProperties({[c.componentProperties[1].id]:l});
+                c.setProperties({[c.componentProperties[3].id]:r});
+            }
+        }
+    }
+}
+
 function creTableSet(node,name,view,needText,textOrClone,){
     node.name = name;
     node.layoutPositioning = "AUTO";
+    node.clipsContent = false;
     node.flexGrow = 0;
     node.flexMode = "HORIZONTAL";
     node.flexWrap = "NO_WRAP";
@@ -2272,7 +3691,12 @@ function creTableSet(node,name,view,needText,textOrClone,){
     node.fills = [];
     var colorLayer = mg.createRectangle();
     cloneMain(colorLayer,node)
-    colorLayer.fills = [{type:"SOLID",color:{r:0.7,g:0.7,b:0.7,a:1,}}];   
+    if (view){
+        colorLayer.fills = [{type:"SOLID",color:{r:0.4,g:0.4,b:0.4,a:1,}}];
+    } else {
+        colorLayer.fills = [{type:"SOLID",color:{r:0.4,g:0.4,b:0.4,a:0.5,}}];
+    }
+
     var strokeTop = mg.createRectangle();
     cloneMain(strokeTop,node);
     setStroke(strokeTop,"CENTER",[1,0,0,0]);
@@ -2298,6 +3722,89 @@ function creTableSet(node,name,view,needText,textOrClone,){
     addAbsolute(node,strokeR,"右描边",false)
     addAbsolute(node,strokeB,"下描边",false)
     addAbsolute(node,strokeL,"左描边",false)
+
+    if (needText == true){
+        node.appendChild(mg.createText())
+
+        for ( var ii = 0; ii < node.children.length; ii++){
+            if ( node.children[ii].type == "TEXT"){
+                //node.children[ii].flexGrow = 1; 
+                node.children[ii].textAutoResize = "HEIGHT";
+                if (Object.keys(node.children[ii].componentPropertyReferences).length === 0){
+                    var addTextSet = node.addComponentProperty("字段1", "TEXT", node.children[ii].characters);
+                    node.children[ii].componentPropertyReferences = {characters:addTextSet};
+                    node.children[ii].characters = textOrClone;
+                    node.children[ii].textAlignHorizontal = "CENTER";
+                    node.children[ii].textAutoResize = "WIDTH_AND_HEIGHT";//适应宽度，方便伪合并表格
+                    setTextMain(node.children[ii],0,textOrClone.length,22);
+                }
+            }
+            if (node.children[ii].layoutPositioning == "ABSOLUTE"){
+                node.children[ii].children[0].constraints = {
+                    horizontal: "STARTANDEND",
+                    vertical: "STARTANDEND"
+                }
+            }
+        }
+        node.crossAxisAlignItems = "FLEX_START"; 
+        setTimeout(() => {
+            node.crossAxisAlignItems = "CENTER"; 
+        },50)
+    }else{
+        node.appendChild(textOrClone.clone())
+    }
+
+    node.width = 176;
+    node.height = 52;
+    
+            
+}
+
+function creStyleTableSet(node,name,view,needText,textOrClone,){
+    node.name = name;
+    node.layoutPositioning = "AUTO";
+    node.flexGrow = 0;
+    node.flexMode = "HORIZONTAL";
+    node.flexWrap = "NO_WRAP";
+    node.itemSpacing = 0;
+    node.mainAxisAlignItems = "CENTER";
+    node.mainAxisSizingMode = "FIXED";
+    node.crossAxisAlignItems = "CENTER"; 
+    node.crossAxisSizingMode = "FIXED";
+    node.crossAxisSpacing = 0;
+    node.paddingTop = 10;
+    node.paddingBottom = 10;
+    node.width = 176;
+    node.height = 52;
+    node.fills = [];
+    var colorLayer = mg.createRectangle();
+    cloneMain(colorLayer,node)
+    colorLayer.fills = [{type:"SOLID",color:{r:0.12,g:0.12,b:0.12,a:1,}}];   
+    var strokeTop = mg.createRectangle();
+    cloneMain(strokeTop,node);
+    setStroke(strokeTop,"CENTER",[1,0,0,0]);
+    var strokeRight = mg.createRectangle();
+    cloneMain(strokeRight,node);
+    setStroke(strokeRight,"CENTER",[0,1,0,0]);
+    var strokeBottom = mg.createRectangle();
+    cloneMain(strokeBottom,node);
+    setStroke(strokeBottom,"CENTER",[0,0,1,0]);
+    var strokeLeft = mg.createRectangle();
+    cloneMain(strokeLeft,node);
+    setStroke(strokeLeft,"CENTER",[0,0,0,1]);
+
+    var diffC = mg.group([colorLayer]);
+    var strokeT = mg.group([strokeTop]);
+    var strokeR = mg.group([strokeRight]);
+    var strokeB = mg.group([strokeBottom]);
+    var strokeL = mg.group([strokeLeft]);
+
+
+    addAbsolute(node,diffC,"区分色",view)
+    addAbsolute(node,strokeT,"上描边",true)
+    addAbsolute(node,strokeR,"右描边",true)
+    addAbsolute(node,strokeB,"下描边",true)
+    addAbsolute(node,strokeL,"左描边",true)
 
     if (needText == true){
         node.appendChild(mg.createText())
@@ -2333,6 +3840,228 @@ function creTableSet(node,name,view,needText,textOrClone,){
             
 }
 
+function addStyleTable(name,styles,type,eg){
+
+    if ( type == 're'){
+        mg.ui.postMessage(['re','hasStyleTable'])
+    }
+
+    if ( type == 'new' || type == 'old'){
+        var page = mg.createPage()
+        page.name = name
+        page.bgColor = mg.hexToRGBA('272727')
+
+        var name1 = styles.map(item => item.name);
+        var allGroup = []
+        var allStyle = []
+        name1.forEach( item => {
+            allGroup.push(item.split('/')[0].split('#样式组 ')[1])
+            allStyle .push(item.split('/')[item.split('/').length - 1])
+        })
+        var allStyleName = [...new Set(allStyle)]
+        var nameGroup = []
+        var styleGroup =  [...new Set(allGroup)]
+        styleGroup.forEach( item => {
+            if ( item !== undefined){
+                nameGroup.push(item)
+            }
+        })
+
+        var styleToArr = Object.values(styles.reduce((acc,item) => {
+            var key = item.name.split('/')[0];
+            (acc[key] || (acc[key] = [])).push(item);
+            return acc;
+        },{}));
+
+        var x = 0;
+        var y = 0;
+        var H = 2;
+        if (type == 'new'){
+            H = styles.length + 1;
+        } else {
+            H = allStyleName.length + 1;
+        }
+        
+
+        var node1 = mg.createComponent();
+        node1.x = x;
+        node1.y = y;
+        creStyleTableSet(node1, "style-key",true,true,"表头文案")//需添加表格属性的节点，命名，是否显示区分色，是否需要填充文案，需要填充的文案/克隆的节点
+        var node2 = mg.createComponent();
+        node2.x = node1.x;
+        node2.y = node1.y + 60;
+        creStyleTableSet(node2, "style-string",false,true,"数据文案")
+        var node3 = mg.createComponent();
+        node3.x = node2.x;
+        node3.y = node2.y + 60;
+        creStyleTableSet(node3, "style-var",false,true,"--")
+        var box = mg.createRectangle()
+        box.width = 32;
+        box.height = 32;
+        node3.insertChild(5,box)
+
+        var list = mg.createFrame()
+        list.name = "#列";
+        list.layoutPositioning = "AUTO";
+        list.flexGrow = 0;
+        list.flexMode = "VERTICAL";
+        list.flexWrap = "NO_WRAP";
+        list.itemSpacing = 0;
+        list.crossAxisSpacing = 0;
+        list.paddingTop = 0;
+        list.paddingBottom = 0;
+        list.paddingLeft = 0;
+        list.paddingRight= 0;
+        list.fills = [];
+
+        list.appendChild(node1.clone());
+        for ( var e = 1; e < H; e++){
+            list.appendChild(node2.clone());
+        }
+        
+        list.flexMode = "VERTICAL";
+        list.mainAxisAlignItems = "FLEX_START";
+        list.mainAxisSizingMode = "AUTO";
+        list.crossAxisAlignContent = "AUTO";
+        list.crossAxisAlignItems = "CENTER"; 
+        list.crossAxisSizingMode = "AUTO";
+
+        var list2 = mg.createFrame()
+        list2.name = "#列";
+        list2.layoutPositioning = "AUTO";
+        list2.flexGrow = 0;
+        list2.flexMode = "VERTICAL";
+        list2.flexWrap = "NO_WRAP";
+        list2.itemSpacing = 0;
+        list2.crossAxisSpacing = 0;
+        list2.paddingTop = 0;
+        list2.paddingBottom = 0;
+        list2.paddingLeft = 0;
+        list2.paddingRight= 0;
+        list2.fills = [];
+
+        list2.appendChild(node1.clone());
+        for ( var e = 1; e < H; e++){
+            list2.appendChild(node3.clone());
+        }
+
+        list2.flexMode = "VERTICAL";
+        list2.mainAxisAlignItems = "FLEX_START";
+        list2.mainAxisSizingMode = "AUTO";
+        list2.crossAxisAlignContent = "AUTO";
+        list2.crossAxisAlignItems = "CENTER"; 
+        list2.crossAxisSizingMode = "AUTO";
+
+        var table = mg.createFrame()
+        table.x = x + 200;
+        table.y = y;
+        table.name = "本地样式集 #table";
+        table.layoutPositioning = "AUTO";
+        table.flexGrow = 0;
+        table.flexMode = "HORIZONTAL";
+        table.flexWrap = "NO_WRAP";
+        table.itemSpacing = 0;
+        table.mainAxisAlignItems = "FLEX_START";
+        table.mainAxisSizingMode = "AUTO";
+        table.crossAxisAlignItems = "FLEX_START"; 
+        table.crossAxisSizingMode = "AUTO";
+        table.crossAxisSpacing = 0;
+        table.paddingTop = 0;
+        table.paddingBottom = 0;
+        table.paddingLeft = 0;
+        table.paddingRight= 0;
+        table.fills = [];
+
+        table.appendChild(list);
+        table.appendChild(list2);
+
+        if ( type == 'old'){
+            
+            
+            for ( var i = 1; i < nameGroup.length; i++){
+                table.appendChild(list2.clone());
+            }
+            for ( var e = 0; e < table.children[0].children.length; e++){
+                if ( e == 0){
+                    table.children[0].children[e].setProperties({[table.children[0].children[e].componentProperties[5].id]:'样式名'})
+                } else {
+                    var NAME = allStyleName[e - 1]
+                    table.children[0].children[e].setProperties({[table.children[0].children[e].componentProperties[5].id]:NAME.split('/')[NAME.split('/').length - 1]})
+                }
+            }
+            for ( var i = 1; i < table.children.length; i++){
+                
+                table.children[i].children[0].setProperties({[table.children[i].children[0].componentProperties[5].id]:nameGroup[i - 1]})
+                for ( var e = 1; e < table.children[i].children.length; e++){
+                    //console.log(allStyleName[e - 1],nameGroup[i - 1])
+                    if ( styles.filter(item => item.name.split(allStyleName[e - 1]).length > 1 && item.name.split(nameGroup[i - 1]).length > 1).length > 0){
+                        //table.children[i].children[e].children[5].fillStyleId = styles.filter(item => item.name.split(allStyleName[e - 1]).length > 1 && item.name.split(nameGroup[i - 1]).length > 1)[0].id
+                    } else {
+                        mg.createFillStyle({id:table.children[i].children[e].children[5].id,name:'#样式组 ' + nameGroup[i - 1] + '/' + allStyleName[e - 1]})
+                    }
+                    
+                }
+            }
+        }
+    
+        if ( type == 'new'){        
+            table.appendChild(list2.clone());
+            for ( var e = 0; e < table.children[0].children.length; e++){
+                if ( e == 0){
+                    table.children[0].children[e].setProperties({[table.children[0].children[e].componentProperties[5].id]:'样式名'})
+                } else {
+                    var NAME = styles[e - 1].name
+                    table.children[0].children[e].setProperties({[table.children[0].children[e].componentProperties[5].id]:NAME.split('/')[NAME.split('/').length - 1]})
+                }
+            }
+            for ( var e = 0; e < table.children[1].children.length; e++){
+                if ( e == 0){
+                    table.children[1].children[e].setProperties({[table.children[0].children[e].componentProperties[5].id]:'示例1'})
+                } else {
+                    table.children[1].children[e].children[5].fillStyleId = styles[e - 1].id
+                }
+            }
+            for ( var e = 0; e < table.children[2].children.length; e++){
+                if ( e == 0){
+                    table.children[2].children[e].setProperties({[table.children[0].children[e].componentProperties[5].id]:'示例2'})
+                } else {
+                    mg.createFillStyle({id:table.children[2].children[e].children[5].id,name:'#样式组 示例2/' + styles[e - 1].name})
+                }
+            }
+            styles.forEach(item => {
+                item.name = '#样式组 示例1/' + item.name 
+            })          
+        }
+        
+        for ( var i = 0; i < table.children.length; i++){
+            table.children[i].children.forEach(node => {
+                node.alignSelf = "STRETCH";
+            })
+        }
+        for ( var i = 1; i < table.children.length; i++){
+            table.children.forEach(node => {
+                node.flexGrow = 1;
+            })
+        }
+
+        setStroke(table,'CENTER',[1,1,1,1])
+        setRadius(table,[16,16,16,16])
+        table.fills = [{type:"SOLID",color:{r:0.175,g:0.175,b:0.175,a:1,}}]
+
+        
+        var group = mg.group([node1,node2,node3,table])
+        group.name = '变量表'
+        group.isVisible = false
+
+        mg.ui.postMessage([type,'hasStyleTable'])
+
+    }
+
+
+    
+    
+}
+
 async function setTextMain(node,star,end,fontSize){
     await mg.listAvailableFontsAsync()
 
@@ -2347,12 +4076,17 @@ async function setTextMain(node,star,end,fontSize){
 function addTable(b,H,L){
     for (var i = 0; i < b.length; i++){
             
-        if (b[i].name.split('#table').length !== 1){
+        if (b[i].name.split('#table').length !== 1 || b[i].name.split('数据流').length !== 1){
             if (b[i].children.length >= 1 ){
                 if ( L > 0){
                     for( var e = 0; e < L; e++){
                         //console.log()
-                        var lists = b[i].children[0]
+                        if (b[i].name.split('数据流').length !== 1){
+                            var lists = b[i].children[0] 
+                        } else {
+                            var lists = b[i].children[Math.floor(b[i].children.length/2)]
+                        }
+                        
                         b[i].appendChild(lists.clone());
                     }
                 } else if ( L < 0 ){
@@ -2396,11 +4130,112 @@ function addTable(b,H,L){
     }
 }
 
+function easePickTable(info,a,b){
+    if(b.length == 2 && b[0].parent.name.split('#列').length > 1 && b[1].parent.name.split('#列').length > 1){
+        var H1,L1,H2,L2,HH,LL;//记录对象所在行列和总行列
+        H1 = b[0].parent.children.findIndex(item => item == b[0]);
+        L1 = b[0].parent.parent.children.findIndex(item => item == b[0].parent);
+        H2 = b[1].parent.children.findIndex(item => item == b[1]);
+        L2 = b[1].parent.parent.children.findIndex(item => item == b[1].parent);
+        HH = b[0].parent.children.length;
+        LL = b[0].parent.parent.children.filter( item => item.name.split('#列').length > 1).length;
+        //console.log(H1,L1,H2,L2,HH,LL)
+
+        var picks = []
+        
+        if ( info == 'area'){
+            var starH = Math.min(H1,H2), endH = Math.max(H1,H2),starL = Math.min(L1,L2), endL = Math.max(L1,L2)
+            for ( var i = starL; i <= endL ; i++ ){
+                for ( var ii = starH; ii <= endH; ii++){
+                    picks.push(b[0].parent.parent.children[i].children[ii])
+                    if ( i == endL && ii == endH){
+                        a.selection = picks
+                    }
+                } 
+            }
+            pickTableArea = true; 
+        }
+        if ( info == 'line'){
+            var starH = Math.min(H1,H2), endH = Math.max(H1,H2);
+            if ( starH == H2 ){
+                var starL = L2,endL = L1
+            } else {
+                var starL = L1,endL = L2
+            }
+
+            for ( var i = starL; i < LL; i++){
+                picks.push(b[0].parent.parent.children[i].children[starH])
+            }
+            for ( var i = 0; i < LL; i++){
+                for ( var ii = starH + 1; ii < endH; ii++){
+                    picks.push(b[0].parent.parent.children[i].children[ii])
+                }
+            }
+            for ( var i = 0; i <= endL; i++){
+                picks.push(b[0].parent.parent.children[i].children[endH])
+            }
+
+            a.selection = picks
+        }
+    }
+}
+
+function setTableStroke(node,trbl){
+    for(var i = 0; i < 4; i++){
+        if ( trbl[i] == 0){
+            node.setProperties({[node.componentProperties[i + 1].id]:false});
+        } else {
+            node.setProperties({[node.componentProperties[i + 1].id]:true});
+        }
+
+    }
+}
+
+function tableToArea(nodes,type,hl){
+    if ( type == 'l'){ 
+        setTableStroke(nodes[0],[1,1,0,1])
+        setTableStroke(nodes[nodes.length - 1],[0,1,1,1])
+        for ( var i = 1; i < nodes.length - 1; i++){
+            setTableStroke(nodes[i],[0,1,0,1])
+        }
+    } else if ( type == 'h'){ 
+        setTableStroke(nodes[0],[1,0,1,1])
+        setTableStroke(nodes[nodes.length - 1],[1,1,1,0])
+        for ( var i = 1; i < nodes.length - 1; i++){
+            setTableStroke(nodes[i],[1,0,1,0])
+        }
+    } else if ( type == 'hl'){
+        setTableStroke(nodes[0],[1,0,0,1])
+        setTableStroke(nodes[hl[0] - 1],[0,0,1,1])
+        setTableStroke(nodes[nodes.length - 1],[0,1,1,0])
+        setTableStroke(nodes[nodes.length - hl[0]],[1,1,0,0])
+        console.log(nodes[0].componentProperties[5],nodes[hl[0] - 1].componentProperties[5],nodes[nodes.length - hl[0]].componentProperties[5],nodes[nodes.length - 1].componentProperties[5])
+        for ( var i = 1; i < hl[0] - 1; i++){
+            setTableStroke(nodes[i],[0,0,0,1])
+        }
+        for ( var i = nodes.length - hl[0] + 1; i < nodes.length - 1; i++){
+            setTableStroke(nodes[i],[0,1,0,0])
+        }
+        for ( var i = hl[0]; i < nodes.length - hl[0]; i++){
+            console.log(666)
+            if ( i%(hl[0] + 1 ) == 0){
+                setTableStroke(nodes[i],[1,0,0,0])
+            } else if ( i%(hl[0]*2 ) == 0){
+                setTableStroke(nodes[i],[0,0,1,0])
+            } else {
+                setTableStroke(nodes[i],[0,0,0,0])
+            }
+        }
+    }
+}
+
  async function createrMap(){
+
     var a = mg.document.currentPage;
     var b = a.children;
     var inView = getInView(b)
-    
+
+    /*
     var pageInView = mg.createFrame()
     a.insertChild(0,pageInView)
     pageInView.x = inView.x;
@@ -2426,13 +4261,22 @@ function addTable(b,H,L){
         }
     }
     pageInView.clipsContent = false;
-    
+    */
+    //console.log(inView)
+    var pageInView = mg.createSlice()
+    pageInView.x = inView.x;
+    pageInView.y = inView.y;
+    pageInView.width = inView.w;
+    pageInView.height = inView.h;
+    pageInView.name = "创建快照";
+
+
     if(inView.w > inView.h){
         var pageView = new Uint8Array(pageInView.export({ format: 'PNG',constraint:{type:'WIDTH',value:"2048"}}))
     } else {
         var pageView = new Uint8Array(pageInView.export({ format: 'PNG',constraint:{type:'HEIGHT',value:"2048"}}))
     }  
-    //console.log(inView)
+    //console.log(pageView)
     await mg.ui.postMessage([{w:inView.w,h:inView.h,x:inView.x,y:inView.y,view:pageView,bg:mg.RGBAToHex(a.bgColor)},"createrMap"])
     pageInView.isVisible = false;
     //console.log(mg.document.currentPage.selection[0])//.selection[0]
@@ -2631,9 +4475,22 @@ function cutNode(a,node,scale){
                     imgGroup.appendChild(a.children[index + 2])
                 }
             }
+            
         }
     }
         
+}
+
+function pickBefore(nodes){
+    var a = mg.document.currentPage;
+    var newNode = [];
+    nodes.forEach(item => {
+        //console.log(item.name)
+        var parentnode = item.parent;
+        var index = parentnode.children.findIndex(node => node === item);
+        newNode.push(parentnode.children[index + 1]);
+    })
+    a.selection = newNode;
 }
 
 function intXY(node){
