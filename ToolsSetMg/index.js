@@ -681,7 +681,9 @@ mg.ui.onmessage = (message) => {
         var c = []
         for (var i = 0; i < b.length; i++){
             //console.log(b[i].fills[0].imageRef)
-            var imgURL = 'https://mastergo.netease.com/mastergo-default/' + b[i].fills[0].imageRef;
+            //https://image-resource-nc.mastergo.com/
+            //https://mastergo.netease.com/mastergo-default/
+            var imgURL = 'https://image-resource-nc.mastergo.com/' + b[i].fills[0].imageRef;
             mg.ui.postMessage([{imgURL:imgURL,index:i},'imgURLtoWH'],'*')
             //console.log(c)
         }
@@ -4418,22 +4420,6 @@ function cutNode(a,node,scale){
     //console.log(c[c.length - 1].t)
     
     for ( var ii = 0; ii < c.length; ii++){
-        
-        /*
-        if ( node.type == 'SECTION'){
-            var frame = mg.createFrame();
-            cloneMain(frame,node);
-            //var key = ['fills','cornerRadius','strokes',]//'strokeAlign','strokeStyle','strokeWeight',
-            //cloneKey(key,frame,node);
-            frame.fills = []
-            frame.name = node.name + '转换';
-            var group = mg.group([frame]);
-            group.appendChild(cutArea);
-        } else {
-            var group = mg.group([node]);
-            group.appendChild(cutArea);
-        }
-        */
         
         var cutArea = mg.createSlice()
         cutArea.width = c[ii].w;
