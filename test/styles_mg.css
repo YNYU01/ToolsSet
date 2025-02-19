@@ -75,7 +75,6 @@
   /*自动布局*/
   .df{
     display: flex;
-    gap:var(--gap,10px)
   }
   .df-ffc{
     display: flex;
