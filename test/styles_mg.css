@@ -563,6 +563,20 @@ input[type="checkbox"]:checked+.btn-theme {
     color: var(--boxBod);
   }
 
+  .tips-i{
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    border: 1px solid var(--boxBod);
+    font-size: 10px;
+    color: var(--boxBod);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 1px 0 0 0;
+    flex: 0 0 auto;
+  }
+
   .tags {
     position: relative;
     animation: tags-up 0.2s;
