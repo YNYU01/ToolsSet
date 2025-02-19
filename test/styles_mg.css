@@ -149,7 +149,7 @@
     opacity: 1;
   }
 
-  .btn-upfile-auto {
+  .drop-area {
     position: absolute;
     top: 0px;
     width: 100%;
@@ -564,7 +564,7 @@ input[type="checkbox"]:checked+.btn-theme {
   }
 
   .tips-i{
-    width: 10px;
+    width: 11px;
     height: 10px;
     border-radius: 50%;
     border: 1px solid var(--boxBod);
