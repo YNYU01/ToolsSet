@@ -20,12 +20,13 @@
   
   */
   :root {
+    /*test*/
     --mainColor: #acacac;
     --mainColor2: #378360;
     --mainColor3: #fff;
     --boxBod: #5d5d5d;
     --boxBak: #202020;
-    --boxGry: #393939;
+    --boxGry: #c64242;
     --liColor1: #d03b3b;
     --tabBR: 0 8px 8px 8px;
     --keepTrue: #d03b3b;
