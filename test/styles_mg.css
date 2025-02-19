@@ -1,5 +1,7 @@
-/*/*
-  :root{
+
+  :root {
+    /*浅色*/
+    /*
     --mainColor:#2b2b2b;
     --mainColor2:#378360;
     --mainColor3:#000;
@@ -15,11 +17,8 @@
     --map-line-x:50%;
     --map-line-y:50%;
     --map-bg:#c5c5c5;
-    
-  }
-  
-  */
-  :root {
+    */
+    /*暗色*/
     --mainColor: #acacac;
     --mainColor2: #378360;
     --mainColor3: #fff;
@@ -42,24 +41,74 @@
 
 
   body {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    flex-direction: column;
     padding: 0px 10px;
+    position: relative;
+    background-color: var(--boxBak);
+    /*设置默认字体样式*/
     font-family: Arial, Helvetica, sans-serif;
     font-size: 14px;
     font-weight: 500;
     color: var(--mainColor);
-    position: relative;
-    background-color: var(--boxBak);
+    /*优化字体渲染*/
     text-rendering: optimizeLegibility;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     letter-spacing: 0.01em;
-    overflow: hidden;
-    /*transition: background-color 0.5s ease-out,fill 0.5s ease-out,color 0.5s ease-out;*/
   }
+
+  /*禁用选择复制*/
+  html,body,.noselect {
+    -webkit-user-select: none;/* Safari */
+    -moz-user-select: none;/* Firefox */
+    -ms-user-select: none;/* IE/Edge */
+    user-select: none;/* 标准语法 */
+  }
+
+  .noscrollbar {
+    scrollbar-width: none;
+  }
+
+  html::-webkit-scrollbar,body::-webkit-scrollbar,.noscrollbar::-webkit-scrollbar {
+    display: none;
+  }
+
+  /*自动布局*/
+  .df{
+    display: flex;
+    gap:var(--gap,10px)
+  }
+  .df-ffc{
+    display: flex;
+    flex-flow: column;
+  }
+  .cc{
+    justify-content: center;
+    align-items: center;
+  }
+  .ovh{
+    overflow: hidden;
+  }
+  .wh100{
+    width: 100%;
+    height: 100%; 
+  }
+  .w100{
+    width: 100%;
+  }
+
+  .pos-r{
+    position: relative;
+  }
+
+  .pos-a{
+    position: absolute;
+  }
+
+  .pos-f{
+    position: fixed;
+  }
+
+  /*其他*/
 
   .top-box {
     width: 100%;
@@ -69,29 +118,6 @@
     align-items: center;
     font-size: 12px;
     z-index: 2;
-  }
-
-  html,
-  body,
-  .noselect {
-    -webkit-user-select: none;
-    /* Safari */
-    -moz-user-select: none;
-    /* Firefox */
-    -ms-user-select: none;
-    /* IE/Edge */
-    user-select: none;
-    /* 标准语法 */
-  }
-
-  .noscrollbar {
-    scrollbar-width: none;
-  }
-
-  html::-webkit-scrollbar,
-  body::-webkit-scrollbar,
-  .noscrollbar::-webkit-scrollbar {
-    display: none;
   }
 
   .page-main {
@@ -150,14 +176,12 @@
   }
 
   .drop-area {
-    position: absolute;
-    top: 0px;
     width: 100%;
     height: 100%;
     display: flex;
     align-items: center;
     justify-content: center;
-    flex-direction: column;
+    flex-flow: column;
     gap: 4px;
   }
 
@@ -167,7 +191,7 @@
     padding: 0 var(--sidepageP) 10px var(--sidepageP);
     display: flex;
     gap: 2px;
-    flex-direction: column;
+    flex-flow: column;
     position: relative;
 
   }
