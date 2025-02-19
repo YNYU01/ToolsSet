@@ -1138,6 +1138,7 @@ input[type="checkbox"]:checked+.btn-theme {
     }
   }
 
+  /*最大化窗口*/
   @media (min-width:350px) {
     :root {
       --sidepageW:380px;
