@@ -436,14 +436,14 @@ mg.ui.onmessage = (message) => {
     }
     //记录导出尺寸设置
     if ( type == 'exportSizeSet'){
-        console.log(info)
+        //console.log(info)
         var a = mg.document.currentPage;
         var b = mg.getNodeById(info[1]);
         b.setPluginData('s',info[0])
     }
     //记录导出格式设置
     if ( type == 'exportTypeSet'){
-        console.log(info)
+        //console.log(info)
         var a = mg.document.currentPage;
         var b = mg.getNodeById(info[1]);
         b.setPluginData('type',info[0])
@@ -464,27 +464,27 @@ mg.ui.onmessage = (message) => {
                 
                 if( b[i].getPluginData('type') && b[i].getPluginData('type') !== '' && typeAllow.includes(b[i].getPluginData('type')) ){
                     imgtype = b[i].getPluginData('type')
-                    console.log(name.split(' ')[0] + " 格式已预设为：" + b[i].getPluginData('type'))
+                    //console.log(name.split(' ')[0] + " 格式已预设为：" + b[i].getPluginData('type'))
                 } else {
                     if (b[i].fills == '' || b[i].bottomLeftRadius * b[i].bottomRightRadius * b[i].topLeftRadius * b[i].topRightRadius !== 0 || b[i].name.split("png").length > 1) {
                         imgtype = "png"
-                        console.log(name.split(' ')[0] + " 格式识别为：png")
+                        //console.log(name.split(' ')[0] + " 格式识别为：png")
                     }else{
                         imgtype = "jpg"
-                        console.log(name.split(' ')[0] + " 格式识别为：jpg")
+                        //console.log(name.split(' ')[0] + " 格式识别为：jpg")
                     }
                 }
                 if (b[i].getPluginData('s') !== ''){
                     frameData.push({name:name,s:b[i].getPluginData('s'),type:imgtype,id:b[i].id});
-                    console.log(name.split(' ')[0] + " 大小已预设为：" + b[i].getPluginData('s') + 'k');
+                    //console.log(name.split(' ')[0] + " 大小已预设为：" + b[i].getPluginData('s') + 'k');
                 } else {
                     var nameS = name.match(/(\d+)(?=[kK])/);
                     if(nameS){
-                        console.log(name.split(' ')[0] + " 大小识别为：" + nameS[1] + 'k(首次识别成功将进行预设)');
+                        //console.log(name.split(' ')[0] + " 大小识别为：" + nameS[1] + 'k(首次识别成功将进行预设)');
                         b[i].setPluginData('s',nameS[1])
                         frameData.push({name:name,s:nameS[1],type:imgtype,id:b[i].id});
                     } else {
-                        console.log(name.split(' ')[0] + " 未识别到大小设置");
+                        //console.log(name.split(' ')[0] + " 未识别到大小设置");
                         frameData.push({name:name,s:'',type:imgtype,id:b[i].id});
                     } 
                 }  

@@ -1047,12 +1047,12 @@
     </label>
   </div>
   <!--顶部-->
-  <div id="top" class="noscrollbar pr" >
+  <div id="top" class="noscrollbar pos-r" >
     <div>
     </div>
-    <div style="display: flex; gap: 8px; position: relative; z-index: 18;">
+    <div class="df pos-r" style="gap: 8px; z-index: 18; margin-top: -2px;">
       <!--深浅模式-->
-      <div style="width: 14px; height: 14px; margin-top: -2px;">
+      <div style="width: 14px; height: 14px; ">
         <input id="theme" type="checkbox" checked="true" style="display: none;" onchange="
         if(!this.checked){
           console.log('浅色主题')
@@ -1065,16 +1065,6 @@
             root.style.setProperty('--' + styleKey2[i], styleValue2[i])
           }
         }
-        /*
-        document.getElementById('mask').style.display = 'block';
-        document.getElementById('mask').style.animation = 'maskup 0.2s ease-out';
-        setTimeout(()=>{
-          document.getElementById('mask').style.animation = 'maskno 0.2s ease-out';
-          setTimeout(()=>{
-            document.getElementById('mask').style.display = 'none';
-          },200)
-        },300)
-        */
       "></input>
         <label for="theme" class="btn-theme" style="position: relative;">
           <div class="tags-search-toast-area" style="right: 0; bottom:0;width: 20px;">
@@ -1120,22 +1110,24 @@
         </label>
       </div>
       <!--钉住窗口-->
-      <input id="btn-keep" type="checkbox" checked="true" style="display: none;" ></input>
-      <label for="btn-keep" class="btn-keep pr" >
-        <div class="tags-search-toast-area" style="right: 0; bottom:0; width: 20px;">
-          <div class="tags-search-toast" style="width: 120px;height: 18px; top: 30px; right: 0;"> 锁定窗口/自动休眠</div>
-        </div>
-        <svg style="fill:var(--keep); width:100%; height:100%;" viewBox="0 0 1024 1024" version="1.1"
-          xmlns="http://www.w3.org/2000/svg">
-          <path
-            d="M557.728 688v288.384H466.24V688H227.52c-9.6 0-18.048-3.712-24.96-11.264A37.824 37.824 0 0 1 192 649.984c0-48.768 14.432-92.704 43.584-131.84 29.12-38.976 61.92-58.56 98.56-58.56V200.512c-19.296 0-35.84-7.552-50.048-22.656a76.16 76.16 0 0 1-21.12-53.6c0-20.672 7.04-38.4 21.12-53.6 13.984-14.976 30.72-22.656 50.048-22.656h355.584c19.296 0 35.84 7.552 50.048 22.656 13.984 15.104 21.152 32.928 21.152 53.6 0 20.672-7.04 38.4-21.12 53.6-14.112 15.232-30.784 22.656-50.08 22.656v258.944c36.64 0 69.568 19.584 98.56 58.56A215.424 215.424 0 0 1 832 649.984c0 10.272-3.456 19.328-10.528 26.752-7.04 7.424-15.36 11.264-24.96 11.264H557.76z">
-          </path>
-        </svg>
-      </label>
+      <div style="width: 14px; height: 14px;">
+        <input id="btn-keep" type="checkbox" checked="true" style="display: none;" ></input>
+        <label for="btn-keep" class="btn-keep pos-r" >
+          <div class="tags-search-toast-area" style="right: 0; bottom:0; width: 20px;">
+            <div class="tags-search-toast" style="width: 120px;height: 18px; top: 30px; right: 0;"> 锁定窗口/自动休眠</div>
+          </div>
+          <svg style="fill:var(--keep); width:100%; height:100%;" viewBox="0 0 1024 1024" version="1.1"
+            xmlns="http://www.w3.org/2000/svg">
+            <path
+              d="M557.728 688v288.384H466.24V688H227.52c-9.6 0-18.048-3.712-24.96-11.264A37.824 37.824 0 0 1 192 649.984c0-48.768 14.432-92.704 43.584-131.84 29.12-38.976 61.92-58.56 98.56-58.56V200.512c-19.296 0-35.84-7.552-50.048-22.656a76.16 76.16 0 0 1-21.12-53.6c0-20.672 7.04-38.4 21.12-53.6 13.984-14.976 30.72-22.656 50.048-22.656h355.584c19.296 0 35.84 7.552 50.048 22.656 13.984 15.104 21.152 32.928 21.152 53.6 0 20.672-7.04 38.4-21.12 53.6-14.112 15.232-30.784 22.656-50.08 22.656v258.944c36.64 0 69.568 19.584 98.56 58.56A215.424 215.424 0 0 1 832 649.984c0 10.272-3.456 19.328-10.528 26.752-7.04 7.424-15.36 11.264-24.96 11.264H557.76z">
+            </path>
+          </svg>
+        </label>
+      </div>
       <!--放大缩小窗口-->
       <div style="width: 12px; height: 12px;position: relative; margin-top: -1px;">
         <input id="big" type="checkbox" style="display: none;" onclick="bigWindow(this)"></input>
-        <label for="big" class="btn-big" style="position: relative;">
+        <label for="big" class="btn-big pos-r">
           <div class="tags-search-toast-area" style="right: 0; bottom:0;width: 20px;">
             <div class="tags-search-toast" style="width: 120px;height: 18px; top: 30px; right: 0;"> 最大化窗口</div>
           </div>
@@ -1310,19 +1302,23 @@
     <!--拖拽区域，用于感知拖拽-->
     <div class="drop-area" >
       <!--预览区域，用于切换视图-->
-      <div style="position: absolute; top:18px; left:-8px; width: 100%; padding:4px 8px 2px 8px; display: flex;justify-content: space-between; z-index: 2;">
-        <div style="position: absolute; width: 100%; height: 60px; top: -6px;left: 0; border-radius: 10px 10px 0 0; border-bottom: var(--boxBod) 1px solid; background:var(--boxGry);"></div>
+      <div style="position: absolute; top:18px; left:-8px; width: 100%; padding:4px 8px 2px 8px; display: flex;justify-content: space-between; align-items: center; z-index: 2;">
+        <div style="position: absolute; width: 100%; height: calc(100% + 10px); top: -6px;left: 0; border-radius: 10px 10px 0 0; border-bottom: var(--boxBod) 1px solid; background:var(--boxGry);"></div>
         <div style="display: flex; gap:2px;">
           <div class="btn-style-set" style="--color-btn1:var(--boxBak);--color-btn2:var(--boxBod); width:12ch; font-size: 12px;" onclick="message(['new','exportImg'])">上传所选</div>
-          <div class="btn-style-set" style="--color-btn1:var(--boxBak);--color-btn2:var(--boxBod); width:12ch; font-size: 12px;" onclick="message(['add','exportImg'])">添加所选</div>
+          <div class="btn-style-set" style="--color-btn1:var(--boxBak);--color-btn2:var(--boxBod); width:12ch; font-size: 12px;" onclick="message(['add','exportImg'])">追加所选</div>
         </div>
-        <div class="btn-style-set" style="--color-btn1:#86868644;--color-btn2:#48484888;  font-size: 12px;" onclick="noExport('all')"><span style="opacity: 0.6;">清空</span></div>
+        <div style="display: flex; gap:2px; font-size: 12px;">
+          <div class="btn-text" onclick="noExport('all')"><span style="opacity: 0.6;">清空</span></div>
+          <div style="opacity: 0.5;"> | </div>
+          <div class="btn-text" onclick=""><span style="opacity: 0.6;">管理</span></div>
+        </div>
       </div>
       <div style="position: absolute; top:50px; left:0px; width: calc(100% - 20px); opacity: 0.6; font-size: 12px; padding:4px 8px 2px 8px; display: flex;justify-content: space-between; z-index: 2;">
         <div id="editor-btns" style="display: flex; align-items: center; gap: 4px; height: 100%;position: relative;">
-          <div class="btn-text" onclick="noEdit()">刷新</div>
-          <!--div style="opacity: 0.5;"> | </div>
-          <div class="btn-text" onclick="noEdit()">检测（规范库）</div-->
+          <div class="btn-text" onclick="noEdit()">更新</div>
+          <div style="opacity: 0.5;"> | </div>
+          <div class="btn-text" onclick="noEdit()">规范审核</div>
         </div>
         <input id="allExportTags" type="checkbox" style="display: none;" onchange="
         if(this.checked){
@@ -1344,8 +1340,9 @@
           </svg>
         </label>
       </div>
-      <div class="tags-box" id="tags-area-export" style="width: 100%; height:calc(100% - 130px); padding:65px 8 40px 8; gap:4px; position: relative;">
+      <div class="tags-box"  style="width: 100%; height:calc(100% - 40px); gap:4px; position: relative;">
         <!--根据列表生成标签-->
+        <div class="df-ffc" id="tags-area-export" style="padding-top: 60px; width: fit-content; gap:4px; position: relative;"></div>
       </div>
     </div>
   </div>
@@ -1580,6 +1577,7 @@
     const anotherBtns4 = document.getElementById('another-btns-4');
     const editTag = document.getElementById('editor-tags');
     const editSets = document.getElementById('editor-set');
+    const typeAllow = ["jpg","jpeg","png","webp"];
 
     //通用控件绑定
     const btnKeep = document.getElementById('btn-keep');//绑定"按钮-窗口固定/收起"
@@ -2156,7 +2154,6 @@
       /*mastergo*/
       parent.postMessage(data,"*")
     }
-    //封装侧边栏按钮
 
     //粘贴上传
     upFileByInput()
@@ -2431,71 +2428,77 @@
     //生成导出标签
     function addExport(frameDataOld,frameDataNew,isNew) {
       //console.log(frameData)
+      var index = 0;
       if(isNew == 'new'){
         exportNum = 0;
         tagsContainer2.innerHTML = "";
         frameData = frameDataNew;
-
-        for (var i = 0; i < frameData.length; i++) {
-          if ( frameData[i].type == 'jpg'){
-            var filetype = '<select id="imgtype-' + i + `" class="input-btn-skill" style="width: 60px; min-width: 60px; height:22px" name="文件格式" style=" width: 14ch; color: var(--mainColor); font-size: 12;" onchange="var name = document.getElementById('fileName-' +` + i + `);var text = name.value.split('.')[0] + '.' + this.value; name.value = text;imgExportData[`+ i +`].fileName = text "><option value="jpg">jpg</option><option value="png">png</option><option value="jpeg">jpeg</option><option value="webp">webp</option></select>`
-          } else {
-            var filetype = '<select id="imgtype-' + i + `" class="input-btn-skill" style="width: 60px; min-width: 60px; height:22px" name="文件格式" style=" width: 14ch; color: var(--mainColor); font-size: 12;" onchange="var name = document.getElementById('fileName-' +` + i + `);var text = name.value.split('.')[0] + '.' + this.value; name.value = text;imgExportData[`+ i +`].fileName = text "><option value="png">png</option><option value="jpg">jpg</option><option value="jpeg">jpeg</option><option value="webp">webp</option></select>`
-          }
-          var info = '<div class="info"><span style="opacity: 0.5;">' + (i + 1) + '. ' + '</span><input type="text" class="input-nobg" id="fileName-' + i + '" value="' + frameData[i].name + '.' + frameData[i].type + `" onKeyPress="if(window.event.keyCode==13) this.blur()" onchange="imgExportData[`+ i +'].fileName = this.value;console.log(imgExportData.map(item => item.fileName))"/></div>';
-          var size = '<span id="imgsize-'+ i +'" style="color:var(--mainColor2);opacity: 0.8;"></span>';
-          var setsize = '<div class="input-btn-skill" style="width: 60px; min-width: 60px; height:20px" > <input  id="exportSize-' + i + '" type="text" class="input-btn-skill" style="border:0px; height: 18px;" value="' + frameData[i].s + `" onKeyPress="if(window.event.keyCode==13) this.blur()" onchange="message([[this.value,'` + frameData[i].id + `'],'exportSizeSet']);imgExportData[`+ i +'].s = this.value;console.log(imgExportData.map(item => item.s))"/><div class="input-btn-skill" style="border:0px; width:30px; border-radius: 0px ;background-color: var(--boxGry); opacity: 0.8;  color:var(--mainColor)">k</div></div>'
-          var chk = `
-          <input id="chk-export-` + i + `" type="checkbox" style="display: none;" />
-          <label for="chk-export-` + i + `" class="chk-export-key set" style="width:100%; display: flex;align-items: center;gap: 4px;">
-            `+ info +`
-            <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" fill="none" version="1.1" width="14" height="14" viewBox="0 0 10 10">
-                <g transform="matrix(0.8660253882408142,0.5,-0.5,0.8660253882408142,1.3172291698792833,-2.3877065935394057)">
-                  <path fill="var(--has)" d="M8.4255957421875,1.264617919671875L8.4255957421875,6.264129638671875Q8.4255957421875,6.313379638671875,8.4159857421875,6.361679638671875Q8.4063857421875,6.409969638671875,8.3875357421875,6.455469638671875Q8.3686957421875,6.500969638671875,8.3413357421875,6.541909638671875Q8.3139757421875,6.582859638671875,8.2791557421875,6.617679638671875Q8.244325742187499,6.652499638671875,8.2033857421875,6.679859638671875Q8.1624357421875,6.707219638671875,8.1169357421875,6.726069638671875Q8.0714457421875,6.744909638671875,8.0231457421875,6.754519638671875Q7.9748457421875,6.764129638671875,7.9255957421875,6.764129638671875Q7.8640457421875,6.764129638671875,7.8043357421875,6.749199638671875L4.9928757421875,6.046379638671875Q4.9117407421875,6.026099638671875,4.8416217421875,5.980519638671875Q4.7715037421875,5.934939638671875,4.7200357421875,5.869019638671875Q4.6685667421875,5.803099638671875,4.6413517421875,5.724019638671875Q4.6141357421875,5.644939638671875,4.6141357421875,5.561309638671875Q4.6141357421875,5.512059638671875,4.6237427421875,5.463759638671875Q4.6333507421875,5.415469638671875,4.6521957421875,5.369969638671875Q4.6710417421875,5.324469638671875,4.6984007421875,5.283519638671875Q4.7257607421875,5.2425796386718755,4.7605827421875,5.207759638671876Q4.7954047421875,5.172929638671874,4.8363507421875,5.145579638671875Q4.8772967421875,5.118219638671874,4.9227937421875,5.099369638671876Q4.9682907421875,5.080519638671875,5.0165906421875,5.0709196386718745Q5.0648900421875,5.061309638671875,5.1141357421875,5.061309638671875Q5.1756846421875,5.061309638671875,5.2353957421875,5.0762396386718756L5.2358847421875,5.076359638671875L7.4255957421875,5.623749638671875L7.4255957421875,1.264129638671875Q7.4255957421875,1.214883938671875,7.435205742187501,1.166584538671875Q7.4448157421875,1.118284638671875,7.4636557421875,1.0727876386718749Q7.4825057421875005,1.027290638671875,7.5098657421875,0.986344638671875Q7.5372257421875,0.945398638671875,7.5720457421875,0.910576638671875Q7.6068657421875,0.875754638671875,7.6478157421875,0.848394638671875Q7.6887557421874995,0.821035638671875,7.7342557421875,0.802189638671875Q7.7797557421875005,0.783344638671875,7.8280557421875,0.7737366386718749Q7.8763557421875,0.764129638671875,7.9255957421875,0.764129638671875Q7.9748457421875,0.764129638671875,8.0231457421875,0.7737366386718749Q8.0714457421875,0.783344638671875,8.1169357421875,0.802189638671875Q8.1624357421875,0.821035638671875,8.2033857421875,0.848394638671875Q8.244325742187499,0.875754638671875,8.2791557421875,0.910576638671875Q8.3139757421875,0.945398638671875,8.3413357421875,0.986344638671875Q8.3686957421875,1.027290638671875,8.3875357421875,1.0727876386718749Q8.4063857421875,1.118284638671875,8.4159857421875,1.166584538671875Q8.4255957421875,1.214883938671875,8.4255957421875,1.264129638671875L8.4255957421875,1.264617919671875Z" fill-rule="evenodd" fill-opacity="1"/>
-                </g>
-                <rect stroke="var(--boxBod)" x="0.5" y="0.5" width="9" height="9" rx="1.5" fill-opacity="0" stroke-opacity="1"  fill="none" stroke-width="1"/>
-            </svg>
-          </label>`
-          var node = document.createElement('div');
-          node.className = "tags-exports";
-          node.id = "tags-exports-" + i;
-          node.innerHTML = '<div style="display:flex;gap:4px; align-items: center; width:100%;"><div class="btn-text" style="width:14px; height:14px;" onclick="this.parentNode.parentNode.remove();imgExportData['+ i +`].fileName = ''"><btn-close style=" opacity: 0.6;"></btn-close></div>` + chk + '</div><div class="set">' + size + '<div style="display:flex; gap:4px">'  + setsize + filetype + '</div></div>';
-          tagsContainer2.appendChild(node);
-          exportNum++
-        }
       }else{
-
         frameData = frameDataNew;
-        var index = exportNum//tagsContainer2.children.length
+        index = exportNum//避免序号错乱
+      }
 
-        for (var i = 0; i < frameData.length; i++) {
-          if ( frameData[i].type == 'jpg'){
-            var filetype = '<select id="imgtype-' + (i + index) + `" class="input-btn-skill" style="width: 60px; min-width: 60px; height:22px" name="文件格式" style=" width: 14ch; color: var(--mainColor); font-size: 12;" onchange="var name = document.getElementById('fileName-' +` + (i + index) + `);var text = name.value.split('.')[0] + '.' + this.value; name.value = text;imgExportData[`+ (i + index) +`].fileName = text "><option value="jpg">jpg</option><option value="png">png</option><option value="jpeg">jpeg</option><option value="webp">webp</option></select>`
-          } else {
-            var filetype = '<select id="imgtype-' + (i + index) + `" class="input-btn-skill" style="width: 60px; min-width: 60px; height:22px" name="文件格式" style=" width: 14ch; color: var(--mainColor); font-size: 12;" onchange="var name = document.getElementById('fileName-' +` + (i + index) + `);var text = name.value.split('.')[0] + '.' + this.value; name.value = text;imgExportData[`+ (i + index) +`].fileName = text "><option value="png">png</option><option value="jpg">jpg</option><option value="jpeg">jpeg</option><option value="webp">webp</option></select>`
+      for (var i = 0; i < frameData.length; i++) {
+        var option = `<option value="` + frameData[i].type + `">` + frameData[i].type + `</option>`
+        var options = "";
+        typeAllow.forEach(item => {
+          if( item != frameData[i].type){
+            options += `<option value="` + item + `">` + item + `</option>`
           }
-          var info = '<div class="info"><span style="opacity: 0.5;">' + ((i + index) + 1) + '. ' + '</span><input type="text" class="input-nobg" id="fileName-' + (i + index) + '"value="' + frameData[i].name + '.' + frameData[i].type + `" onKeyPress="if(window.event.keyCode==13) this.blur()" onchange="imgExportData[`+ (i + index) +'].fileName = this.value; console.log(imgExportData.map(item => item.fileName))"/></div>';
-          var size = '<span id="imgsize-'+ (i + index) +'" style="color:var(--mainColor2);opacity: 0.8;"></span>';
-          var setsize = '<div class="input-btn-skill" style="width: 60px; min-width: 60px; height:20px" > <input  id="exportSize-' + (i + index) + '" type="text" class="input-btn-skill" style="border:0px; height: 18px;" value="' + frameData[i].s + `" onKeyPress="if(window.event.keyCode==13) this.blur()" onchange="message([[this.value,'` + frameData[i].id + `'],'exportSizeSet']);imgExportData[`+ (i + index) +'].s = this.value;console.log(imgExportData.map(item => item.s))"/><div class="input-btn-skill" style="border:0px; width:30px; border-radius: 0px ;background-color: var(--boxGry); opacity: 0.8;  color:var(--mainColor)">k</div></div>'
-          var chk = `
-          <input id="chk-export-` + (i + index) + `" type="checkbox" style="display: none;" />
-          <label for="chk-export-` + (i + index) + `" class="chk-export-key set" style="width:100%; display: flex;align-items: center;gap: 4px;">
-            `+ info +`
-            <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" fill="none" version="1.1" width="14" height="14" viewBox="0 0 10 10">
-                <g transform="matrix(0.8660253882408142,0.5,-0.5,0.8660253882408142,1.3172291698792833,-2.3877065935394057)">
-                  <path fill="var(--has)" d="M8.4255957421875,1.264617919671875L8.4255957421875,6.264129638671875Q8.4255957421875,6.313379638671875,8.4159857421875,6.361679638671875Q8.4063857421875,6.409969638671875,8.3875357421875,6.455469638671875Q8.3686957421875,6.500969638671875,8.3413357421875,6.541909638671875Q8.3139757421875,6.582859638671875,8.2791557421875,6.617679638671875Q8.244325742187499,6.652499638671875,8.2033857421875,6.679859638671875Q8.1624357421875,6.707219638671875,8.1169357421875,6.726069638671875Q8.0714457421875,6.744909638671875,8.0231457421875,6.754519638671875Q7.9748457421875,6.764129638671875,7.9255957421875,6.764129638671875Q7.8640457421875,6.764129638671875,7.8043357421875,6.749199638671875L4.9928757421875,6.046379638671875Q4.9117407421875,6.026099638671875,4.8416217421875,5.980519638671875Q4.7715037421875,5.934939638671875,4.7200357421875,5.869019638671875Q4.6685667421875,5.803099638671875,4.6413517421875,5.724019638671875Q4.6141357421875,5.644939638671875,4.6141357421875,5.561309638671875Q4.6141357421875,5.512059638671875,4.6237427421875,5.463759638671875Q4.6333507421875,5.415469638671875,4.6521957421875,5.369969638671875Q4.6710417421875,5.324469638671875,4.6984007421875,5.283519638671875Q4.7257607421875,5.2425796386718755,4.7605827421875,5.207759638671876Q4.7954047421875,5.172929638671874,4.8363507421875,5.145579638671875Q4.8772967421875,5.118219638671874,4.9227937421875,5.099369638671876Q4.9682907421875,5.080519638671875,5.0165906421875,5.0709196386718745Q5.0648900421875,5.061309638671875,5.1141357421875,5.061309638671875Q5.1756846421875,5.061309638671875,5.2353957421875,5.0762396386718756L5.2358847421875,5.076359638671875L7.4255957421875,5.623749638671875L7.4255957421875,1.264129638671875Q7.4255957421875,1.214883938671875,7.435205742187501,1.166584538671875Q7.4448157421875,1.118284638671875,7.4636557421875,1.0727876386718749Q7.4825057421875005,1.027290638671875,7.5098657421875,0.986344638671875Q7.5372257421875,0.945398638671875,7.5720457421875,0.910576638671875Q7.6068657421875,0.875754638671875,7.6478157421875,0.848394638671875Q7.6887557421874995,0.821035638671875,7.7342557421875,0.802189638671875Q7.7797557421875005,0.783344638671875,7.8280557421875,0.7737366386718749Q7.8763557421875,0.764129638671875,7.9255957421875,0.764129638671875Q7.9748457421875,0.764129638671875,8.0231457421875,0.7737366386718749Q8.0714457421875,0.783344638671875,8.1169357421875,0.802189638671875Q8.1624357421875,0.821035638671875,8.2033857421875,0.848394638671875Q8.244325742187499,0.875754638671875,8.2791557421875,0.910576638671875Q8.3139757421875,0.945398638671875,8.3413357421875,0.986344638671875Q8.3686957421875,1.027290638671875,8.3875357421875,1.0727876386718749Q8.4063857421875,1.118284638671875,8.4159857421875,1.166584538671875Q8.4255957421875,1.214883938671875,8.4255957421875,1.264129638671875L8.4255957421875,1.264617919671875Z" fill-rule="evenodd" fill-opacity="1"/>
-                </g>
-                <rect stroke="var(--boxBod)" x="0.5" y="0.5" width="9" height="9" rx="1.5" fill-opacity="0" stroke-opacity="1"  fill="none" stroke-width="1"/>
-            </svg>
-          </label>`
-          var node = document.createElement('div');
-          node.className = "tags-exports";
-          node.id = "tags-exports-" + (i + index);
-          node.innerHTML = '<div style="display:flex;gap:4px; align-items: center; width:100%;"><div class="btn-text" style="width:14px; height:14px;"onclick="this.parentNode.parentNode.remove();imgExportData['+ (i + index) +`].fileName = ''"><btn-close style=" opacity: 0.6;"></btn-close></div>` + chk + '</div><div class="set">' + size + '<div style="display:flex; gap:4px">'  + setsize + filetype + '</div></div>';
-          tagsContainer2.appendChild(node);
-          console.log("创建导出：第" + (i + index))
-          exportNum++
-        }
+        })
+        var filetype = `<select id="imgtype-` + (i + index) + `" class="input-btn-skill" 
+        name="文件格式"
+        style="width: 60px; min-width: 60px; height:22px; width: 14ch; color: var(--mainColor); font-size: 12;" 
+        onchange="
+        var name = document.getElementById('fileName-' +` + (i + index) + `);
+        var text = name.value.split('.')[0] + '.' + this.value; 
+        name.value = text;
+        message([[this.value,'` + frameData[i].id + `'],'exportTypeSet']);
+        imgExportData[`+ (i + index) +`].fileName = text ">
+          `+ option + options +`
+        </select>`
+        var info = `<div class="info">
+          <span style="opacity: 0.5;">` + ((i + index) + 1) + `.</span>
+          <input type="text" class="input-nobg" id="fileName-` + (i + index) + `"value="` + frameData[i].name + `.` + frameData[i].type + `" 
+          onKeyPress="if(window.event.keyCode==13) this.blur()" 
+          onchange="imgExportData[`+ (i + index) +`].fileName = this.value; 
+          var type = this.value.split('.')[1] ? this.value.split('.')[1].toLowerCase() : '';
+          if (type && typeAllow.includes(type)){
+          document.getElementById('imgtype-' +` + (i + index) + `).value = type;
+          } else {
+           this.value = this.value.split('.')[0] + '.' + document.getElementById('imgtype-' +` + (i + index) + `).value;
+          }
+          
+          //console.log(imgExportData.map(item => item.fileName))"/>
+        </div>`;
+        var size = '<span id="imgsize-'+ (i + index) +'" style="color:var(--mainColor2);opacity: 0.8;"></span>';
+        var setsize = `<div class="input-btn-skill" style="width: 60px; min-width: 60px; height:20px" >
+          <input  id="exportSize-` + (i + index) + `" type="text" class="input-btn-skill" 
+          style="border:0px; height: 18px;" value="` + frameData[i].s + `" 
+          onKeyPress="if(window.event.keyCode==13) this.blur()" 
+          onchange="message([[this.value,'` + frameData[i].id + `'],'exportSizeSet']);
+          imgExportData[`+ (i + index) +`].s = this.value;
+          console.log(imgExportData.map(item => item.s))"/>
+          <div class="input-btn-skill" style="border:0px; width:30px; border-radius: 0px ;background-color: var(--boxGry); opacity: 0.8;  color:var(--mainColor)">k</div>
+          </div>`
+        var chk = `
+        <input id="chk-export-` + (i + index) + `" type="checkbox" style="display: none;" />
+        <label for="chk-export-` + (i + index) + `" class="chk-export-key set" style="width:100%; display: flex;align-items: center;gap: 4px;">
+          `+ info +`
+          <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" fill="none" version="1.1" width="14" height="14" viewBox="0 0 10 10">
+              <g transform="matrix(0.8660253882408142,0.5,-0.5,0.8660253882408142,1.3172291698792833,-2.3877065935394057)">
+                <path fill="var(--has)" d="M8.4255957421875,1.264617919671875L8.4255957421875,6.264129638671875Q8.4255957421875,6.313379638671875,8.4159857421875,6.361679638671875Q8.4063857421875,6.409969638671875,8.3875357421875,6.455469638671875Q8.3686957421875,6.500969638671875,8.3413357421875,6.541909638671875Q8.3139757421875,6.582859638671875,8.2791557421875,6.617679638671875Q8.244325742187499,6.652499638671875,8.2033857421875,6.679859638671875Q8.1624357421875,6.707219638671875,8.1169357421875,6.726069638671875Q8.0714457421875,6.744909638671875,8.0231457421875,6.754519638671875Q7.9748457421875,6.764129638671875,7.9255957421875,6.764129638671875Q7.8640457421875,6.764129638671875,7.8043357421875,6.749199638671875L4.9928757421875,6.046379638671875Q4.9117407421875,6.026099638671875,4.8416217421875,5.980519638671875Q4.7715037421875,5.934939638671875,4.7200357421875,5.869019638671875Q4.6685667421875,5.803099638671875,4.6413517421875,5.724019638671875Q4.6141357421875,5.644939638671875,4.6141357421875,5.561309638671875Q4.6141357421875,5.512059638671875,4.6237427421875,5.463759638671875Q4.6333507421875,5.415469638671875,4.6521957421875,5.369969638671875Q4.6710417421875,5.324469638671875,4.6984007421875,5.283519638671875Q4.7257607421875,5.2425796386718755,4.7605827421875,5.207759638671876Q4.7954047421875,5.172929638671874,4.8363507421875,5.145579638671875Q4.8772967421875,5.118219638671874,4.9227937421875,5.099369638671876Q4.9682907421875,5.080519638671875,5.0165906421875,5.0709196386718745Q5.0648900421875,5.061309638671875,5.1141357421875,5.061309638671875Q5.1756846421875,5.061309638671875,5.2353957421875,5.0762396386718756L5.2358847421875,5.076359638671875L7.4255957421875,5.623749638671875L7.4255957421875,1.264129638671875Q7.4255957421875,1.214883938671875,7.435205742187501,1.166584538671875Q7.4448157421875,1.118284638671875,7.4636557421875,1.0727876386718749Q7.4825057421875005,1.027290638671875,7.5098657421875,0.986344638671875Q7.5372257421875,0.945398638671875,7.5720457421875,0.910576638671875Q7.6068657421875,0.875754638671875,7.6478157421875,0.848394638671875Q7.6887557421874995,0.821035638671875,7.7342557421875,0.802189638671875Q7.7797557421875005,0.783344638671875,7.8280557421875,0.7737366386718749Q7.8763557421875,0.764129638671875,7.9255957421875,0.764129638671875Q7.9748457421875,0.764129638671875,8.0231457421875,0.7737366386718749Q8.0714457421875,0.783344638671875,8.1169357421875,0.802189638671875Q8.1624357421875,0.821035638671875,8.2033857421875,0.848394638671875Q8.244325742187499,0.875754638671875,8.2791557421875,0.910576638671875Q8.3139757421875,0.945398638671875,8.3413357421875,0.986344638671875Q8.3686957421875,1.027290638671875,8.3875357421875,1.0727876386718749Q8.4063857421875,1.118284638671875,8.4159857421875,1.166584538671875Q8.4255957421875,1.214883938671875,8.4255957421875,1.264129638671875L8.4255957421875,1.264617919671875Z" fill-rule="evenodd" fill-opacity="1"/>
+              </g>
+              <rect stroke="var(--boxBod)" x="0.5" y="0.5" width="9" height="9" rx="1.5" fill-opacity="0" stroke-opacity="1"  fill="none" stroke-width="1"/>
+          </svg>
+        </label>`
+        var node = document.createElement('div');
+        node.className = "tags-exports";
+        node.id = "tags-exports-" + (i + index);
+        node.innerHTML = '<div style="display:flex;gap:4px; align-items: center; width:100%;"><div class="btn-text" style="width:14px; height:14px; z-index:1;"onclick="this.parentNode.parentNode.remove();imgExportData['+ (i + index) +`].fileName = ''"><btn-close style=" opacity: 0.6;"></btn-close></div>` + chk + '</div><div class="set">' + size + '<div style="display:flex; gap:4px">'  + setsize + filetype + '</div></div>';
+        tagsContainer2.appendChild(node);
+        console.log("创建导出：第" + (i + index))
+        exportNum++
       }
 
     }
@@ -3257,52 +3260,9 @@
           for (var i = 0; i < imgData.length; i++) {
             var fileName = document.getElementById('fileName-' + i).value;
             var s = document.getElementById('exportSize-' + i).value;
-            
-            var colorBox = await getColorBox2();//八叉树法
-            function getColorBox2(){
-              return new Promise((resolve, reject) => {
-                var blob = new Blob([imgData[i]], { type: 'image/png' }); 
-                var url = URL.createObjectURL(blob);
-                var img = new Image()
-                img.src = url;
-
-                img.onload = function(){
-                  var canvas = document.createElement('canvas');
-                  canvas.width = img.width;
-                  canvas.height = img.height;
-                  var ctx = canvas.getContext('2d')
-                  ctx.drawImage(img,0,0)
-                  var imageData = ctx.getImageData(0,0,img.width,img.height)
-                  var data = imageData.data;
-
-                  function quantizeImage(datas) {
-                    const octree = new OctreeQuantizer(3); // 设置最大深度
-
-                    // 插入每个像素到八叉树中
-                    for (let i = 0; i <  datas.length; i += 4) {
-                        const r =  datas[i];
-                        const g =  datas[i + 1];
-                        const b =  datas[i + 2];
-                        octree.insertPixel([r, g, b]);
-                    }
-
-                    // 减少颜色数量
-                    octree.reduceColors(128);
-
-                    // 生成调色板
-                    octree.generatePalette();
-
-                    return octree.getPalette();
-                  }
-
-                  resolve(quantizeImage(imageData.data))
-
-                }
-              })
-            }
-
+            var colorBox = await getColorBox2(imgData[i]);//八叉树法
             imgExportData.push({u8a:imgData[i],src:U8AToB64(imgData[i]),fileName: fileName,s:s,col:colorBox})
-            console.log(imgExportData)
+            //console.log(imgExportData)
             if ( imgData[i].length/1000 <= s || s == ''){
               document.getElementById('imgsize-' + i).innerHTML =  Math.floor(imgData[i].length/1000)  + 'k /无需压缩' 
             } else {
@@ -3323,7 +3283,7 @@
               var fileName = ''
               var s = ''
             }
-            
+            var colorBox = await getColorBox2(imgData[i]);//八叉树法 
             imgExportData.push({u8a:imgData[i],src:U8AToB64(imgData[i]),fileName: fileName,s:s,col:colorBox})
           }
 
@@ -3339,6 +3299,47 @@
 
         }
 
+    }
+    function getColorBox2(imgDatas){
+      return new Promise((resolve, reject) => {
+        var blob = new Blob([imgDatas], { type: 'image/png' }); 
+        var url = URL.createObjectURL(blob);
+        var img = new Image()
+        img.src = url;
+
+        img.onload = function(){
+          var canvas = document.createElement('canvas');
+          canvas.width = img.width;
+          canvas.height = img.height;
+          var ctx = canvas.getContext('2d')
+          ctx.drawImage(img,0,0)
+          var imageData = ctx.getImageData(0,0,img.width,img.height)
+          var data = imageData.data;
+
+          function quantizeImage(datas) {
+            const octree = new OctreeQuantizer(3); // 设置最大深度
+
+            // 插入每个像素到八叉树中
+            for (let i = 0; i <  datas.length; i += 4) {
+                const r =  datas[i];
+                const g =  datas[i + 1];
+                const b =  datas[i + 2];
+                octree.insertPixel([r, g, b]);
+            }
+
+            // 减少颜色数量
+            octree.reduceColors(128);
+
+            // 生成调色板
+            octree.generatePalette();
+
+            return octree.getPalette();
+          }
+
+          resolve(quantizeImage(imageData.data))
+
+        }
+      })
     }
 
     //导出图片为zip
