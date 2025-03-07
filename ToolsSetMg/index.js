@@ -215,6 +215,7 @@ mg.ui.onmessage = (message) => {
         console.log("创建画板：",info.length,"个");
         var a = mg.document.currentPage;
         var b = a.selection;
+
         //反传对象尺寸信息
         if ( info == 0 && b.length > 0){
             var frameInfo = [];
@@ -223,210 +224,141 @@ mg.ui.onmessage = (message) => {
             })
             mg.ui.postMessage([frameInfo,'getFrame'])
         }
+
+
         var gap = 30;
         var maxW ,maxH ;
-        var viewX = mg.viewport.center.x - ((mg.viewport.bound.width/2  - 300)* mg.viewport.zoom)/// mg.viewport.bound.width/2 + 300;
-        var viewY = mg.viewport.center.y;
+        var viewX = Math.floor( mg.viewport.center.x - ((mg.viewport.bound.width/2  - 300)* mg.viewport.zoom))/// mg.viewport.bound.width/2 + 300;
+        var viewY = Math.floor(mg.viewport.center.y);
         var x = viewX;
         var y = viewY;
         var allH = [];
         var allW = [];
         var ws = [0];
         var hs = [0];
-    
-        //找出最宽最高的图，作为换行标准，并挑出KV单独排布
-        for(var i = 0; i < info.length; i++){
-            ws.push(info[i].w);
-            hs.push(info[i].h);
-        };
-    
-    
-        var maxW = Math.max(...ws);
-        var maxH = Math.max(...hs);
-        console.log("最宽",maxW,";最高：",maxH);
-    
-        for(var i = 0; i < info.length; i++){
-    
-            if (info[i].name.toLowerCase().split("kv").length > 1 ) {
-                console.log("含KV");
-                var addframe = mg.createFrame()
-                if( info[i].s !== undefined){
-                    addframe.setPluginData('s',info[i].s.replace(/[kK]/g,''));
-                    addframe.name = info[i].name + " "  + info[i].s  + " " + info[i].w + "×" + info[i].h; 
-                } else {
-                    addframe.name = info[i].name + " " + info[i].w + "×" + info[i].h; 
-                }      
-                addframe.x = x;
-                addframe.y = y;
-                addframe.width = info[i].w;
-                addframe.height = info[i].h;
-                
-                if ( b.length == 1){
-                    if ( b[0].type == "COMPONENT" || b[0].type == "INSTANCE"){
-                        var scale = addframe.height/ b[0].height;
-                        addframe.appendChild(b[0].clone())
-                        addframe.children[0].rescale(scale,{scaleCenter:'CENTER'});
-                        addframe.children[0].constrainProportions = false;//关闭等比例
-                        addframe.children[0].width = info[i].w;
-                        addframe.children[0].height = info[i].h;
-                        addframe.children[0].x = 0;
-                        addframe.children[0].y = 0;  
-                    }
-                }
-                y += info[i].h + gap
+
+        function easeframe(info,x,y,gap,isCreater){
+            var starX = x, starY = y;
+            var kvAll = info.filter(item => item.name.toLowerCase().split("kv").length > 1);
+            var HH = info.filter(item => item.w > item.h && item.name.toLowerCase().split("kv").length == 1).sort((a, b) => b.w * b.h - a.w * a.h);//横板
+            var maxW = Math.max(...HH.map(item => item.w));//找出最宽的图，作为横板换行标准
+            var LL = info.filter(item => item.w < item.h && item.name.toLowerCase().split("kv").length == 1).sort((a, b) => b.w * b.h - a.w * a.h);//竖版
+            var maxH = Math.max(...HH.map(item => item.h));//找出最高的图，作为竖版换行标准
+            var FF = info.filter(item => item.w == item.h).sort((a, b) => b.w - a.w);//方形
+            maxW = Math.max(1920,maxW);
+            maxH = Math.max(1920,maxH);//1920是常见KV尺寸
+            console.log("最宽",maxW,";最高：",maxH);
+
+            var kvH = [0]
+            for(var i = 0; i < kvAll.length; i++){
+                var frame = kvAll[i]
+                var s = frame.s ? frame.s : '';
+                var type = frame.type ? frame.type : '';
+                var isPng = type == 'png' ? true : false;
+                createFrame({name:frame.name,w:frame.w,h:frame.h,x:x,y:y,s:s,type:type},isPng)
+                x += frame.w + gap
+                kvH.push(frame.h)
             }
-        };
-    
-        //重新排序
-        info.sort((a, b) => b.w - a.w);
-        //移除KV，其余按纵横比排布
-        for(var i = 0; i < info.length; i++){
-            if(info[i].name.toLowerCase().split("kv").length  == 1){
-                if ( info[i].w / info[i].h > 1){
-                    allH.push(info[i].h);
-                    var addframe = mg.createFrame()
-                    if( info[i].s !== undefined){
-                        addframe.setPluginData('s',info[i].s.replace(/[kK]/g,''));
-                        addframe.name = info[i].name + " "  + info[i].s  + " " + info[i].w + "×" + info[i].h; 
-                    } else {
-                        addframe.name = info[i].name + " " + info[i].w + "×" + info[i].h; 
-                    }       
-                    addframe.x = x;
-                    addframe.y = y;
-                    addframe.width = info[i].w;
-                    addframe.height = info[i].h;
-                    
-                    if ((info[i].w == 1333 && info[i].h == 275 )|| info[i].name.split("按钮").length > 1){
-                        addframe.fills = []
-                    }
 
-                    if ((info[i].w == 1200 && info[i].h == 300 )){
-                        /*
-                        var nodes = mg.createRectangle()
-                        addframe.appendChild(nodes)
-                        nodes.x = 100
-                        nodes.y = 100
-                        */
-                    }
+            x = starX;
+            y = starY + Math.max(...kvH) + gap;
+            console.log("横版起点：",x,y)
 
-                    if ( b.length == 1){
-                        if ( b[0].type == "COMPONENT" || b[0].type == "INSTANCE"){
-                            var scale = addframe.height/ b[0].height;                        
-                            addframe.appendChild(b[0].clone())
-                            addframe.children[0].rescale(scale,{scaleCenter:'CENTER'});
-                            addframe.children[0].constrainProportions = false;//关闭等比例
-                            addframe.children[0].width = info[i].w;
-                            addframe.children[0].height = info[i].h;
-                            addframe.children[0].x = 0;
-                            addframe.children[0].y = 0;  
-                        }
-                    }
-    
-                    //按换行标准换行
-                    x = x + Number(info[i].w) + gap;
-                    if (info[i + 1] !== undefined){
-                        if (x + Number(info[i + 1].w) > maxW + viewX){
-                            var maxHs = Number(Math.max(...allH));
-                            x = viewX;
-                            y +=  maxHs + gap;
-                            var allH = []
-                        };
-                    }
-                };
-            };
-            
-        };
-    
-    
-        x = maxW + gap + viewX;;
-        y = viewY;
-        //重新排序
-        info.sort((a, b) => b.h - a.h);
-        for(var i = 0; i < info.length; i++){
-    
-            
-            if(info[i].name.toLowerCase().split("kv").length  == 1){
-                if ( info[i].w / info[i].h < 1){
-                    allW.push(info[i].w);
-                    var addframe = mg.createFrame()
-                    if( info[i].s !== undefined){
-                        addframe.setPluginData('s',info[i].s.replace(/[kK]/g,''));
-                        addframe.name = info[i].name + " "  + info[i].s  + " " + info[i].w + "×" + info[i].h; 
-                    } else {
-                        addframe.name = info[i].name + " " + info[i].w + "×" + info[i].h; 
-                    }    
-                    addframe.x = x;
-                    addframe.y = y;
-                    addframe.width = info[i].w;
-                    addframe.height = info[i].h;
-                    
-                    if ((info[i].w == 580 && info[i].h == 870 )|| info[i].name.split("弹窗").length > 1 ){
-                        addframe.fills = []
-                    }
-                    if ( b.length == 1){
-                        if ( b[0].type == "COMPONENT" || b[0].type == "INSTANCE"){
-                            var scale = addframe.width/ b[0].width;
-                            addframe.appendChild(b[0].clone())
-                            addframe.children[0].rescale(scale,{scaleCenter:'CENTER'});
-                            addframe.children[0].constrainProportions = false;//关闭等比例
-                            addframe.children[0].width = info[i].w;
-                            addframe.children[0].height = info[i].h;
-                            addframe.children[0].x = 0;
-                            addframe.children[0].y = 0;  
-                        }
-                    }
-    
-                    //按换行标准换行
-                    y = y + Number(info[i].h) + gap;
-                    if (info[i + 1] !== undefined){
-                        if (y + Number(info[i + 1].h)> maxH + viewY){
-                            var maxWs = Number(Math.max(...allW));
-                            x += maxWs + gap;
-                            y =  viewY;
-                            var allW = []
-                        };
-                    }
-                };
-            };
-           
-        };
-    
-        x = maxW + gap + viewX;;
-        y = maxH + gap + viewY;;
-    
-        for(var i = 0; i < info.length; i++){
-    
-            
-            if(info[i].name.toLowerCase().split("kv").length  == 1){
-                if ( info[i].w / info[i].h == 1){
-                    allW.push(info[i].w);
-                    var addframe = mg.createFrame()
-                    if( info[i].s !== undefined){
-                        addframe.setPluginData('s',info[i].s.replace(/[kK]/g,''));
-                        addframe.name = info[i].name + " "  + info[i].s  + " " + info[i].w + "×" + info[i].h; 
-                    } else {
-                        addframe.name = info[i].name + " " + info[i].w + "×" + info[i].h; 
-                    }     
-                    addframe.x = x;
-                    addframe.y = y;
-                    addframe.width = info[i].w;
-                    addframe.height = info[i].h;
-                    addframe.fills = []
-    
-                    //按换行标准换行
-                    y = y + Number(info[i].h) + gap;
-                    if (y > maxH){
-                        var maxWs = Number(Math.max(...allW));
-                        x += maxWs + gap;
-                        y = maxH + gap;
-                        var allW = []
-                    };
-                };
-            };
-           
-        };
-    
-    
+            var lineH = [];
+            var lineAllW;
+            for(var i = 0; i < HH.length; i++){  
+                var frame = HH[i];
+                var s = frame.s ? frame.s : '';
+                var type = frame.type ? frame.type : '';
+                var isPng = type.toLowerCase() == 'png' ? true : false;
+                createFrame({name:frame.name,w:frame.w,h:frame.h,x:x,y:y,s:s,type:type},isPng);
+                lineAllW += frame.w + gap;
+                lineH.push(frame.h)
+                if (HH[i + 1] && (lineAllW + HH[i + 1].w) <= maxW){
+                    x += frame.w + gap;
+                } else {
+                    //console.log(lineH)
+                    x = starX;
+                    y += Math.max(...lineH) + gap;
+                    lineH = [];
+                    lineAllW = 0;
+                }
+                
+            }
+
+            x = starX + maxW + gap;
+            y = starY + Math.max(...kvH) + gap;
+            console.log("竖版起点：",x,y)
+
+            var lineW = [];
+            var lineAllH;
+            for(var i = 0; i < LL.length; i++){      
+                var frame = LL[i];
+                var s = frame.s ? frame.s : '';
+                var type = frame.type ? frame.type : '';
+                var isPng = type.toLowerCase() == 'png' ? true : false;
+                if(frame.name.split('弹窗').length > 1 ){
+                    isPng = true
+                }
+                createFrame({name:frame.name,w:frame.w,h:frame.h,x:x,y:y,s:s,type:type},isPng);
+                lineAllH += frame.h + gap;
+                lineW.push(frame.w);
+                if (LL[i + 1] && (lineAllH + LL[i + 1].h) <= maxH){
+                    y += frame.h + gap;
+                } else {
+                    y = starY + Math.max(...kvH) + gap;
+                    x += Math.max(...lineW)+ gap;
+                    lineW = [];
+                    lineAllH = 0;
+                }
+                
+            }
+
+            x = starX + maxW + gap;
+            y = starY + Math.max(...kvH) + gap + maxH;
+            console.log("方版起点：",x,y)
+
+            lineH = [];
+            lineAllW = 0;
+            for(var i = 0; i < FF.length; i++){  
+                var frame = FF[i];
+                var s = frame.s ? frame.s : '';
+                var type = frame.type ? frame.type : '';
+                var isPng = type.toLowerCase() == 'png' ? true : false;
+                createFrame({name:frame.name,w:frame.w,h:frame.h,x:x,y:y,s:s,type:type},isPng);
+                lineAllW += frame.w + gap;
+                lineH.push(frame.h)
+                if (FF[i + 1] && (lineAllW + FF[i + 1].w) <= maxW){
+                    x += frame.w + gap;
+                } else {
+                    //console.log(lineH)
+                    x = starX;
+                    y += Math.max(...lineH) + gap;
+                    lineH = [];
+                    lineAllW = 0;
+                }
+                
+            }
+
+            function createFrame(framedata,isPng){
+                var node = mg.createFrame()
+                node.x = framedata.x;
+                node.y = framedata.y;
+                node.width = framedata.w;
+                node.height = framedata.h;
+                var minName = framedata.name + ' ' + framedata.w + '×' + framedata.h;
+                var maxName = framedata.name + ' ' + framedata.s + 'k ' + framedata.w + '×' + framedata.h;
+                node.name = framedata.s ? maxName : minName
+                node.setPluginData('s',String(framedata.s));
+                node.setPluginData('type',framedata.type);
+                if (isPng) {
+                    node.fills = []
+                }
+
+            }
+        }
+
+        easeframe(info,x,y,gap,true)
     }
     //自动排列
     if ( info == 'autoLayout'){
@@ -496,6 +428,87 @@ mg.ui.onmessage = (message) => {
                 */
             }
         }
+    }
+    //监听tab切换
+    if ( type == 'tabSet'){
+        tabInfo = "tab-" + info 
+        //console.log("tab-" + info)
+    }
+    //记录导出尺寸设置
+    if ( type == 'exportSizeSet'){
+        console.log(info)
+        var a = mg.document.currentPage;
+        var b = mg.getNodeById(info[1]);
+        b.setPluginData('s',info[0])
+    }
+    //记录导出格式设置
+    if ( type == 'exportTypeSet'){
+        console.log(info)
+        var a = mg.document.currentPage;
+        var b = mg.getNodeById(info[1]);
+        b.setPluginData('type',info[0])
+    }
+    //处理要导出的图片
+    if (type == 'exportImg'){  
+        var a = mg.document.currentPage;
+        var b = a.selection;     
+        var frameData = [];
+        var imgtype = "jpg";
+        var typeAllow = ["jpg","jpeg","png","webp"];
+        for (var i = 0; i < b.length; i++){
+            if ( b[i].isVisible == true && b[i].width * b[i].height < 4096*4096){
+                var name = b[i].name;
+                if(name.split('=').length > 1 && b[i].type == 'COMPONENT'){
+                    name = name.split('=')[1]
+                }
+                
+                if( b[i].getPluginData('type') && b[i].getPluginData('type') !== '' && typeAllow.includes(b[i].getPluginData('type')) ){
+                    imgtype = b[i].getPluginData('type')
+                    console.log(name.split(' ')[0] + " 格式已预设为：" + b[i].getPluginData('type'))
+                } else {
+                    if (b[i].fills == '' || b[i].bottomLeftRadius * b[i].bottomRightRadius * b[i].topLeftRadius * b[i].topRightRadius !== 0 || b[i].name.split("png").length > 1) {
+                        imgtype = "png"
+                        console.log(name.split(' ')[0] + " 格式识别为：png")
+                    }else{
+                        imgtype = "jpg"
+                        console.log(name.split(' ')[0] + " 格式识别为：jpg")
+                    }
+                }
+                if (b[i].getPluginData('s') !== ''){
+                    frameData.push({name:name,s:b[i].getPluginData('s'),type:imgtype,id:b[i].id});
+                    console.log(name.split(' ')[0] + " 大小已预设为：" + b[i].getPluginData('s') + 'k');
+                } else {
+                    var nameS = name.match(/(\d+)(?=[kK])/);
+                    if(nameS){
+                        console.log(name.split(' ')[0] + " 大小识别为：" + nameS[1] + 'k(首次识别成功将进行预设)');
+                        b[i].setPluginData('s',nameS[1])
+                        frameData.push({name:name,s:nameS[1],type:imgtype,id:b[i].id});
+                    } else {
+                        console.log(name.split(' ')[0] + " 未识别到大小设置");
+                        frameData.push({name:name,s:'',type:imgtype,id:b[i].id});
+                    } 
+                }  
+                if ( i == b.length - 1){
+                    var loading = mg.notify("加载中，请耐心等待~",{
+                        position: "top",
+                        timeout: 30000,
+                        isLoading: true,
+                    });
+                    mg.ui.postMessage([[frameData,info],"frameExport"]) 
+                    //console.log([frameData,info])
+                    setTimeout(function(){
+                        var imgData = [];
+                        for (var i = 0; i < b.length; i++){
+                            if ( b[i].isVisible == true && b[i].width * b[i].height < 4096*4096){
+                                imgData.push( b[i].export({ format: 'PNG',constraint:{type:'SCALE',value:1} }) );
+                            }  
+                        };
+                        mg.ui.postMessage([[imgData,info],"imgExport"]);
+                        loading.cancel()
+                    },100)
+                }
+            }  
+        }    
     }
     //将组件填充到画板
     if ( info =='autoAddComponent'){
@@ -684,6 +697,7 @@ mg.ui.onmessage = (message) => {
             //https://image-resource-nc.mastergo.com/
             //https://mastergo.netease.com/mastergo-default/
             var imgURL = 'https://image-resource-nc.mastergo.com/' + b[i].fills[0].imageRef;
+            console.log("图片链接：" + imgURL)
             mg.ui.postMessage([{imgURL:imgURL,index:i},'imgURLtoWH'],'*')
             //console.log(c)
         }
@@ -1066,59 +1080,7 @@ mg.ui.onmessage = (message) => {
             }
         }
     }
-    //监听tab切换
-    if ( type == 'tabSet'){
-        tabInfo = "tab-" + info 
-        //console.log("tab-" + info)
-        if(info == 2){
-            var frameData = []
-            var a = mg.document.currentPage;
-            var b = a.selection;
-            for (var i = 0; i < b.length; i++){
-                if ( b[i].type == "FRAME" || b[i].type == "GROUP" || b[i].type == "COMPONENT" || b[i].type == "INSTANCE")
-                if (b[i].fills == '' | b[i].bottomLeftRadius !== 0 | b[i].bottomRightRadius !== 0 | b[i].topLeftRadius !== 0 | b[i].topRightRadius !== 0) {
-                    var types = "png";
-                }else{
-                    var types = "jpg";
-                }
-                if (b[i].getPluginData('s') !== ''){
-                    frameData.push({name:b[i].name,s:b[i].getPluginData('s'),type:types});
-                } else {
-                    frameData.push({name:b[i].name,s:'',type:types});
-                } 
-            };
-            mg.ui.postMessage([frameData,"frameExport"]);
-            if (b.length !== 0){
-                setTimeout(function(){
-                    var imgData = [];
-                    for (var i = 0; i < b.length; i++){
-                        imgData.push( b[i].export({ format: 'PNG',constraint:{type:'SCALE',value:1} }) );
-                    };
-                    mg.ui.postMessage([imgData,"imgExport"]);
-                },200)
-            }
-            
-        }
-    }
-    //记录导出尺寸设置
-    if ( type == 'exportSizeSet'){
-        var a = mg.document.currentPage;
-        var b = a.selection;
-        b[info[1]].setPluginData('s',info[0])
-
-    }
-    //处理要导出的图片
-    if ( info == 'exportImg'){
-        /*
-        var a = mg.document.currentPage;
-        var b = a.selection;
-        var imgData = []
-        for (var i = 0; i < b.length; i++){
-            imgData.push( b[i].export({ format: 'PNG',constraint:{type:'SCALE',value:1} }) );
-        }
-        mg.ui.postMessage([imgData,"imgExport"])
-        //*/
-    }
+    
     //建立表格
     if ( type == 'creTable'){
         var a = mg.document.currentPage;
@@ -1427,124 +1389,21 @@ mg.ui.onmessage = (message) => {
         }
         if (b.length == 1 && b[0].name.split("数据流").length !== 1 || b[0].children[0].name.split('数据流').length !== 1){
             var data = tableToData(info.trim(),false)
-                var H = 0;
-                var L = data.length - b[0].children.length;
-                addTable(b,H,L)
-                for(var i = 0; i < b[0].children.length; i++){
-                    for (var e = 0; e < b[0].children[i].componentProperties.length; e++){
-                        //console.log(data[i][e],e)
-                        if ( b[0].children[i].componentProperties[e].type == "TEXT"){
-                            b[0].children[i].setProperties({[b[0].children[i].componentProperties[e].id]:data[i][e]})
-                        }
+            var H = 0;
+            var L = data.length - b[0].children.length;
+            //console.log(data)
+            addTable(b,H,L)
+            for(var i = 0; i < b[0].children.length; i++){
+                for (var e = 0; e < b[0].children[i].componentProperties.length; e++){      
+                    if ( b[0].children[i].componentProperties[e].type == "TEXT"){
+                        //console.log(data[i],e)
+                        b[0].children[i].setProperties({[b[0].children[i].componentProperties[e].id]:data[i][0]})
                     }
                 }
+            }
                    
         }
-        if (b.length == 2){
-            if (b[1].type == "TEXT" && b[0].children[0].name.split('数据流').length == 1 && b[0].name.split('#table').length !== 1){
-                var data = tableToData(b[1].characters.trim(),true)
-                var H = data[0].length - b[0].children[0].children.length;
-                var L = data.length - b[0].children.length;
-                addTable(b,H,L)
-                
-                for(var i = 0; i < b[0].children.length; i++){
-                    
-                    if (b[0].children[i].name.split('#列').length !== 1){
-                        var c = b[0].children[i].children;
-                        for (var ii = 0; ii < c.length; ii++){
-                            //console.log(c[ii].name + ':' + data[i][ii])
-                            var id = []
-                            if ( c[ii].componentProperties.length >= 6){
-                                for (var e = 5; e < c[ii].componentProperties.length; e++){//默认前五个是固定的组件属性：区分色、上右下左描边
-                                    if ( c[ii].componentProperties[e].name.split('字').length !== 1){
-                                        //console.log("含字段" + ii)
-                                        id.push( c[ii].componentProperties[e].id)//收集字段/文字属性ii
-                                    }
-                                } 
-                                var maxText = data[i][ii].split("|")
-                                if (id.length == maxText.length){
-                                    //console.log(id.length + ":" + maxText)
-                                    for (var iii = 0; iii < id.length; iii++){
-                                        c[ii].setProperties({[id[iii]]:maxText[iii]})//按顺序修改字段属性
-                                    }  
-                                } else {
-                                    c[ii].setProperties({[id[0]]:data[i][ii]})
-                                }
-                                
-                            }
-                        }  
-                    }  
-                }   
-            } 
-            
-            if (b[0].type == "TEXT" && b[1].children[1].name.split('数据流').length == 1 && b[1].name.split('#table').length !== 1){
-                var data = tableToData(b[0].characters.trim(),true)
-                var H = data[0].length - b[1].children[0].children.length;
-                var L = data.length - b[1].children.length;
-                addTable(b,H,L)
-                
-                for(var i = 0; i < b[1].children.length; i++){
-                    
-                    if (b[1].children[i].name.split('#列').length !== 1){
-                        var c = b[1].children[i].children;
-                        for (var ii = 0; ii < c.length; ii++){
-                            //console.log(c[ii].name + ':' + data[i][ii])
-                            var id = []
-                            if ( c[ii].componentProperties.length >= 6){
-                                for (var e = 5; e < c[ii].componentProperties.length; e++){//默认前五个是固定的组件属性：区分色、上右下左描边
-                                    if ( c[ii].componentProperties[e].name.split('字').length !== 1){
-                                        //console.log("含字段" + ii)
-                                        id.push( c[ii].componentProperties[e].id)//收集字段/文字属性ii
-                                    }
-                                } 
-                                var maxText = data[i][ii].split("|")
-                                if (id.length == maxText.length){
-                                    //console.log(id.length + ":" + maxText)
-                                    for (var iii = 0; iii < id.length; iii++){
-                                        c[ii].setProperties({[id[iii]]:maxText[iii]})//按顺序修改字段属性
-                                    }  
-                                } else {
-                                    c[ii].setProperties({[id[0]]:data[i][ii]})
-                                } 
-                            }
-                        }
-                            
-                    }    
-                }
-            }   
 
-            if ( b[1].type == "TEXT" && b[0].children[0].name.split('数据流').length !== 1 && b[0].name.split('#table').length !== 1){
-                var data = tableToData(b[1].characters.trim(),false)
-                var H = 0;
-                var L = data.length - b[0].children.length;
-                addTable(b,H,L)
-                for(var i = 0; i < b[0].children.length; i++){
-                    for (var e = 0; e < b[0].children[i].componentProperties.length; e++){
-                        //console.log(data[i][e],e)
-                        if ( b[0].children[i].componentProperties[e].type == "TEXT"){
-                            b[0].children[i].setProperties({[b[0].children[i].componentProperties[e].id]:data[i][e]})
-                        }
-                    }
-                }
-                        
-            }
-
-            if ( b[0].type == "TEXT" && b[1].children[1].name.split('数据流').length !== 1 && b[1].name.split('#table').length !== 1){
-                var data = tableToData(b[0].characters.trim(),false)
-                var H = 0;
-                var L = data.length - b[1].children.length;
-                addTable(b,H,L)
-                for(var i = 0; i < b[1].children.length; i++){
-                    for (var e = 0; e < b[1].children[i].componentProperties.length; e++){
-                        //console.log(data[i][e],e)
-                        if ( b[1].children[i].componentProperties[e].type == "TEXT"){
-                            b[1].children[i].setProperties({[b[1].children[i].componentProperties[e].id]:data[i][e]})
-                        }
-                    }
-                }
-                        
-            }
-        }
     }
     //从表格文本命名
     if ( type == 'reTableName'){
@@ -2116,12 +1975,12 @@ mg.ui.onmessage = (message) => {
         var a = mg.document.currentPage;
         var b = a.selection.filter(item => item.name.split('#no').length == 1);
         //console.log(b)
+        var nodes = []
         for (var i = 0; i < b.length; i++){
-            var node = mg.createText();
-            node.x = b[i].absoluteBoundingBox.x;
-            node.y = b[i].absoluteBoundingBox.y;
-            node.characters = b[i].name;
-            b[i].parent.appendChild(node)
+            var node = mg.createText();   
+            node.characters = b[i].name; 
+            setTextMain(node,0,b[i].name.length,18);
+            /*
             if (b[i].width > 2560 || b[i].height > 1920){
                 setTextMain(node,0,b[i].name.length,36);
                 node.y -= 50
@@ -2132,7 +1991,21 @@ mg.ui.onmessage = (message) => {
                 setTextMain(node,0,b[i].name.length,28);
                 node.y -= 38
             }  
+                */
+            b[i].parent.appendChild(node);
+            node.x = b[i].x;
+            node.y = b[i].y - 24;
+            nodes.push(node);
+            /*
+            if(i == b.length - 1){
+                mg.group(nodes)
+            }
+                */
         }
+        setTimeout(() => {
+            mg.group(nodes)
+        }, 500);
+        
     }
     //建立伪描边{color:,size:,num:}
     if ( type == "setStyle-wmb"){
@@ -3248,6 +3121,42 @@ mg.ui.onmessage = (message) => {
             colorBox.appendChild(box)
         })
     }
+    //提取原始路径
+    if ( info == 'getPath'){
+        var a = mg.document.currentPage;
+        var b = a.selection;
+        var svgText = '';
+        if ( b.length == 1){
+            svgText += '<svg width="' + b[0].width + '" height="' + b[0].height + '" viewBox="0 0 '+ b[0].width + ' ' + b[0].height + '">\n';
+            var starX = b[0].x,starY = b[0].y;
+            b[0].children.forEach( item => {
+                if ( item.type == 'PEN' ){
+                    svgText += '<g>\n<path d="' + item.penPaths.data + '"></path>\n</g>'
+                }else{      
+                    if ( item.children ){
+                        svgText += '<g>\n'
+                        item.children.forEach(items => {
+                            if ( items.type == 'PEN' ){
+                                svgText += '<g>\n<path d="' + items.penPaths.data + '"></path>\n</g>'
+                            }
+                        })
+                        svgText += '</g>\n'
+                    }
+                    
+                }
+            })
+            svgText += '</svg>'
+            
+        }
+        //console.log(svgText)
+        var node = mg.createText();
+        node.x = b[0].x + b[0].width;
+        node.y = b[0].y;
+        node.characters = svgText;
+        b[i].parent.appendChild(node)
+         setTextMain(node,0,svgText.length,4);
+        b[0].parent.appendChild(node)
+    }
 }
   
 //初始化
@@ -3272,6 +3181,12 @@ function send(){
     var b = a.selection;
     if( a.name == stylePage || a.name == '附录/变量表格'){
         mg.ui.postMessage([5,'toTab'])
+    }
+    var parents = b.map(item => item.parent.name)
+    if ( [...new Set(parents)].length == 1){
+        mg.ui.postMessage([[a.parent.name,a.name,b[0].parent.name,b.length],'docInfo'])
+    } else {
+        mg.ui.postMessage([[a.parent.name,a.name,b.length],'docInfo'])
     }
     //var sidePage = true;
     if (b[0] !== undefined){
@@ -3326,58 +3241,7 @@ function send(){
             mg.ui.postMessage([{x:0,y:0,w:100,h:100},'skewData']);
         }
 
-        if (tabInfo == 'tab-2'){
-            var parents = b.map(item => item.parent.name)
-            if ( [...new Set(parents)].length == 1){
-                mg.ui.postMessage([[a.parent.name,a.name,b[0].parent.name],'docInfo'])
-            } else {
-                mg.ui.postMessage([[a.parent.name,a.name],'docInfo'])
-            }
-            
-            var frameData = []
-            for (var i = 0; i < b.length; i++){
-                if ( b[i].isVisible == true && b[i].width * b[i].height < 4096*4096){
-                    if (b[i].fills == '' | b[i].bottomLeftRadius !== 0 | b[i].bottomRightRadius !== 0 | b[i].topLeftRadius !== 0 | b[i].topRightRadius !== 0) {
-                        var type = "png"
-                    }else{
-                        var type = "jpg"
-                    }
-                    if (b[i].getPluginData('s') !== ''){
-                        frameData.push({name:b[i].name,s:b[i].getPluginData('s'),type:type})
-                    } else {
-                        if ( b[i].name.length > 40){
-                            frameData.push({name:b[i].name.substring(0, 40).replace(/[\/\?<>\\:\*\|":]/g, '_').replace(/\s+/g, ' ').replace(/_+/g, '_'),s:'',type:type})
-                            mg.notify("图层名过长，已省略",{
-                                type: "error",
-                                position: "bottom",
-                                timeout: 3000,
-                                isLoading: false,
-                            });
-                        } else {
-                            frameData.push({name:b[i].name.replace(/[\/\?<>\\:\*\|":]/g, '_').replace(/\s+/g, ' ').replace(/_+/g, '_'),s:'',type:type})
-                        }
-                    }  
-                    if ( i == b.length - 1){
-                        var loading = mg.notify("加载中，请耐心等待~",{
-                            position: "top",
-                            timeout: 30000,
-                            isLoading: true,
-                        });
-                        mg.ui.postMessage([frameData,"frameExport"]) 
-                        setTimeout(function(){
-                            var imgData = [];
-                            for (var i = 0; i < b.length; i++){
-                                if ( b[i].isVisible == true && b[i].width * b[i].height < 4096*4096){
-                                    imgData.push( b[i].export({ format: 'PNG',constraint:{type:'SCALE',value:1} }) );
-                                }  
-                            };
-                            mg.ui.postMessage([imgData,"imgExport"]);
-                            loading.cancel()
-                        },100)
-                    }
-                }  
-            }    
-        }
+        
             
         if (searchType == 'Same') {
             if ( b.length == 1){
@@ -3538,7 +3402,6 @@ function send(){
     } else {
         mg.ui.postMessage([{x:0,y:0,w:100,h:100},'skewData']);
         mg.ui.postMessage(['noSidePage','changeUI']);
-        mg.ui.postMessage([[],"frameExport"]) 
         mg.ui.postMessage([[["#000000",4,1]],'wmbEffects'])
         mg.ui.postMessage([false,'searchInfo']);
         mg.ui.postMessage([[],'getNodeStyle'])
@@ -4344,7 +4207,7 @@ function fillsToRGBA(obj){
         var a = obj.a.toFixed(1)
         return "rgba(" + r + "," + g + "," + b + "," + a + ")"
     } else {
-        return mg.RGBAToHex(obj).split('FF')[0]
+        return mg.RGBAToHex(obj).substring(0,6)
     }
 
 }
@@ -4420,6 +4283,22 @@ function cutNode(a,node,scale){
     //console.log(c[c.length - 1].t)
     
     for ( var ii = 0; ii < c.length; ii++){
+        
+        /*
+        if ( node.type == 'SECTION'){
+            var frame = mg.createFrame();
+            cloneMain(frame,node);
+            //var key = ['fills','cornerRadius','strokes',]//'strokeAlign','strokeStyle','strokeWeight',
+            //cloneKey(key,frame,node);
+            frame.fills = []
+            frame.name = node.name + '转换';
+            var group = mg.group([frame]);
+            group.appendChild(cutArea);
+        } else {
+            var group = mg.group([node]);
+            group.appendChild(cutArea);
+        }
+        */
         
         var cutArea = mg.createSlice()
         cutArea.width = c[ii].w;
