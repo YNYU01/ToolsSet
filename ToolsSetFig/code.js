@@ -123,6 +123,8 @@ if ( figma.command == 'open' ){
  
 figma.ui.resize(UI[0], UI[1]);
 
+//figma.ui.postMessage({pluginMessage:["light","setTheme"]})
+
 //console.log(viewportX);
 
 //核心功能

@@ -1053,21 +1053,7 @@
     <div class="df pos-r" style="gap: 8px; z-index: 18; margin-top: -2px;">
       <!--深浅模式-->
       <div style="width: 14px; height: 14px; ">
-        <input id="theme" type="checkbox" checked="true" style="display: none;" onchange="
-        if(!this.checked){
-          console.log('浅色主题')
-          for (var i = 0; i < styleKey.length; i++) {
-            root.style.setProperty('--' + styleKey[i], styleValue[i])
-          }
-          document.body.style.filter = 'contrast(130%)';
-        } else {
-          console.log('深色主题')
-          for (var i = 0; i < styleKey2.length; i++) {
-            root.style.setProperty('--' + styleKey2[i], styleValue2[i])
-          }
-          document.body.style.filter = '';
-        }
-      "></input>
+        <input id="theme" type="checkbox" checked="true" style="display: none;" onchange="setTheme(this)"></input>
         <label for="theme" class="btn-theme" style="position: relative;">
           <div class="tags-search-toast-area" style="right: 0; bottom:0;width: 20px;">
             <div class="tags-search-toast" style="width: 120px;height: 18px; top: 30px; right: 0;"> 亮色/暗色主题</div>
@@ -1603,6 +1589,7 @@
 
     //通用控件绑定
     const btnKeep = document.getElementById('btn-keep');//绑定"按钮-窗口固定/收起"
+    const btnSetTheme = document.getElementById('theme')
 
     const dragSources = document.getElementsByClassName('edits');
     const dropZones = document.getElementById('editor-tags');
@@ -1844,19 +1831,23 @@
       document.getElementById('btn-side-text-0').style.pointerEvents = 'none';
       sidePage()
       /**/
+      btnSetTheme.checked = false;
+      setTheme(btnSetTheme)
     }
 
     window.onmessage = (message) => {
-      const info = message.data[0]
-      const type = message.data[1]
+      console.log(message.data.pluginMessage.pluginMessage)
+      /*figma*/
+      var pluginDatas = message.data.pluginMessage.pluginMessage;
+      /*mastergo*/
+      //var pluginDatas = message.data;
+
+      const info = pluginDatas[0]
+      const type = pluginDatas[1]
 
       if (info == 'light') {
-        console.log("浅色主题")
-        for (var i = 0; i < styleKey.length; i++) {
-          //console.log("--" + styleKey[i] + ":" + styleValue[i])
-          root.style.setProperty("--" + styleKey[i], styleValue[i])
-
-        }
+        btnSetTheme.checked = false;
+        setTheme(btnSetTheme)
       }
 
       if (info == 'sidePage') {
@@ -2175,6 +2166,23 @@
       parent.postMessage({pluginMessage:data},"*")
       /*mastergo*/
       //parent.postMessage(data,"*")
+    }
+
+    //设置主题
+    function setTheme(e){
+      if(!e.checked){
+          console.log('浅色主题')
+          for (var i = 0; i < styleKey.length; i++) {
+            root.style.setProperty('--' + styleKey[i], styleValue[i])
+          }
+          document.body.style.filter = 'contrast(130%)';
+        } else {
+          console.log('深色主题')
+          for (var i = 0; i < styleKey2.length; i++) {
+            root.style.setProperty('--' + styleKey2[i], styleValue2[i])
+          }
+          document.body.style.filter = '';
+        }
     }
 
     //粘贴上传
