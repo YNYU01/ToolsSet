@@ -1831,12 +1831,10 @@
       document.getElementById('btn-side-text-0').style.pointerEvents = 'none';
       sidePage()
       /**/
-      btnSetTheme.checked = false;
-      setTheme(btnSetTheme)
     }
 
     window.onmessage = (message) => {
-      console.log(message.data.pluginMessage.pluginMessage)
+      //console.log(message.data.pluginMessage.pluginMessage)
       /*figma*/
       var pluginDatas = message.data.pluginMessage.pluginMessage;
       /*mastergo*/
@@ -2126,13 +2124,15 @@
       }
 
       if ( type == 'getFrame'){
-        dataText.innerHTML = 'name\tw\th\n'
+        console.log(111,dataText.value)
+        dataText.value = 'name\tw\th\n'
         info.forEach( item => {
-          dataText.innerHTML += item
+          dataText.value += item
         })
         
         dataText.focus()
         inputDataText()
+        console.log(222,dataText.innerHTML)
       }
       
       if ( type == 'hasreComponent') {

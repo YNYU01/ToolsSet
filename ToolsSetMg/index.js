@@ -545,37 +545,6 @@ mg.ui.onmessage = (message) => {
         cutMax = info * 1
         console.log("最大裁切尺寸：" + info + "px")
     }
-    //导入图片
-    if (type == 'createrImage'){
-        
-        var a = mg.document.currentPage;
-        var b = a.selection;
-        var viewX = mg.viewport.center.x - ((mg.viewport.bound.width/2  - 300)* mg.viewport.zoom)/// mg.viewport.bound.width/2 + 300;
-        var viewY = mg.viewport.center.y;
-        var x;
-        var y;
-
-        x = viewX;
-        y = viewY;
-        for ( i = 0; i < info.length; i++){
-            //console.log(info[i])
-            
-            for (var ii = 0; ii < info[i][2][0].cuts.length; ii++){
-                var img = new Uint8Array(info[i][2][0].cuts[0]);
-                var pixels = mg.createRectangle()
-                
-                pixels.width = info[i][1][0].cutW
-                pixels.height = info[i][1][0].cutH
-                pixels.x = x
-                pixels.y = y;
-                fillTheSelection(pixels,img)
-                y = y + pixels.height;
-            }
-            
-        }
-
-        
-    }
     //生成栅格化
     if (type == 'pixel') {
         
@@ -630,7 +599,38 @@ mg.ui.onmessage = (message) => {
         },100)
         
     }
-    //导入大图
+    //导入图片
+    if (type == 'createrImage'){
+        
+        var a = mg.document.currentPage;
+        var b = a.selection;
+        var viewX = mg.viewport.center.x - ((mg.viewport.bound.width/2  - 300)* mg.viewport.zoom)/// mg.viewport.bound.width/2 + 300;
+        var viewY = mg.viewport.center.y;
+        var x;
+        var y;
+
+        x = viewX;
+        y = viewY;
+        for ( i = 0; i < info.length; i++){
+            //console.log(info[i])
+            
+            for (var ii = 0; ii < info[i][2][0].cuts.length; ii++){
+                var img = new Uint8Array(info[i][2][0].cuts[0]);
+                var pixels = mg.createRectangle()
+                
+                pixels.width = info[i][1][0].cutW
+                pixels.height = info[i][1][0].cutH
+                pixels.x = x
+                pixels.y = y;
+                fillTheSelection(pixels,img)
+                y = y + pixels.height;
+            }
+            
+        }
+
+        
+    }
+    //导入大图（UI侧已裁剪）时按顺序拼接回去
     if (type == "importNum"){
         importNum = info;
         xx = 0;
