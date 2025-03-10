@@ -243,7 +243,7 @@ mg.ui.onmessage = (message) => {
             var HH = info.filter(item => item.w > item.h && item.name.toLowerCase().split("kv").length == 1).sort((a, b) => b.w * b.h - a.w * a.h);//横板
             var maxW = Math.max(...HH.map(item => item.w));//找出最宽的图，作为横板换行标准
             var LL = info.filter(item => item.w < item.h && item.name.toLowerCase().split("kv").length == 1).sort((a, b) => b.w * b.h - a.w * a.h);//竖版
-            var maxH = Math.max(...HH.map(item => item.h));//找出最高的图，作为竖版换行标准
+            var maxH = Math.max(...LL.map(item => item.h));//找出最高的图，作为竖版换行标准
             var FF = info.filter(item => item.w == item.h).sort((a, b) => b.w - a.w);//方形
             maxW = Math.max(1920,maxW);
             maxH = Math.max(1920,maxH);//1920是常见KV尺寸
@@ -372,11 +372,11 @@ mg.ui.onmessage = (message) => {
             
             if( i == b.length - 1){
                 //console.log(nodes)
-                var HH = nodes.filter(item => item.w > item.h).sort((a, b) => b.w - a.w);//横板
-                var maxW = Math.max(...HH.map(item => item.w))
-                var LL = nodes.filter(item => item.w < item.h).sort((a, b) => b.h - a.h);//竖版
-                var maxH = Math.max(...HH.map(item => item.h))
-                var FF = nodes.filter(item => item.w == item.h).sort((a, b) => b.w - a.w);//方形
+                var HH = nodes.filter(item => item.w > item.h).sort((a, b) => b.w*b.h - a.w*a.h);//横板
+                var maxW = Math.max(Math.max(...HH.map(item => item.w)),1920)
+                var LL = nodes.filter(item => item.w < item.h).sort((a, b) => b.w*b.h - a.w*a.h);//竖版
+                var maxH = Math.max(...LL.map(item => item.h))
+                var FF = nodes.filter(item => item.w == item.h).sort((a, b) => b.w*b.h - a.w*a.h);//方形
                 var gap = 30;
                 var lineMaxH = [],lineMaxW = [];
                 var lineW = 0,lineH = 0;
@@ -399,6 +399,8 @@ mg.ui.onmessage = (message) => {
                         x = x + HH[e].w; 
                     }
                 }
+                x = XX + maxW + gap;
+                y = YY;
                 for(var e = 0; e < LL.length; e++){
                     if ( e !== LL.length - 1){
                         lineH += LL[e].h + LL[e + 1].h ;
@@ -418,14 +420,28 @@ mg.ui.onmessage = (message) => {
                         y = y + LL[e].h; 
                     }
                 }
-                /*
-                newXY = [...HH,...LL,...FF]
-                //console.log(newXY)
-                for ( var ii = 0; ii < b.length; ii++){
-                    b[i].x = newXY[i].x;
-                    b[i].y = newXY[i].y;
+
+                x = XX + maxW + gap;
+                y = YY + maxH + gap;
+                for(var e = 0; e < FF.length; e++){
+                    if ( e !== FF.length - 1){
+                        lineW += FF[e].w + FF[e + 1].w ;
+                    }
+                    lineMaxH.push([FF[e].h]);
+                    //console.log(lineMaxH)                   
+                    b[FF[e].i].x = x
+                    b[FF[e].i].y = y
+                    
+                    if ( lineW > maxW){
+
+                        lineW = 0;
+                        x = XX + maxW + gap;
+                        y = y + Math.max(...lineMaxH) + gap;
+                        lineMaxW = []
+                    } else {
+                        x = x + FF[e].w + gap; 
+                    }
                 }
-                */
             }
         }
     }
