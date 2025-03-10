@@ -1282,6 +1282,146 @@ figma.ui.onmessage = (message) => {
         
 
     }
+    //设置裁切最大尺寸
+    if ( type == "cutMax"){
+        cutMax = info * 1
+        //console.log("最大裁切尺寸：" + info + "px")
+    }
+    //生成栅格化
+    if (type == 'pixel') {
+        
+        var a = figma.currentPage;
+        var b = a.selection;
+        console.log("原地栅格化：",info,"倍")
+        
+        if (b.some(item => item.type === 'SECTION' )){
+            figma.notify("请将区域转为画板再重试",{
+                timeout: 3000,
+                });
+        } else {
+            var loading =  figma.notify("生成中，请稍后",{
+                timeout: 6000,
+            });
+            setTimeout(() =>{
+                for (var i = 0; i < b.length; i++){
+                    intXY(b[i]);
+                    cutNode(a,b[i],info);
+                }
+                loading.cancel();
+                pickBefore(a.selection);
+            },100)
+        }
+        
+    }
+    //覆盖栅格化
+    if (type == 'pixelRe') {
+        
+        var a = figma.currentPage;
+        var b = a.selection;
+        console.log("原地栅格化：",info,"倍")
+        if (b.some(item => item.type === 'SECTION' )){
+            figma.notify("请将区域转为画板再重试",{
+                timeout: 3000,
+                });
+        } else {
+            var loading =  figma.notify("生成中，请稍后",{
+                timeout: 6000,
+            });
+
+            setTimeout(() =>{
+                for (var i = 0; i < b.length; i++){
+                    intXY(b[i]);
+                    cutNode(a,b[i],info);
+                    b[i].remove();  
+                }
+                loading.cancel();
+                pickBefore(a.selection);
+            },100)
+        }
+            
+    }
+    //导入图片
+    if (type == 'createrImage'){
+        
+        var a = figma.currentPage;
+        var b = a.selection;
+        var viewX = figma.viewport.center.x - ((figma.viewport.bounds.width/2  - 300)* figma.viewport.zoom)/// figma.viewport.bound.width/2 + 300;
+        var viewY = figma.viewport.center.y;
+        var x;
+        var y;
+
+        x = viewX;
+        y = viewY;
+        for ( i = 0; i < info.length; i++){
+            //console.log(info[i])
+            
+            for (var ii = 0; ii < info[i][2][0].cuts.length; ii++){
+                var img = new Uint8Array(info[i][2][0].cuts[0]);
+                var pixels = figma.createRectangle()
+                fillTheSelection(pixels,info[i].img);     
+                pixels.resize(info[i][1][0].cutW * 1,info[i][1][0].cutH * 1);
+                pixels.x = x
+                pixels.y = y;
+                y = y + pixels.height;
+            }
+            
+        }
+
+        
+    }
+    //导入大图（UI侧已裁剪）时按顺序拼接回去
+    if (type == "importNum"){
+        importNum = info;
+        xx = 0;
+        yy = 0;
+        time = 0;
+        ww = 0;
+        hh = 0;  
+    }
+    if (type == 'pixelIm'){
+        var loading =  figma.notify("文件较大时会卡顿，请耐心等待",{
+            timeout: 2000,
+        });
+        //console.log(info[0])
+        var a = figma.currentPage;
+        var viewX = figma.viewport.center.x - ((figma.viewport.bounds.width/2  - 300)* figma.viewport.zoom);/// figma.viewport.bound.width/2 + 300;
+        var viewY = figma.viewport.center.y;
+        var x = viewX + xx;
+        var y = viewY + yy;
+        for (var i = 0; i < info.length; i++){
+            //console.log(info[i].img)
+            var pixels = figma.createRectangle()
+            fillTheSelection(pixels,info[i].img);
+            pixels.x = (x + info[i].x);
+            pixels.y = (y + info[i].y);
+            pixels.resize(info[i].w * 1,info[i].h * 1);
+            pixels.name = info[i].name;  
+            if ( i == (info.length - 1 )){
+                var index = a.children.length - info.length;
+                var group = figma.group([a.children[index]],a);
+                group.name = info[i].name.split("-")[0];
+                for ( var ii = 1; ii < info.length; ii ++){
+                    a.children[index].appendChild( a.children[index + 1])
+                    a.selection = [a.children[index]]
+                }
+                
+            }
+            
+        }
+
+        xx += info[0].w + 20
+        time++
+        if ( hh < info[0].h){
+            hh = info[0].h
+        }
+
+        if ( time%4 == 0){
+            xx = 0;
+            yy += hh;
+            hh = 0;
+        }
+            
+    }
 }
 
 
@@ -1291,6 +1431,33 @@ function postmessage(data){
     figma.ui.postMessage({pluginMessage:data})
     /*mastergo*/
     //mg.ui.postMessage(data)
+}
+
+async function fillTheSelection(node,img) {
+    const imageHandle = await figma.createImage(img);
+    // 设置图片填充
+    node.fills = [
+        {
+        type: "IMAGE",
+        scaleMode: "FILL",
+        imageHash: imageHandle.hash, // 将 hash 作为图片填充的 imageHash
+        },
+    ];
+}
+
+async function fillTheSelection2(node,img) {
+    const imageHandle = await figma.createImage(img);
+    // 设置图片填充
+    node.fills = [
+        {
+        type: "IMAGE",
+        imageHash: imageHandle.hash, // 将 hash 作为图片填充的 imageHash
+        filters:{contrast: 0,exposure: 0,highlights: 0,hue: 0,saturation: -1,shadows: 0,temperature: 0,tint: 0},
+        scaleMode:'TILE',
+        //ratio:0.1,
+        alpha:0.5,
+        },
+    ];
 }
 
 function cloneMain(newnode,oldnode,boundingBox){
@@ -1601,29 +1768,29 @@ function creCutArea(info){//{w:,h:,x:,y:,s:}
     
 }
 
-function cutNode(a,node,scale){
+async function cutNode(a,node,scale){
     
     var c = creCutArea({w:node.absoluteRenderBounds.width,h:node.absoluteRenderBounds.height,x:node.absoluteRenderBounds.x,y:node.absoluteRenderBounds.y,s:scale,});
     var index = node.parent.children.findIndex(item => item === node);
     //console.log(c[c.length - 1].t)
     
     for ( var ii = 0; ii < c.length; ii++){
-        var cutArea = mg.createSlice()
-        cutArea.width = c[ii].w;
-        cutArea.height = c[ii].h;
+        var cutArea = figma.createSlice()
+        cutArea.resize(c[ii].w,c[ii].h);
         cutArea.x = c[ii].x;
         cutArea.y = c[ii].y;
-        var group = mg.group([node]);
-            group.appendChild(cutArea);
-        var cutImg = mg.createRectangle()
-        var img = new Uint8Array(cutArea.export({ format: 'PNG',constraint:{type:'SCALE',value:scale}}))
+        var group = figma.group([node],node.parent);
+        group.appendChild(cutArea);
+        var cutImg = figma.createRectangle();
+        var img = new Uint8Array(await cutArea.exportAsync({ format: 'PNG',constraint:{type:'SCALE',value:scale * 1}}))
+        //console.log(img)
+        fillTheSelection(cutImg,img);
         if ( c.length > 1 ){
             cutImg.name = node.name + "-" + (ii + 1);
         } else {
             cutImg.name = node.name + " @" + scale + "x";
         }
         cloneMain(cutImg,cutArea);
-        fillTheSelection(cutImg,img);
         group.appendChild(cutImg);
         cutArea.remove();
         if (group.parent !== a){
@@ -1639,10 +1806,10 @@ function cutNode(a,node,scale){
             }
         } else {
             console.log("无容器包裹")
-            a.insertChild((index + 1),a.children[index].children[0])
-            a.insertChild((index + 2),a.children[index].children[0])
+            a.insertChild((index + 1),a.children[index * 1].children[0])
+            a.insertChild((index + 2),a.children[index * 1].children[0])
             if ( c.length > 1 && ii == (c.length - 1)){
-                var imgGroup = mg.group([a.children[index + 1]]);
+                var imgGroup = figma.group([a.children[index + 1]],a);
                 imgGroup.name = node.name + " @" + scale + "x"
                 for (var e = 1; e < c.length; e++){
                     imgGroup.appendChild(a.children[index + 2])
@@ -1664,6 +1831,34 @@ function pickBefore(nodes){
         newNode.push(parentnode.children[index + 1]);
     })
     a.selection = newNode;
+}
+
+function intXY(node){
+    node.x = Math.ceil(node.x)
+    node.y = Math.ceil(node.y)
+}
+
+function intWH(node){
+    if (node.type !== 'GROUP'){
+        node.width = Math.ceil(node.width)
+        node.height = Math.ceil(node.height)
+    }
+    
+}
+
+
+function evenWH(node){
+    if (node.type !== 'GROUP'){
+        var w = Math.ceil(node.width)
+        var h = Math.ceil(node.height)
+        if (w%2 !== 0){
+            w = w - 1
+        }
+        if (h%2 !== 0){
+            h = h - 1
+        }
+        node.resize(w,h)
+    }
 }
 
 function mixPd(star,node,end,num,index){
