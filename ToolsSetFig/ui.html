@@ -8,7 +8,7 @@
 -->
 
 <head>
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/YNYU01/ToolsSet@9e6cdc89cb65e7aceccf1a222e864f0ea0c37432/test/styles_mg.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/YNYU01/ToolsSet@67b26c5cda59e4cd132cdc992edc9c5a3e38ba86/public/styles_main.css">
 </head>
 
 <body class="ovh df-ffc cc">
@@ -1272,14 +1272,14 @@
         </div>
       </div>
       <div style="width: 80vw; padding: 4px;">
-        <textarea id="data-text" class="input-textarea noscrollbar" style="min-height: 200px; height:40% ; max-height:calc(100% - 140px);" placeholder="*name *w *h s"
+        <textarea id="data-text" class="input-textarea noscrollbar" style="min-height: 200px; height:40% ; max-height:calc(100% - 140px);" placeholder="*name *w *h s type"
           ondblclick="this.value = 'name\tw\th\nkv\t1920\t1080\nbanner#000000\t1200\t300'; inputDataText()"></textarea>
       </div>
 
       <div id="data-text-tips" class="tips-list">
-        <li class="tags">复制表格（含表头）或双击查看示例</li>
-        <li class="tags">手动输入要用tab隔开行内数据</li>
-        <li class="tags">name:资源名；w/h：宽高；s：大小</li>
+        <li class="tags">复制表格（含表头）或双击查看示例；</li>
+        <li class="tags">手动输入要用tab隔开行内数据；</li>
+        <li class="tags">name:资源名；w/h：宽高；s：大小；type:格式；</li>
       </div>
     </div>
 
@@ -1833,327 +1833,331 @@
       /**/
     }
 
+
     window.onmessage = (message) => {
-      //console.log(message.data.pluginMessage.pluginMessage)
-      /*figma*/
-      var pluginDatas = message.data.pluginMessage.pluginMessage;
-      /*mastergo*/
-      //var pluginDatas = message.data;
-
-      const info = pluginDatas[0]
-      const type = pluginDatas[1]
-
-      if (info == 'light') {
-        btnSetTheme.checked = false;
-        setTheme(btnSetTheme)
-      }
-
-      if (info == 'sidePage') {
-        if (document.getElementById("page-main-1").style.display == 'flex' && document.getElementById("zzz").style.display !== 'block'  ) {
-          document.getElementById("btn-side-0").checked = true
-          sidePage()
-        }
-      }
-
-      if (info == 'noSidePage') {
-        //document.getElementById("btn-side-0").checked = false
-        //sidePage()
-      }
-
-      if (type == 'imgURLtoWH') {
-        imgURLtoWH(info)
-        //console.log(imgURLtoWH(info))
-          //message([imgURLtoWH(info), 'imgWH'])
-      }
-
-      if (type == 'noiseWH') {
-        var noiseURL = noise()
-        setTimeout(() => {
-          message([noiseURL, 'noiseURL'])
-        }, 100)
-        //console.log(noiseURL)
-      }
-
-      if (type == 'skewData') {
-        //console.log(info)
-        document.getElementById('slider-skewW').value = info.x;
-        document.getElementById('slider-skewH').value = info.y;
-        document.getElementById('input-num-skewW').value = info.x;
-        document.getElementById('input-num-skewH').value = info.y;
-        document.getElementById('slider-scaleW').value = info.w;
-        document.getElementById('slider-scaleH').value = info.h;
-        document.getElementById('input-num-scaleW').value = info.w;
-        document.getElementById('input-num-scaleH').value = info.h;
-      }
-
-      if (type == 'frameExport') {
-        if (document.getElementById("select-export").value == "toIMG") {
-          
-          //console.log(imgExportInfo)
-          addExport(imgExportInfo,info[0],info[1]);
-          imgExportInfo.push(...info[0]);
-          if (info == '') {
-            exportInfo.innerHTML = "[-- 未选中容器 --]"
-          } else {
-            exportInfo.innerHTML = '<span style="color:#ff2222; font-weight:700;">[-- 加载中，请稍后 --]</span>'
-          }
-        }
-      }
-
-      if (type == 'imgExport') {
-        //console.log(info)
-        if (document.getElementById("select-export").value == "toIMG") {
-          //imgExportData.length = 0
-          imgDataSet(imgExportData,info[0],info[1])
-          //console.log(imgExportData)
-          exportInfo.innerHTML = '[-- 加载完成 --]'
-
-
-        }
-
-      }
-
-      if (type == 'createrMap') {
-        inView.w = info.w
-        inView.h = info.h
-        inView.x = info.x
-        inView.y = info.y
-        inView.view = info.view
-        inView.bg = info.bg
-        createrMap(info, 6)
-        setTimeout(() => {
-          message(["", "hasMap"])
-        }, 100)
-      }
-
-      if (type == 'hasView') {
-        message(['', 'hasView'])
-        console.log('getHasView')
-      }
-
-      if (type == 'reMap') {
-        setTimeout(() => {
-          message(['', 'reMap'])
-          console.log('reMap')
-        }, 200)
-
-      }
-
-      if (type == 'toTool') {
-        //console.log(info)
-        setTimeout(() => {
-          if (info == 'PEN' || info == 'BOOLEAN_OPERATION') {
-            document.getElementById("矢量工具").scrollIntoView({ behavior: "smooth" })
-          }
-          if (info == 'table') {
-            document.getElementById("表格工具").scrollIntoView({ behavior: "smooth" })
-          }
-          if (info == 'image' || info == 'skew') {
-            document.getElementById("topView").scrollIntoView({ behavior: "smooth" })
-          }
-          if (info == 'text') {
-            //document.getElementById("容器工具").scrollIntoView({behavior:"smooth"})
-          }
-        }, 500)
-
-
-      }
-
-      if (type == 'wmbEffects') {
-        var rehex = document.getElementById("input-hex-wmb");
-        var recolor = document.getElementById("input-color-wmb");
-        var renum = document.getElementById("wmbNum");
-        var resize = document.getElementById("input-size-wmb");
-        if (info.some((arr, index) => arr[0] !== info[0][0])) {
-          //存在多颜色
-          rehex.value = "多值"
-          //recolor.value = "#000000"
-        } else {
-          rehex.value = info[0][0]
-          recolor.value = info[0][0]
-          colorWmb = info[0][0]
-        }
-        if (info.some((arr, index) => arr[1] !== info[0][1])) {
-          //存在多数量
-          renum.value = "?"
-        } else {
-          renum.value = info[0][1]
-          numWmb = info[0][1]
-        }
-        if (info.some((arr, index) => arr[2] !== info[0][2])) {
-          //存在多大小
-          resize.value = "多值"
-        } else {
-          resize.value = info[0][2]
-          sizeWmb = info[0][2]
-        }
-      }
-
-      if (type == 'getFind') {
-        document.getElementById('input-search-all').value = info;
-        document.getElementById('input-search-pick').value = 1;
-      }
-    
-      if (type == 'hasStyle') {
-        if(info){
-          document.getElementById('noStyle').checked = true;
-        } else {
-          document.getElementById('noStyle').checked = false;
-        }
-        
-      }
-
-      if (type == 'hasStyleTable') {
-        if(info == true){
-          document.getElementById('noStyleTable').checked = true;
-        } else if ( info == false) {
-          document.getElementById('noStyleTable').checked = false;
-        } else {
-          message([info,'moveStyleTable'])
-          //console.log(info)
-        }
-        
-      }
-    
-      if (type == 'toTab'){
-        viewPage(info)
-      }
-
-      if (type == 'searchInfo') {
-        if(info){
-          if(info.length > 10){
-            infos = info.substring(0, 10) + '...';
-            document.getElementById('search-same-node').innerHTML = '已选图层：<span style="color: var(--boxBod);">' + infos + '</span>'
-          } else {
-            document.getElementById('search-same-node').innerHTML = '已选图层：<span style="color: var(--boxBod);">' + info + '</span>'
-          }
-          
-        } else {
-          document.getElementById('search-same-node').innerHTML = `<span style="color: var(--boxBod);">*请选中一个对象</span>`
-        }
-        if(info == 'noOnly'){
-          document.getElementById('search-same-node').innerHTML = `<span style="color: var(--liColor1);">*选中多个对象无效</span>`
-        }
-        
-      }
-
-      if ( type == 'getNodeStyle') {
-        
-        if(info.length > 0){
-          document.getElementById('reStyleSet').checked = false;
-          document.getElementById('getstyle-node-1').innerHTML = '';
-          document.getElementById('getstyle-node-2').innerHTML = '';
-          //console.log(info)
-          var btn1 = '',btn2 = '',btn3 = '',btn4 = '';
-          for ( var i = 0; i < info.length; i++){
-            if(info[i][2] == 'NEW'){
-              btn1 = `<div class="btn-style-set" style="--color-btn1:#00BA7944;--color-btn2:#00BA7988;" onclick="message(['`+ info[i][1] +`','newStyle'])">新建</div>`
-            } else {
-              btn1 = '';
-            }
-            if( info[i][2] == 'DIFF'){
-              btn2 = `<div class="btn-style-set" style="--color-btn1:#77777744;--color-btn2:#77777788; opacity:0.5" onclick="message(['`+ info[i][1] +`','setDiffStyle'])">覆盖</div>`
-              btn3 = `<div class="btn-style-set" style="--color-btn1:#FF840044;--color-btn2:#FF840088;" onclick="message(['`+ info[i][1] +`','linkStyle'])">重链</div>`
-            } else {
-              btn2 = '';
-              btn3 = '';
-            }
-            
-            if( info[i][2] == 'OLD'){
-              document.getElementById('getstyle-node-2').innerHTML += '<div class="tag-style-info" style=" width:100%; height:30px; display:flex; align-items: center; justify-content: space-between;">' + info[i][0] + '<div style="display:flex;gap:4px"> ' + btn4 + '</div> </div>';
-            } else {
-              document.getElementById('getstyle-node-1').innerHTML += `<div class="tag-style-info" style=" width:100%; height:30px; display:flex; align-items: center; justify-content: space-between;" ondblclick="message(['`+ info[i][1] +`','diffStylePick'])">` + info[i][0] + '<div style="display:flex;gap:4px"> ' + btn1 + btn2 + btn3 + '</div> </div>';
-            }
-            
-            if ( i == info.length - 1){
-              if(document.getElementById('getstyle-node-2').innerHTML == ''){
-                document.getElementById('getstyle-node-2').innerHTML = '----'
-              }
-              if(document.getElementById('getstyle-node-1').innerHTML == ''){
-                document.getElementById('getstyle-node-1').innerHTML = '----'
-              }
-            }
-          }
-        } else {
-          document.getElementById('reStyleSet').checked = true;
-        }
-      }
-
-      if ( type == 'hasLinkStyle') {
-        message(['reSend','reSend'])
-      }
-
-      if ( type == 'hasNewStyle') {
-        message([info,'reNewStyle'])
-      }
-
-      if ( type == 'hasSetLinkStyle') {
-          message([info,'linkStyle'])
-      }
-
-      if( type == 'getStyleGroup') {
-        if(info.length > 1){
-          var group = document.getElementById('stylegroup');
-          group.innerHTML = '';
-          var star = `<select id="select-stylegroup" class="input-btn-skill" name="样式组切换" style=" width: 18ch; color: var(--mainColor); font-size: 12;"onchange="message([this.value,'reStyleGroup']);">`
-          var option = ''
-          for (var i = info.length - 1; i >= 0; i--){
-            option += '<option value="' + info[i] + '">' + info[i] + '</option>'
-          }
-          var end = '</select>'
-          group.innerHTML += star + option + end
-        } else {
-          var group = document.getElementById('stylegroup');
-          group.innerHTML = '';
-        }
-      }
-
-      if( type == 'styleLinkAndNew' ) {
-        if(info){
-
-          document.getElementById('styleLinkAndNew').style.display = "flex";
-        } else {
-
-          document.getElementById('styleLinkAndNew').style.display = "none";
-        }
-        
-      }
-
-      if ( type == 'tolink') {
-        document.getElementById('tab-' + info).click()
-      }
-
-      if ( type == 'getFrame'){
-        console.log(111,dataText.value)
-        dataText.value = 'name\tw\th\n'
-        info.forEach( item => {
-          dataText.value += item
-        })
-        
-        dataText.focus()
-        inputDataText()
-        console.log(222,dataText.innerHTML)
-      }
       
-      if ( type == 'hasreComponent') {
-        message([info,'reComponentText'])
-      }
+      if(message.data && message.data.pluginMessage && message.data.pluginMessage.pluginMessage){
+        //console.log(message.data)
+        //console.log(message.data.pluginMessage.pluginMessage)
+        /*figma*/
+        var pluginDatas = message.data.pluginMessage.pluginMessage;
+        /*mastergo*/
+        //var pluginDatas = message.data;
 
-      if ( type == 'docInfo'){
-        if (info.length == 4 && info[1] !== info[2]){
-          docInfo = info[1] + '-' + info[2]  
-        } else {
-          docInfo = info[1]
+        var info = pluginDatas[0];
+        var type = pluginDatas[1];
+
+        if (info == 'light') {
+          btnSetTheme.checked = false;
+          setTheme(btnSetTheme)
         }
-        if (info.length == 4 && info[3]*1 > 0 ){
-          exportInfo.innerHTML = "[-- 已选中 " + '<span style="color:#2AE02D; font-weight: 700;">' + info[3] + " </span>个对象 --]"
-        } else if(info.length == 3 && info[2]*1 > 0){
-          exportInfo.innerHTML = "[-- 已选中 " + '<span style="color:#2AE02D; font-weight: 700;">' + info[3] + " </span>个对象 --]"
-        } else {
-          exportInfo.innerHTML = "[-- 未选中容器 --]"
+
+        if (info == 'sidePage') {
+          if (document.getElementById("page-main-1").style.display == 'flex' && document.getElementById("zzz").style.display !== 'block'  ) {
+            document.getElementById("btn-side-0").checked = true
+            sidePage()
+          }
+        }
+
+        if (info == 'noSidePage') {
+          //document.getElementById("btn-side-0").checked = false
+          //sidePage()
+        }
+
+        if (type == 'imgURLtoWH') {
+          imgURLtoWH(info)
+          //console.log(imgURLtoWH(info))
+            //message([imgURLtoWH(info), 'imgWH'])
+        }
+
+        if (type == 'noiseWH') {
+          var noiseURL = noise()
+          setTimeout(() => {
+            message([noiseURL, 'noiseURL'])
+          }, 100)
+          //console.log(noiseURL)
+        }
+
+        if (type == 'skewData') {
+          //console.log(info)
+          document.getElementById('slider-skewW').value = info.x;
+          document.getElementById('slider-skewH').value = info.y;
+          document.getElementById('input-num-skewW').value = info.x;
+          document.getElementById('input-num-skewH').value = info.y;
+          document.getElementById('slider-scaleW').value = info.w;
+          document.getElementById('slider-scaleH').value = info.h;
+          document.getElementById('input-num-scaleW').value = info.w;
+          document.getElementById('input-num-scaleH').value = info.h;
+        }
+
+        if (type == 'frameExport') {
+          if (document.getElementById("select-export").value == "toIMG") {
+            
+            //console.log(imgExportInfo)
+            addExport(imgExportInfo,info[0],info[1]);
+            imgExportInfo.push(...info[0]);
+            if (info == '') {
+              exportInfo.innerHTML = "[-- 未选中容器 --]"
+            } else {
+              exportInfo.innerHTML = '<span style="color:#ff2222; font-weight:700;">[-- 加载中，请稍后 --]</span>'
+            }
+          }
+        }
+
+        if (type == 'imgExport') {
+          //console.log(info)
+          if (document.getElementById("select-export").value == "toIMG") {
+            //imgExportData.length = 0
+            imgDataSet(imgExportData,info[0],info[1])
+            //console.log(imgExportData)
+            exportInfo.innerHTML = '[-- 加载完成 --]'
+
+
+          }
+
+        }
+
+        if (type == 'createrMap') {
+          inView.w = info.w
+          inView.h = info.h
+          inView.x = info.x
+          inView.y = info.y
+          inView.view = info.view
+          inView.bg = info.bg
+          createrMap(info, 6)
+          setTimeout(() => {
+            message(["", "hasMap"])
+          }, 100)
+        }
+
+        if (type == 'hasView') {
+          message(['', 'hasView'])
+          console.log('getHasView')
+        }
+
+        if (type == 'reMap') {
+          setTimeout(() => {
+            message(['', 'reMap'])
+            console.log('reMap')
+          }, 200)
+
+        }
+
+        if (type == 'toTool') {
+          //console.log(info)
+          setTimeout(() => {
+            if (info == 'PEN' || info == 'BOOLEAN_OPERATION') {
+              document.getElementById("矢量工具").scrollIntoView({ behavior: "smooth" })
+            }
+            if (info == 'table') {
+              document.getElementById("表格工具").scrollIntoView({ behavior: "smooth" })
+            }
+            if (info == 'image' || info == 'skew') {
+              document.getElementById("topView").scrollIntoView({ behavior: "smooth" })
+            }
+            if (info == 'text') {
+              //document.getElementById("容器工具").scrollIntoView({behavior:"smooth"})
+            }
+          }, 500)
+
+
+        }
+
+        if (type == 'wmbEffects') {
+          var rehex = document.getElementById("input-hex-wmb");
+          var recolor = document.getElementById("input-color-wmb");
+          var renum = document.getElementById("wmbNum");
+          var resize = document.getElementById("input-size-wmb");
+          if (info.some((arr, index) => arr[0] !== info[0][0])) {
+            //存在多颜色
+            rehex.value = "多值"
+            //recolor.value = "#000000"
+          } else {
+            rehex.value = info[0][0]
+            recolor.value = info[0][0]
+            colorWmb = info[0][0]
+          }
+          if (info.some((arr, index) => arr[1] !== info[0][1])) {
+            //存在多数量
+            renum.value = "?"
+          } else {
+            renum.value = info[0][1]
+            numWmb = info[0][1]
+          }
+          if (info.some((arr, index) => arr[2] !== info[0][2])) {
+            //存在多大小
+            resize.value = "多值"
+          } else {
+            resize.value = info[0][2]
+            sizeWmb = info[0][2]
+          }
+        }
+
+        if (type == 'getFind') {
+          document.getElementById('input-search-all').value = info;
+          document.getElementById('input-search-pick').value = 1;
+        }
+      
+        if (type == 'hasStyle') {
+          if(info){
+            document.getElementById('noStyle').checked = true;
+          } else {
+            document.getElementById('noStyle').checked = false;
+          }
+          
+        }
+
+        if (type == 'hasStyleTable') {
+          if(info == true){
+            document.getElementById('noStyleTable').checked = true;
+          } else if ( info == false) {
+            document.getElementById('noStyleTable').checked = false;
+          } else {
+            message([info,'moveStyleTable'])
+            //console.log(info)
+          }
+          
+        }
+      
+        if (type == 'toTab'){
+          viewPage(info)
+        }
+
+        if (type == 'searchInfo') {
+          if(info){
+            if(info.length > 10){
+              infos = info.substring(0, 10) + '...';
+              document.getElementById('search-same-node').innerHTML = '已选图层：<span style="color: var(--boxBod);">' + infos + '</span>'
+            } else {
+              document.getElementById('search-same-node').innerHTML = '已选图层：<span style="color: var(--boxBod);">' + info + '</span>'
+            }
+            
+          } else {
+            document.getElementById('search-same-node').innerHTML = `<span style="color: var(--boxBod);">*请选中一个对象</span>`
+          }
+          if(info == 'noOnly'){
+            document.getElementById('search-same-node').innerHTML = `<span style="color: var(--liColor1);">*选中多个对象无效</span>`
+          }
+          
+        }
+
+        if ( type == 'getNodeStyle') {
+          
+          if(info.length > 0){
+            document.getElementById('reStyleSet').checked = false;
+            document.getElementById('getstyle-node-1').innerHTML = '';
+            document.getElementById('getstyle-node-2').innerHTML = '';
+            //console.log(info)
+            var btn1 = '',btn2 = '',btn3 = '',btn4 = '';
+            for ( var i = 0; i < info.length; i++){
+              if(info[i][2] == 'NEW'){
+                btn1 = `<div class="btn-style-set" style="--color-btn1:#00BA7944;--color-btn2:#00BA7988;" onclick="message(['`+ info[i][1] +`','newStyle'])">新建</div>`
+              } else {
+                btn1 = '';
+              }
+              if( info[i][2] == 'DIFF'){
+                btn2 = `<div class="btn-style-set" style="--color-btn1:#77777744;--color-btn2:#77777788; opacity:0.5" onclick="message(['`+ info[i][1] +`','setDiffStyle'])">覆盖</div>`
+                btn3 = `<div class="btn-style-set" style="--color-btn1:#FF840044;--color-btn2:#FF840088;" onclick="message(['`+ info[i][1] +`','linkStyle'])">重链</div>`
+              } else {
+                btn2 = '';
+                btn3 = '';
+              }
+              
+              if( info[i][2] == 'OLD'){
+                document.getElementById('getstyle-node-2').innerHTML += '<div class="tag-style-info" style=" width:100%; height:30px; display:flex; align-items: center; justify-content: space-between;">' + info[i][0] + '<div style="display:flex;gap:4px"> ' + btn4 + '</div> </div>';
+              } else {
+                document.getElementById('getstyle-node-1').innerHTML += `<div class="tag-style-info" style=" width:100%; height:30px; display:flex; align-items: center; justify-content: space-between;" ondblclick="message(['`+ info[i][1] +`','diffStylePick'])">` + info[i][0] + '<div style="display:flex;gap:4px"> ' + btn1 + btn2 + btn3 + '</div> </div>';
+              }
+              
+              if ( i == info.length - 1){
+                if(document.getElementById('getstyle-node-2').innerHTML == ''){
+                  document.getElementById('getstyle-node-2').innerHTML = '----'
+                }
+                if(document.getElementById('getstyle-node-1').innerHTML == ''){
+                  document.getElementById('getstyle-node-1').innerHTML = '----'
+                }
+              }
+            }
+          } else {
+            document.getElementById('reStyleSet').checked = true;
+          }
+        }
+
+        if ( type == 'hasLinkStyle') {
+          message(['reSend','reSend'])
+        }
+
+        if ( type == 'hasNewStyle') {
+          message([info,'reNewStyle'])
+        }
+
+        if ( type == 'hasSetLinkStyle') {
+            message([info,'linkStyle'])
+        }
+
+        if( type == 'getStyleGroup') {
+          if(info.length > 1){
+            var group = document.getElementById('stylegroup');
+            group.innerHTML = '';
+            var star = `<select id="select-stylegroup" class="input-btn-skill" name="样式组切换" style=" width: 18ch; color: var(--mainColor); font-size: 12;"onchange="message([this.value,'reStyleGroup']);">`
+            var option = ''
+            for (var i = info.length - 1; i >= 0; i--){
+              option += '<option value="' + info[i] + '">' + info[i] + '</option>'
+            }
+            var end = '</select>'
+            group.innerHTML += star + option + end
+          } else {
+            var group = document.getElementById('stylegroup');
+            group.innerHTML = '';
+          }
+        }
+
+        if( type == 'styleLinkAndNew' ) {
+          if(info){
+
+            document.getElementById('styleLinkAndNew').style.display = "flex";
+          } else {
+
+            document.getElementById('styleLinkAndNew').style.display = "none";
+          }
+          
+        }
+
+        if ( type == 'tolink') {
+          document.getElementById('tab-' + info).click()
+        }
+
+        if ( type == 'getFrame'){
+          //console.log(111,dataText.value)
+          dataText.value = 'name\tw\th\n'
+          info.forEach( item => {
+            dataText.value += item
+          })
+          
+          dataText.focus()
+          inputDataText()
+          //console.log(222,dataText.innerHTML)
+        }
+        
+        if ( type == 'hasreComponent') {
+          message([info,'reComponentText'])
+        }
+
+        if ( type == 'docInfo'){
+          if (info.length == 4 && info[1] !== info[2]){
+            docInfo = info[1] + '-' + info[2]  
+          } else {
+            docInfo = info[1]
+          }
+          if (info.length == 4 && info[3]*1 > 0 ){
+            exportInfo.innerHTML = "[-- 已选中 " + '<span style="color:#2AE02D; font-weight: 700;">' + info[3] + " </span>个对象 --]"
+          } else if(info.length == 3 && info[2]*1 > 0){
+            exportInfo.innerHTML = "[-- 已选中 " + '<span style="color:#2AE02D; font-weight: 700;">' + info[3] + " </span>个对象 --]"
+          } else {
+            exportInfo.innerHTML = "[-- 未选中容器 --]"
+          }
         }
       }
-
     }
 
 
