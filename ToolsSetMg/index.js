@@ -781,7 +781,7 @@ mg.ui.onmessage = (message) => {
     }
     //接收杂色图片
     if ( type == 'noiseURL'){
-        
+        console.log(info)
         var a = mg.document.currentPage;
         var b = a.selection;
         //console.log(info)

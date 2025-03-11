@@ -1057,13 +1057,13 @@
         if(!this.checked){
           console.log('浅色主题')
           for (var i = 0; i < styleKey.length; i++) {
-            root.style.setProperty('--' + styleKey[i], styleValue[i])
+            root.style.setProperty('--' + styleKey[i], styleValue[i]);
           }
           document.body.style.filter = 'contrast(130%)';
         } else {
           console.log('深色主题')
           for (var i = 0; i < styleKey2.length; i++) {
-            root.style.setProperty('--' + styleKey2[i], styleValue2[i])
+            root.style.setProperty('--' + styleKey2[i], styleValue2[i]);
           }
           document.body.style.filter = '';
         }
@@ -1846,9 +1846,9 @@
       /**/
     }
 
-    window.onmessage = (message) => {
-      const info = message.data[0]
-      const type = message.data[1]
+    window.onmessage = (messages) => {
+      const info = messages.data[0]
+      const type = messages.data[1]
 
       if (info == 'light') {
         console.log("浅色主题")
@@ -1879,6 +1879,7 @@
 
       if (type == 'noiseWH') {
         var noiseURL = noise()
+        //console.log(111)
         setTimeout(() => {
           message([noiseURL, 'noiseURL'])
         }, 100)

@@ -1834,13 +1834,13 @@
     }
 
 
-    window.onmessage = (message) => {
+    window.onmessage = (messages) => {
       
-      if(message.data && message.data.pluginMessage && message.data.pluginMessage.pluginMessage){
+      if(messages.data && messages.data.pluginMessage && messages.data.pluginMessage.pluginMessage){
         //console.log(message.data)
         //console.log(message.data.pluginMessage.pluginMessage)
         /*figma*/
-        var pluginDatas = message.data.pluginMessage.pluginMessage;
+        var pluginDatas = messages.data.pluginMessage.pluginMessage;
         /*mastergo*/
         //var pluginDatas = message.data;
 
