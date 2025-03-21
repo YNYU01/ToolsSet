@@ -2281,66 +2281,78 @@
       upfileArea.addEventListener('drop', function (e) {
         e.stopPropagation();
         e.preventDefault();
-        tagsContainer1.style.boxShadow = '';
-        imgsName = []
-        imgsNameNew = []
-        importImg = []
-        importNum = 0;
+        
+        //console.log(e.dataTransfer.getData('text/plain'))
+        if(e.dataTransfer.files){
+          tagsContainer1.style.boxShadow = '';
+          imgsName = []
+          imgsNameNew = []
+          importImg = []
+          importNum = 0;
+          var files = Array.from(e.dataTransfer.files).sort((a, b) => b.size - a.size);
+          var imgType = ["png", "jpg", "jpeg", "webp","jfif"]
+          var excelType = ["xlsx", "csv"]
+          importNum = files.length;
+          message([importNum, "importNum"])
+          for (var i = 0; i < files.length; i++) {
+            var names = files[i].name.split(".")
+            if (imgType.some(type => type.includes(names[names.length - 1].toLowerCase()))) {
+              if (e.dataTransfer.files.length > 1) {
+                fileName.innerHTML = files[0].name.substring(0, 20) + '...等<span style="color:var(--liColor1)">' + e.dataTransfer.files.length + '</span>个文件';
+              } else {
+                fileName.innerHTML = files[0].name;
+              }
+              imgsName.push({ name: names[names.length - 2] })
+              imgsNameNew.push({ name: names[names.length - 2] })
+              cutImg(files[i], names[names.length - 2])
+              if (i == files.length - 1) {
+                message([importImg, "createrImage"])
+              }
+              notag()
 
-        var files = Array.from(e.dataTransfer.files).sort((a, b) => b.size - a.size);
-        var imgType = ["png", "jpg", "jpeg", "webp","jfif"]
-        var excelType = ["xlsx", "csv"]
-        importNum = files.length;
-        message([importNum, "importNum"])
-        for (var i = 0; i < files.length; i++) {
-          var names = files[i].name.split(".")
-          if (imgType.some(type => type.includes(names[names.length - 1].toLowerCase()))) {
-            if (e.dataTransfer.files.length > 1) {
-              fileName.innerHTML = files[0].name.substring(0, 20) + '...等<span style="color:var(--liColor1)">' + e.dataTransfer.files.length + '</span>个文件';
-            } else {
+
+            } else if (excelType.some(type => type.includes(names[names.length - 1].toLowerCase()))) {
               fileName.innerHTML = files[0].name;
-            }
-            imgsName.push({ name: names[names.length - 2] })
-            imgsNameNew.push({ name: names[names.length - 2] })
-            cutImg(files[i], names[names.length - 2])
-            if (i == files.length - 1) {
-              message([importImg, "createrImage"])
-            }
-            notag()
+              var reader = new FileReader();
+              reader.readAsArrayBuffer(files[0]);
+              reader.onload = function (e) {
+                var data = new Uint8Array(e.target.result);
+                //console.log(data)
+                var workbook = XLSX.read(data, { type: 'array' });
 
+                // 假设我们只读取第一个工作表
+                var wsname = workbook.SheetNames[0];
+                var ws = workbook.Sheets[wsname];
 
-          } else if (excelType.some(type => type.includes(names[names.length - 1].toLowerCase()))) {
-            fileName.innerHTML = files[0].name;
-            var reader = new FileReader();
-            reader.readAsArrayBuffer(files[0]);
-            reader.onload = function (e) {
-              var data = new Uint8Array(e.target.result);
-              //console.log(data)
-              var workbook = XLSX.read(data, { type: 'array' });
-
-              // 假设我们只读取第一个工作表
-              var wsname = workbook.SheetNames[0];
-              var ws = workbook.Sheets[wsname];
-
-              // 将工作表转换为JSON
-              var userData = XLSX.utils.sheet_to_json(ws);
-              allFrame = userData;
-              addtag(userData);
-              anotherBtns.style.display = "flex";
-              anotherBtns4.style.display = "flex";
-              badData()
-            };
-          } else {
-            fileName.innerHTML = '<span style=-"color:var(--liColor1)">含错误格式/来源';
-            //console.log(files[i].name)
-            addImg([files[i].name])
-            anotherBtns.style.display = "none";
-            anotherBtns2.style.display = "none";
-            anotherBtns3.style.display = "flex";
+                // 将工作表转换为JSON
+                var userData = XLSX.utils.sheet_to_json(ws);
+                allFrame = userData;
+                addtag(userData);
+                anotherBtns.style.display = "flex";
+                anotherBtns4.style.display = "flex";
+                badData()
+              };
+            } else {
+              fileName.innerHTML = '<span style=-"color:var(--liColor1)">含错误格式/来源';
+              //console.log(files[i].name)
+              addImg([files[i].name])
+              anotherBtns.style.display = "none";
+              anotherBtns2.style.display = "none";
+              anotherBtns3.style.display = "flex";
+          }
+          }
         }
+        if(e.dataTransfer.getData('text/plain')){
+          message([e.dataTransfer.getData('text/plain'),"createByModel"]);
+          fileName.innerHTML = '[-- 暂无数据 --]';
+          if (autoUp.style.display == "none") {
+            e.stopPropagation();
+            e.preventDefault();
+            e.dataTransfer.dropEffect = 'copy';
+            tagsContainer1.style.boxShadow = '';
+            autoUp.style.display = "block";
+          }
         }
-
-
         //console.log(imgsName)
       });
 

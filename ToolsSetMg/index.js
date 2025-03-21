@@ -239,128 +239,69 @@ mg.ui.onmessage = (message) => {
         var ws = [0];
         var hs = [0];
 
-        function easeframe(info,x,y,gap,isCreater){
-            var starX = x, starY = y;
-            var kvAll = info.filter(item => item.name.toLowerCase().split("kv").length > 1);
-            var HH = info.filter(item => item.w > item.h && item.name.toLowerCase().split("kv").length == 1).sort((a, b) => b.w * b.h - a.w * a.h);//横板
-            var maxW = Math.max(...HH.map(item => item.w));//找出最宽的图，作为横板换行标准
-            var LL = info.filter(item => item.w < item.h && item.name.toLowerCase().split("kv").length == 1).sort((a, b) => b.w * b.h - a.w * a.h);//竖版
-            var maxH = Math.max(...LL.map(item => item.h));//找出最高的图，作为竖版换行标准
-            var FF = info.filter(item => item.w == item.h).sort((a, b) => b.w - a.w);//方形
-            maxW = Math.max(1920,maxW);
-            maxH = Math.max(1920,maxH);//1920是常见KV尺寸
-            console.log("最宽",maxW,";最高：",maxH);
+        easeframe(info,x,y,gap,true)
+    }
+    //从模板创建
+    if( type == 'createByModel'){
+        var zyData = JSON.parse(info)
+        var imgs = zyData.zy.map(item => item.img);
+        imgs = [
+            {name:"KV-示例",w:1920,h:1080,s:"",type:"jpg",d:0.6,view:false,info:[1,1,1,1,0],safa:[]},
+            ...imgs
+        ]
+        console.log("创建画板：",imgs.length,"个");
+        var a = mg.document.currentPage;
+        var b = a.selection;
+        var gap = 30;
+        var maxW ,maxH ;
+        var viewX = Math.floor( mg.viewport.center.x - ((mg.viewport.bound.width/2  - 300)* mg.viewport.zoom))/// mg.viewport.bound.width/2 + 300;
+        var viewY = Math.floor(mg.viewport.center.y);
+        var x = viewX;
+        var y = viewY;
+        console.log(111,x,y)
+        var allH = [];
+        var allW = [];
+        var ws = [0];
+        var hs = [0];
+        var zyComponent = [
+            {name:"主标题",h:zyData.public.fontsize[9][2],w:zyData.public.fontsize[9][2] * (zyData.main.title[0].length + 2)},
+            {name:"副标题",h:zyData.public.fontsize[9][1],w:zyData.public.fontsize[9][1] * (zyData.main.sectitle[0].length + 2)},
+            {name:"奖励1",h:zyData.public.fontsize[9][2] * 1.5 + zyData.public.fontsize[9][0] * 2,w:zyData.public.fontsize[9][2] * 1.5 + zyData.public.fontsize[9][0]},
+            {name:"奖励2",h:zyData.public.fontsize[9][2] * 1.5 + zyData.public.fontsize[9][0] * 2,w:zyData.public.fontsize[9][2] * 1.5 + zyData.public.fontsize[9][0]},
+            {name:"奖励3",h:zyData.public.fontsize[9][2] * 1.5 + zyData.public.fontsize[9][0] * 2,w:zyData.public.fontsize[9][2] * 1.5 + zyData.public.fontsize[9][0]},
+            {name:"奖励4",h:zyData.public.fontsize[9][2] * 1.5 + zyData.public.fontsize[9][0] * 2,w:zyData.public.fontsize[9][2] * 1.5 + zyData.public.fontsize[9][0]},
+        ]
+        addComponent(zyComponent,(x - 1920),y);
 
-            var kvH = [0]
-            for(var i = 0; i < kvAll.length; i++){
-                var frame = kvAll[i]
-                var s = frame.s ? frame.s : '';
-                var type = frame.type ? frame.type : '';
-                var isPng = type == 'png' ? true : false;
-                createFrame({name:frame.name,w:frame.w,h:frame.h,x:x,y:y,s:s,type:type},isPng)
-                x += frame.w + gap
-                kvH.push(frame.h)
-            }
-
-            x = starX;
-            y = starY + Math.max(...kvH) + gap;
-            console.log("横版起点：",x,y)
-
-            var lineH = [];
-            var lineAllW;
-            for(var i = 0; i < HH.length; i++){  
-                var frame = HH[i];
-                var s = frame.s ? frame.s : '';
-                var type = frame.type ? frame.type : '';
-                var isPng = type.toLowerCase() == 'png' ? true : false;
-                createFrame({name:frame.name,w:frame.w,h:frame.h,x:x,y:y,s:s,type:type},isPng);
-                lineAllW += frame.w + gap;
-                lineH.push(frame.h)
-                if (HH[i + 1] && (lineAllW + HH[i + 1].w) <= maxW){
-                    x += frame.w + gap;
-                } else {
-                    //console.log(lineH)
-                    x = starX;
-                    y += Math.max(...lineH) + gap;
-                    lineH = [];
-                    lineAllW = 0;
-                }
-                
-            }
-
-            x = starX + maxW + gap;
-            y = starY + Math.max(...kvH) + gap;
-            console.log("竖版起点：",x,y)
-
-            var lineW = [];
-            var lineAllH;
-            for(var i = 0; i < LL.length; i++){      
-                var frame = LL[i];
-                var s = frame.s ? frame.s : '';
-                var type = frame.type ? frame.type : '';
-                var isPng = type.toLowerCase() == 'png' ? true : false;
-                if(frame.name.split('弹窗').length > 1 ){
-                    isPng = true
-                }
-                createFrame({name:frame.name,w:frame.w,h:frame.h,x:x,y:y,s:s,type:type},isPng);
-                lineAllH += frame.h + gap;
-                lineW.push(frame.w);
-                if (LL[i + 1] && (lineAllH + LL[i + 1].h) <= maxH){
-                    y += frame.h + gap;
-                } else {
-                    y = starY + Math.max(...kvH) + gap;
-                    x += Math.max(...lineW)+ gap;
-                    lineW = [];
-                    lineAllH = 0;
-                }
-                
-            }
-
-            x = starX + maxW + gap;
-            y = starY + Math.max(...kvH) + gap + maxH;
-            console.log("方版起点：",x,y)
-
-            lineH = [];
-            lineAllW = 0;
-            for(var i = 0; i < FF.length; i++){  
-                var frame = FF[i];
-                var s = frame.s ? frame.s : '';
-                var type = frame.type ? frame.type : '';
-                var isPng = type.toLowerCase() == 'png' ? true : false;
-                createFrame({name:frame.name,w:frame.w,h:frame.h,x:x,y:y,s:s,type:type},isPng);
-                lineAllW += frame.w + gap;
-                lineH.push(frame.h)
-                if (FF[i + 1] && (lineAllW + FF[i + 1].w) <= maxW){
-                    x += frame.w + gap;
-                } else {
-                    //console.log(lineH)
-                    x = starX;
-                    y += Math.max(...lineH) + gap;
-                    lineH = [];
-                    lineAllW = 0;
-                }
-                
-            }
-
-            function createFrame(framedata,isPng){
-                var node = mg.createFrame()
-                node.x = framedata.x;
-                node.y = framedata.y;
-                node.width = framedata.w;
-                node.height = framedata.h;
-                var minName = framedata.name + ' ' + framedata.w + '×' + framedata.h;
-                var maxName = framedata.name + ' ' + framedata.s + 'k ' + framedata.w + '×' + framedata.h;
-                node.name = framedata.s ? maxName : minName
-                node.setPluginData('s',String(framedata.s));
-                node.setPluginData('type',framedata.type);
-                if (isPng) {
-                    node.fills = []
-                }
-
+        easeframe(imgs,x,y,gap,true);
+        
+        var newNodes = []
+        for(var i = 0; i < imgs.length; i++){
+            newNodes.push(a.children[a.children.length - 1 - i]);
+            if(i == imgs.length - 1){
+                //a.selection = newNodes;
+                newNodes.forEach(item => {
+                    item.appendChild(a.children[a.children.length - imgs.length - zyComponent.length].clone());
+                    item.children[0].x = 0;
+                    item.children[0].y = 0;
+                })
             }
         }
 
-        easeframe(info,x,y,gap,true)
+        function addComponent(sets,starX,starY){
+            var x = starX, y = starY;
+            for(var i = 0; i < sets.length; i++){
+                var node = mg.createComponent();
+                node.name = sets[i].name;
+                node.width = sets[i].w;
+                node.height = sets[i].h;
+                node.fills = [{type:"SOLID",color:{r:0.175,g:0.175,b:0.175,a:1,}}]
+                node.x = x;
+                node.y = y;
+                y += sets[i].h + 30;
+            }
+        }
+
     }
     //自动排列
     if ( info == 'autoLayout'){
@@ -3465,6 +3406,128 @@ async function fillTheSelection2(node,img) {
         alpha:0.5,
         },
     ];
+}
+
+function easeframe(info,x,y,gap,isCreater){
+    var starX = x, starY = y;
+    var kvAll = info.filter(item => item.name.toLowerCase().split("kv").length > 1);
+    var HH = info.filter(item => item.w > item.h && item.name.toLowerCase().split("kv").length == 1).sort((a, b) => b.w * b.h - a.w * a.h);//横板
+    var maxW = Math.max(...HH.map(item => item.w));//找出最宽的图，作为横板换行标准
+    var LL = info.filter(item => item.w < item.h && item.name.toLowerCase().split("kv").length == 1).sort((a, b) => b.w * b.h - a.w * a.h);//竖版
+    var maxH = Math.max(...LL.map(item => item.h));//找出最高的图，作为竖版换行标准
+    var FF = info.filter(item => item.w == item.h).sort((a, b) => b.w - a.w);//方形
+    maxW = Math.max(1920,maxW);
+    maxH = Math.max(1920,maxH);//1920是常见KV尺寸
+    console.log("最宽",maxW,";最高：",maxH);
+
+    var kvH = [0]
+    for(var i = 0; i < kvAll.length; i++){
+        var frame = kvAll[i]
+        var s = frame.s ? frame.s : '';
+        var type = frame.type ? frame.type : '';
+        var isPng = type == 'png' ? true : false;
+        createFrame({name:frame.name,w:frame.w,h:frame.h,x:x,y:y,s:s,type:type},isPng)
+        x += frame.w + gap
+        kvH.push(frame.h)
+    }
+
+    x = starX;
+    y = starY + Math.max(...kvH) + gap;
+    console.log("横版起点：",x,y)
+
+    var lineH = [];
+    var lineAllW;
+    for(var i = 0; i < HH.length; i++){  
+        var frame = HH[i];
+        var s = frame.s ? frame.s : '';
+        var type = frame.type ? frame.type : '';
+        var isPng = type.toLowerCase() == 'png' ? true : false;
+        createFrame({name:frame.name,w:frame.w,h:frame.h,x:x,y:y,s:s,type:type},isPng);
+        lineAllW += frame.w + gap;
+        lineH.push(frame.h)
+        if (HH[i + 1] && (lineAllW + HH[i + 1].w) <= maxW){
+            x += frame.w + gap;
+        } else {
+            //console.log(lineH)
+            x = starX;
+            y += Math.max(...lineH) + gap;
+            lineH = [];
+            lineAllW = 0;
+        }
+        
+    }
+
+    x = starX + maxW + gap;
+    y = starY + Math.max(...kvH) + gap;
+    console.log("竖版起点：",x,y)
+
+    var lineW = [];
+    var lineAllH;
+    for(var i = 0; i < LL.length; i++){      
+        var frame = LL[i];
+        var s = frame.s ? frame.s : '';
+        var type = frame.type ? frame.type : '';
+        var isPng = type.toLowerCase() == 'png' ? true : false;
+        if(frame.name.split('弹窗').length > 1 ){
+            isPng = true
+        }
+        createFrame({name:frame.name,w:frame.w,h:frame.h,x:x,y:y,s:s,type:type},isPng);
+        lineAllH += frame.h + gap;
+        lineW.push(frame.w);
+        if (LL[i + 1] && (lineAllH + LL[i + 1].h) <= maxH){
+            y += frame.h + gap;
+        } else {
+            y = starY + Math.max(...kvH) + gap;
+            x += Math.max(...lineW)+ gap;
+            lineW = [];
+            lineAllH = 0;
+        }
+        
+    }
+
+    x = starX + maxW + gap;
+    y = starY + Math.max(...kvH) + gap + maxH;
+    console.log("方版起点：",x,y)
+
+    lineH = [];
+    lineAllW = 0;
+    for(var i = 0; i < FF.length; i++){  
+        var frame = FF[i];
+        var s = frame.s ? frame.s : '';
+        var type = frame.type ? frame.type : '';
+        var isPng = type.toLowerCase() == 'png' ? true : false;
+        createFrame({name:frame.name,w:frame.w,h:frame.h,x:x,y:y,s:s,type:type},isPng);
+        lineAllW += frame.w + gap;
+        lineH.push(frame.h)
+        if (FF[i + 1] && (lineAllW + FF[i + 1].w) <= maxW){
+            x += frame.w + gap;
+        } else {
+            //console.log(lineH)
+            x = starX;
+            y += Math.max(...lineH) + gap;
+            lineH = [];
+            lineAllW = 0;
+        }
+        
+    }
+
+    function createFrame(framedata,isPng){
+        var node = mg.createFrame()
+        node.x = framedata.x;
+        node.y = framedata.y;
+        node.width = framedata.w;
+        node.height = framedata.h;
+        var minName = framedata.name + ' ' + framedata.w + '×' + framedata.h;
+        var maxName = framedata.name + ' ' + framedata.s.replace(/[Kk]/g,'') + 'k ' + framedata.w + '×' + framedata.h;
+        node.name = framedata.s ? maxName : minName
+        node.setPluginData('s',String(framedata.s));
+        node.setPluginData('type',framedata.type);
+        if (isPng) {
+            node.fills = []
+        }
+    }
+
+    
 }
 
 function tableToData(text,dataToList){
