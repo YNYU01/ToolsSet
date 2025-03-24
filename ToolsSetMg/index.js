@@ -144,7 +144,7 @@ mg.on('layoutchange',function(){
     mg.ui.moveTo(mg.viewport.positionOnDom.x + rulerH,48 + rulerH);
 })
 
-
+mg.listAvailableFontsAsync()
 
 var tabInfo;
 var importNum = 1,xx = 0,yy = 0,time = 0,ww = 0,hh = 0;
@@ -258,7 +258,7 @@ mg.ui.onmessage = (message) => {
         var viewY = Math.floor(mg.viewport.center.y);
         var x = viewX;
         var y = viewY;
-        console.log(111,x,y)
+        //console.log(111,x,y)
         var allH = [];
         var allW = [];
         var ws = [0];
@@ -270,6 +270,7 @@ mg.ui.onmessage = (message) => {
                 w:zyData.public.fontsize[9][2] * (zyData.main.title[0].length + 2),
                 text:zyData.main.title[0],
                 fontsize:zyData.public.fontsize[9][2],
+                fontfamily:zyData.style.title.fontfamily,
             },
             {
                 name:"副标题",
@@ -277,6 +278,7 @@ mg.ui.onmessage = (message) => {
                 w:zyData.public.fontsize[9][1] * (zyData.main.sectitle[0].length + 2),
                 text:zyData.main.sectitle[0],
                 fontsize:zyData.public.fontsize[9][1],
+                fontfamily:zyData.style.sectitle.fontfamily,
             },
             {
                 name:"奖励1",
@@ -284,49 +286,43 @@ mg.ui.onmessage = (message) => {
                 w:zyData.public.fontsize[9][2] * 1.5 + zyData.public.fontsize[9][0],
                 text:zyData.main.gift.name[0],
                 fontsize:zyData.public.fontsize[9][0],
+                fontfamily:'',
             },
             {
                 name:"奖励2",h:zyData.public.fontsize[9][2] * 1.5 + zyData.public.fontsize[9][0] * 2,
                 w:zyData.public.fontsize[9][2] * 1.5 + zyData.public.fontsize[9][0],
                 text:zyData.main.gift.name[1],
                 fontsize:zyData.public.fontsize[9][0],
+                fontfamily:'',
             },
             {
                 name:"奖励3",h:zyData.public.fontsize[9][2] * 1.5 + zyData.public.fontsize[9][0] * 2,
                 w:zyData.public.fontsize[9][2] * 1.5 + zyData.public.fontsize[9][0],
                 text:zyData.main.gift.name[2],
                 fontsize:zyData.public.fontsize[9][0],
+                fontfamily:'',
             },
             {
                 name:"奖励4",h:zyData.public.fontsize[9][2] * 1.5 + zyData.public.fontsize[9][0] * 2,
                 w:zyData.public.fontsize[9][2] * 1.5 + zyData.public.fontsize[9][0],
                 text:zyData.main.gift.name[3],
                 fontsize:zyData.public.fontsize[9][0],
+                fontfamily:'',
             },
         ]
         addComponent(zyComponent,(x - 1920),y);
 
         easeframe(imgs,x,y,gap,true);
         
-        /*
-        var newNodes = []
-        for(var i = 0; i < imgs.length; i++){
-            newNodes.push(a.children[a.children.length - 1 - i]);
-            if(i == imgs.length - 1){
-                //a.selection = newNodes;
-                newNodes.forEach(item => {
-                    item.appendChild(a.children[a.children.length - imgs.length - zyComponent.length].clone());
-                    item.children[0].x = 0;
-                    item.children[0].y = 0;
-                })
-            }
-        }
-        */
         for(var i = 0; i < imgs.length; i++){
             var useFrame = a.children[a.children.length - 1 - i];
             var imgsNum = imgs.findIndex(item => item.name == useFrame.name.split(' ')[0])
             var zyInfoGroup = mg.createFrame();
+            zyInfoGroup.name = "信息组";
+            zyInfoGroup.fills = [];
             var giftInfoGroup = mg.createFrame();
+            giftInfoGroup.name = "奖励组";
+            giftInfoGroup.fills = [];
 
             var titleNode = a.children[a.children.length - imgs.length - zyComponent.length - 2].clone();//上面新建操作要-2序号，同时每次克隆操作会新增容器，所以序号相对静止
             var secTitleNode = a.children[a.children.length - imgs.length - zyComponent.length - 2].clone();
@@ -352,13 +348,15 @@ mg.ui.onmessage = (message) => {
                 secTitleNode.remove();
             };
 
+            
+            
             if(imgs[imgsNum].info[2] == 1){
                 zyInfoGroup.appendChild(giftInfoGroup);
                 giftInfoGroup.layoutPositioning = 'AUTO';
                 giftInfoGroup.flexGrow = 0;
                 giftInfoGroup.flexMode = "HORIZONTAL";
                 giftInfoGroup.flexWrap = "NO_WRAP";
-                giftInfoGroup.itemSpacing = 0;
+                giftInfoGroup.itemSpacing = 24;
                 giftInfoGroup.mainAxisAlignItems = "FLEX_START";
                 giftInfoGroup.mainAxisSizingMode = "AUTO";
                 giftInfoGroup.crossAxisAlignItems = "FLEX_START"; 
@@ -371,11 +369,12 @@ mg.ui.onmessage = (message) => {
                 giftInfoGroup.remove();
             };
             
+
             zyInfoGroup.layoutPositioning = 'AUTO';
             zyInfoGroup.flexGrow = 0;
             zyInfoGroup.flexMode = "VERTICAL";
             zyInfoGroup.flexWrap = "NO_WRAP";
-            zyInfoGroup.itemSpacing = 0;
+            zyInfoGroup.itemSpacing = 28.8;
             zyInfoGroup.mainAxisAlignItems = "FLEX_START";
             zyInfoGroup.mainAxisSizingMode = "AUTO";
             zyInfoGroup.crossAxisAlignItems = "CENTER"; 
@@ -392,6 +391,7 @@ mg.ui.onmessage = (message) => {
             } else {
                 zyInfoGroup.remove()
             }
+            
             var www = useFrame.width;
             var hhh = useFrame.height;
             useFrame.layoutPositioning = 'AUTO';
@@ -401,14 +401,144 @@ mg.ui.onmessage = (message) => {
             useFrame.itemSpacing = 0;
             useFrame.mainAxisAlignItems = "CENTER";
             useFrame.crossAxisAlignItems = "CENTER"; 
+
+            if(imgsNum > 0 && !titleNode.removed){
+                titleNode.rescale(zyData.zy[imgsNum - 1].set.fontsize[2]/titleNode.height,{scaleCenter:'CENTER'});
+            }
+            if(imgsNum > 0 && !secTitleNode.removed){
+                secTitleNode.rescale(zyData.zy[imgsNum - 1].set.fontsize[1]/secTitleNode.height,{scaleCenter:'CENTER'});
+            }
+            if(imgsNum > 0 && !giftInfoGroup.removed){
+                giftInfoGroup.rescale(zyData.zy[imgsNum - 1].set.fontsize[2]*1.5/gifNode1.width,{scaleCenter:'CENTER'});
+            }
+
+            if(imgsNum > 0 && useFrame.children[0]){
+                useFrame.children[0].itemSpacing = zyData.zy[imgsNum - 1].set.fontsize[0] * 0.8
+            }
+
             useFrame.width = www;
             useFrame.height = hhh;
             useFrame.flexMode = "NONE";
+            if(imgs[imgsNum].type == 'png'){
+                useFrame.layoutGrids = [
+                    {
+                        "color": {
+                            "r": 0.5,
+                            "g": 0.5,
+                            "b": 0.5,
+                            "a": 0.5
+                        },
+                        "gridType": "COLUMNS",
+                        "alignment": "STRETCH",
+                        "gutterSize": 0,
+                        "count": 1,
+                        "offset": 0,
+                        "sectionSize": 8,
+                        "isVisible": true,
+                        "id": "138:31723"
+                    },
+                    {
+                        "color": {
+                            "r": 0.5,
+                            "g": 0.5,
+                            "b": 0.5,
+                            "a": 0.5
+                        },
+                        "gridType": "ROWS",
+                        "alignment": "STRETCH",
+                        "gutterSize": 0,
+                        "count": 1,
+                        "offset": 0,
+                        "sectionSize": 8,
+                        "isVisible": true,
+                        "id": "138:31724"
+                    }
+                ]
+            }
+            if(useFrame.children[0] && imgs[imgsNum].safa && imgs[imgsNum].safa[0] && !imgs[imgsNum].safa[0][4]){
+                var yy = imgs[imgsNum].safa[0][1] + imgs[imgsNum].safa[0][3] - useFrame.children[0].height * 1.5;
+                if(yy > (imgs[imgsNum].safa[0][1] + imgs[imgsNum].safa[0][3]/4)){
+                    useFrame.children[0].y = imgs[imgsNum].safa[0][1] + imgs[imgsNum].safa[0][3] - useFrame.children[0].height * 1.5
+                }
+            }
+            
+            
+        }
+        
+        var bgNode = mg.createComponent()
+        bgNode.width = 1920;
+        bgNode.height = 1080;
+        bgNode.name = '背景';
+        bgNode.fills = [];
+        bgNode.x = (x - 1920 - 1920 - 30);
+        bgNode.y = y;
+
+        for(var i = 0; i < imgs.length; i++){
+            var useFrame = a.children[a.children.length - 2 - i];
+            var imgsNum = imgs.findIndex(item => item.name == useFrame.name.split(' ')[0]);
+            if(i < imgs.length - 1){
+                var bgs = a.children[a.children.length - 1].clone()
+                useFrame.insertChild(0,bgs);
+                useFrame.children[0].x = 0;
+                useFrame.children[0].y = 0;
+                var scale = 1;
+                useFrame.width > useFrame.height ? scale = useFrame.height/bgs.height : scale = useFrame.width/bgs.width;
+                useFrame.children[0].rescale(scale);
+                useFrame.children[0].width = useFrame.width;
+                useFrame.children[0].height = useFrame.height;
+                if(imgs[imgsNum].type == 'png'){
+                    useFrame.children[0].remove()
+                }
+            } else {
+                useFrame.insertChild(0,a.children[a.children.length - 1]);
+                useFrame.children[0].x = 0;
+                useFrame.children[0].y = 0;
+            }
+            
+        }
+
+        var logoNode = mg.createComponent()
+        logoNode.width = 300;
+        logoNode.height = 64;
+        logoNode.name = 'logo';
+        logoNode.fills = [{type:"SOLID",color:{r:0.8,g:0.8,b:0.8,a:1,}}];
+        logoNode.x = (x - 1920 - 1920 - 30);
+        logoNode.y = y + 1080 + 30;
+
+        for(var i = 0; i < imgs.length; i++){
+            var useFrame = a.children[a.children.length - 2 - i];
+            var imgsNum = imgs.findIndex(item => item.name == useFrame.name.split(' ')[0]);
+            var ii = (useFrame.children.length);
+            if(i < imgs.length - 1){
+                var logo = a.children[a.children.length - 1].clone();
+                useFrame.appendChild(logo);
+                useFrame.children[ii].x = zyData.zy[imgsNum - 1].set.fontsize[0];
+                useFrame.children[ii].y = zyData.zy[imgsNum - 1].set.fontsize[0];
+                var scale = zyData.zy[imgsNum - 1].set.fontsize[1]/logo.height;
+                useFrame.children[ii].rescale(scale);
+                if(imgs[imgsNum].info[3] == 0){
+                    useFrame.children[ii].remove()
+                }else{
+                    if(imgs[imgsNum].name == '启动页'){
+                        useFrame.children[ii].x = imgs[imgsNum].safa[0][0];
+                        useFrame.children[ii].y = imgs[imgsNum].safa[0][1];
+                    }
+                    if(useFrame.children[ii - 1] && useFrame.children[ii - 1].y < useFrame.children[ii].y + useFrame.children[ii].height){
+                        useFrame.children[ii - 1].y = useFrame.children[ii].y + useFrame.children[ii].height
+                    }
+                }
+                
+            } else {
+                useFrame.appendChild(a.children[a.children.length - 1]);
+                useFrame.children[ii].x = 24;
+                useFrame.children[ii].y = 24;
+            }
             
         }
 
         function addComponent(sets,starX,starY){
             var x = starX, y = starY;
+            var fontW = '';
             for(var i = 0; i < sets.length; i++){
                 var node = mg.createComponent();
                 node.name = sets[i].name;
@@ -424,7 +554,12 @@ mg.ui.onmessage = (message) => {
                 textNode.textAutoResize = "NONE";
                 textNode.height = sets[i].fontsize;
                 textNode.fills = [{type:"SOLID",color:{r:0.175,g:0.175,b:0.175,a:1,}}];
-                setTextMain(textNode,0,sets[i].text.length,sets[i].fontsize);
+                if(i == 0){
+                    fontW = "Heavy";
+                } else if (i == 1){
+                    fontW = "Bold";
+                }
+                setTextMain(textNode,0,sets[i].text.length,sets[i].fontsize,fontW,sets[i].fontfamily);
                 node.appendChild(textNode)
                 node.flexMode = 'AUTO';
                 node.flexWrap = "NO_WRAP";
@@ -435,6 +570,16 @@ mg.ui.onmessage = (message) => {
                 node.height = sets[i].h;
                 node.flexMode = "NONE";
                 textNode.textAutoResize = "WIDTH_AND_HEIGHT";
+                if(i > 1){
+                    var icon = mg.createRectangle();
+                    icon.width = sets[i].w;
+                    icon.height = sets[i].w;
+                    icon.fills = [{type:"SOLID",color:{r:0.8,g:0.8,b:0.8,a:1,}}];
+                    node.appendChild(icon);
+                    node.children[1].x = 0;
+                    node.children[1].y = 0;
+                }
+                textNode.setRangeLineHeight(0,sets[i].text.length,sets[i].fontsize)
             }
         }
 
@@ -3656,10 +3801,44 @@ function easeframe(info,x,y,gap,isCreater){
         var minName = framedata.name + ' ' + framedata.w + '×' + framedata.h;
         var maxName = framedata.name + ' ' + framedata.s.replace(/[Kk]/g,'') + 'k ' + framedata.w + '×' + framedata.h;
         node.name = framedata.s ? maxName : minName
-        node.setPluginData('s',String(framedata.s));
+        node.setPluginData('s',String(framedata.s).replace(/[Kk]/g,'') );
         node.setPluginData('type',framedata.type);
         if (isPng) {
             node.fills = []
+            node.layoutGrids = [
+                {
+                    "color": {
+                        "r": 0.5,
+                        "g": 0.5,
+                        "b": 0.5,
+                        "a": 0.5
+                    },
+                    "gridType": "COLUMNS",
+                    "alignment": "STRETCH",
+                    "gutterSize": 0,
+                    "count": 1,
+                    "offset": 0,
+                    "sectionSize": 8,
+                    "isVisible": true,
+                    "id": "138:31723"
+                },
+                {
+                    "color": {
+                        "r": 0.5,
+                        "g": 0.5,
+                        "b": 0.5,
+                        "a": 0.5
+                    },
+                    "gridType": "ROWS",
+                    "alignment": "STRETCH",
+                    "gutterSize": 0,
+                    "count": 1,
+                    "offset": 0,
+                    "sectionSize": 8,
+                    "isVisible": true,
+                    "id": "138:31724"
+                }
+            ]
         }
     }
 
@@ -4144,15 +4323,33 @@ function addStyleTable(name,styles,type,eg){
     
 }
 
-async function setTextMain(node,star,end,fontSize){
-    await mg.listAvailableFontsAsync()
-
+async function setTextMain(node,star,end,fontSize,fontWeight,fontFamily){
+    var fonts = await mg.listAvailableFontsAsync();
+    //console.log(fonts.filter(item => item.fontName.family == fontFamily))
+    var fontW = "Regular" ,fontF = "Source Han Sans CN";
+    if(fontFamily){
+        fontF = fonts.filter(item => item.fontName.family == fontFamily)[0];
+        fontW = fontWeight;
+        node.setRangeFontName(star,end,{"family": fontF.fontName.family,"style": fontW});
+        node.setRangeFontSize(star,end,fontSize);
+    } else {
+        node.setRangeFontName(star,end,{"family":"Source Han Sans CN","style": "Regular"});
+        node.setRangeFontSize(star,end,fontSize);
+    }
+    /*
     await mg.loadFontAsync({
-        "family": "Source Han Sans CN",
-        "style": "Regular"
+        "family": fontF,
+        "style": fontW,
     })
-    node.setRangeFontName(star,end,{"family": "Source Han Sans CN","style": "Regular"});
-    node.setRangeFontSize(star,end,fontSize);
+    
+    if(fontFamily){
+        fontF = fontFamily;
+    };
+    if(fontWeight){
+        fontW = fontWeight;
+    };
+    */
+    
     //node.setRangeLineHeight(star,end,fontSize);
 }
 
