@@ -264,17 +264,51 @@ mg.ui.onmessage = (message) => {
         var ws = [0];
         var hs = [0];
         var zyComponent = [
-            {name:"主标题",h:zyData.public.fontsize[9][2],w:zyData.public.fontsize[9][2] * (zyData.main.title[0].length + 2)},
-            {name:"副标题",h:zyData.public.fontsize[9][1],w:zyData.public.fontsize[9][1] * (zyData.main.sectitle[0].length + 2)},
-            {name:"奖励1",h:zyData.public.fontsize[9][2] * 1.5 + zyData.public.fontsize[9][0] * 2,w:zyData.public.fontsize[9][2] * 1.5 + zyData.public.fontsize[9][0]},
-            {name:"奖励2",h:zyData.public.fontsize[9][2] * 1.5 + zyData.public.fontsize[9][0] * 2,w:zyData.public.fontsize[9][2] * 1.5 + zyData.public.fontsize[9][0]},
-            {name:"奖励3",h:zyData.public.fontsize[9][2] * 1.5 + zyData.public.fontsize[9][0] * 2,w:zyData.public.fontsize[9][2] * 1.5 + zyData.public.fontsize[9][0]},
-            {name:"奖励4",h:zyData.public.fontsize[9][2] * 1.5 + zyData.public.fontsize[9][0] * 2,w:zyData.public.fontsize[9][2] * 1.5 + zyData.public.fontsize[9][0]},
+            {
+                name:"主标题",
+                h:zyData.public.fontsize[9][2],
+                w:zyData.public.fontsize[9][2] * (zyData.main.title[0].length + 2),
+                text:zyData.main.title[0],
+                fontsize:zyData.public.fontsize[9][2],
+            },
+            {
+                name:"副标题",
+                h:zyData.public.fontsize[9][1],
+                w:zyData.public.fontsize[9][1] * (zyData.main.sectitle[0].length + 2),
+                text:zyData.main.sectitle[0],
+                fontsize:zyData.public.fontsize[9][1],
+            },
+            {
+                name:"奖励1",
+                h:zyData.public.fontsize[9][2] * 1.5 + zyData.public.fontsize[9][0] * 2,
+                w:zyData.public.fontsize[9][2] * 1.5 + zyData.public.fontsize[9][0],
+                text:zyData.main.gift.name[0],
+                fontsize:zyData.public.fontsize[9][0],
+            },
+            {
+                name:"奖励2",h:zyData.public.fontsize[9][2] * 1.5 + zyData.public.fontsize[9][0] * 2,
+                w:zyData.public.fontsize[9][2] * 1.5 + zyData.public.fontsize[9][0],
+                text:zyData.main.gift.name[1],
+                fontsize:zyData.public.fontsize[9][0],
+            },
+            {
+                name:"奖励3",h:zyData.public.fontsize[9][2] * 1.5 + zyData.public.fontsize[9][0] * 2,
+                w:zyData.public.fontsize[9][2] * 1.5 + zyData.public.fontsize[9][0],
+                text:zyData.main.gift.name[2],
+                fontsize:zyData.public.fontsize[9][0],
+            },
+            {
+                name:"奖励4",h:zyData.public.fontsize[9][2] * 1.5 + zyData.public.fontsize[9][0] * 2,
+                w:zyData.public.fontsize[9][2] * 1.5 + zyData.public.fontsize[9][0],
+                text:zyData.main.gift.name[3],
+                fontsize:zyData.public.fontsize[9][0],
+            },
         ]
         addComponent(zyComponent,(x - 1920),y);
 
         easeframe(imgs,x,y,gap,true);
         
+        /*
         var newNodes = []
         for(var i = 0; i < imgs.length; i++){
             newNodes.push(a.children[a.children.length - 1 - i]);
@@ -287,18 +321,120 @@ mg.ui.onmessage = (message) => {
                 })
             }
         }
+        */
+        for(var i = 0; i < imgs.length; i++){
+            var useFrame = a.children[a.children.length - 1 - i];
+            var imgsNum = imgs.findIndex(item => item.name == useFrame.name.split(' ')[0])
+            var zyInfoGroup = mg.createFrame();
+            var giftInfoGroup = mg.createFrame();
+
+            var titleNode = a.children[a.children.length - imgs.length - zyComponent.length - 2].clone();//上面新建操作要-2序号，同时每次克隆操作会新增容器，所以序号相对静止
+            var secTitleNode = a.children[a.children.length - imgs.length - zyComponent.length - 2].clone();
+            var gifNode1 = a.children[a.children.length - imgs.length - zyComponent.length - 2].clone();
+            var gifNode2 = a.children[a.children.length - imgs.length - zyComponent.length - 2].clone();
+            var gifNode3 = a.children[a.children.length - imgs.length - zyComponent.length - 2].clone();
+            var gifNode4 = a.children[a.children.length - imgs.length - zyComponent.length - 2].clone();
+
+            giftInfoGroup.appendChild(gifNode1);
+            giftInfoGroup.appendChild(gifNode2);
+            giftInfoGroup.appendChild(gifNode3);
+            giftInfoGroup.appendChild(gifNode4);
+
+            if(imgs[imgsNum].info[0] == 1){
+                zyInfoGroup.appendChild(titleNode);
+            } else {
+                titleNode.remove();
+            };
+
+            if(imgs[imgsNum].info[1] == 1){
+                zyInfoGroup.appendChild(secTitleNode);
+            } else {
+                secTitleNode.remove();
+            };
+
+            if(imgs[imgsNum].info[2] == 1){
+                zyInfoGroup.appendChild(giftInfoGroup);
+                giftInfoGroup.layoutPositioning = 'AUTO';
+                giftInfoGroup.flexGrow = 0;
+                giftInfoGroup.flexMode = "HORIZONTAL";
+                giftInfoGroup.flexWrap = "NO_WRAP";
+                giftInfoGroup.itemSpacing = 0;
+                giftInfoGroup.mainAxisAlignItems = "FLEX_START";
+                giftInfoGroup.mainAxisSizingMode = "AUTO";
+                giftInfoGroup.crossAxisAlignItems = "FLEX_START"; 
+                giftInfoGroup.crossAxisSizingMode = "AUTO";
+                giftInfoGroup.paddingTop = 0;
+                giftInfoGroup.paddingBottom = 0;
+                giftInfoGroup.paddingLeft = 0;
+                giftInfoGroup.paddingRight= 0;
+            } else {
+                giftInfoGroup.remove();
+            };
+            
+            zyInfoGroup.layoutPositioning = 'AUTO';
+            zyInfoGroup.flexGrow = 0;
+            zyInfoGroup.flexMode = "VERTICAL";
+            zyInfoGroup.flexWrap = "NO_WRAP";
+            zyInfoGroup.itemSpacing = 0;
+            zyInfoGroup.mainAxisAlignItems = "FLEX_START";
+            zyInfoGroup.mainAxisSizingMode = "AUTO";
+            zyInfoGroup.crossAxisAlignItems = "CENTER"; 
+            zyInfoGroup.crossAxisSizingMode = "AUTO";
+            zyInfoGroup.paddingTop = 0;
+            zyInfoGroup.paddingBottom = 0;
+            zyInfoGroup.paddingLeft = 0;
+            zyInfoGroup.paddingRight= 0;
+
+            if((imgs[imgsNum].info[0] + imgs[imgsNum].info[1] + imgs[imgsNum].info[2] ) > 0){
+                useFrame.appendChild(zyInfoGroup);
+                useFrame.children[0].x = 0;
+                useFrame.children[0].y = 0;
+            } else {
+                zyInfoGroup.remove()
+            }
+            var www = useFrame.width;
+            var hhh = useFrame.height;
+            useFrame.layoutPositioning = 'AUTO';
+            useFrame.flexGrow = 0;
+            useFrame.flexMode = "VERTICAL";
+            useFrame.flexWrap = "NO_WRAP";
+            useFrame.itemSpacing = 0;
+            useFrame.mainAxisAlignItems = "CENTER";
+            useFrame.crossAxisAlignItems = "CENTER"; 
+            useFrame.width = www;
+            useFrame.height = hhh;
+            useFrame.flexMode = "NONE";
+            
+        }
 
         function addComponent(sets,starX,starY){
             var x = starX, y = starY;
             for(var i = 0; i < sets.length; i++){
                 var node = mg.createComponent();
                 node.name = sets[i].name;
-                node.width = sets[i].w;
-                node.height = sets[i].h;
-                node.fills = [{type:"SOLID",color:{r:0.175,g:0.175,b:0.175,a:1,}}]
+                //node.fills = [{type:"SOLID",color:{r:0.175,g:0.175,b:0.175,a:1,}}];
+                node.fills = [];
                 node.x = x;
                 node.y = y;
                 y += sets[i].h + 30;
+                var textNode = mg.createText();
+                textNode.characters = sets[i].text;
+                textNode.textAlignHorizontal = "CENTER";
+                textNode.textAlignVertical = "CENTER";
+                textNode.textAutoResize = "NONE";
+                textNode.height = sets[i].fontsize;
+                textNode.fills = [{type:"SOLID",color:{r:0.175,g:0.175,b:0.175,a:1,}}];
+                setTextMain(textNode,0,sets[i].text.length,sets[i].fontsize);
+                node.appendChild(textNode)
+                node.flexMode = 'AUTO';
+                node.flexWrap = "NO_WRAP";
+                node.itemSpacing = 0;
+                node.mainAxisAlignItems = "FLEX_END";
+                node.crossAxisAlignItems = "CENTER"; 
+                node.width = sets[i].w;
+                node.height = sets[i].h;
+                node.flexMode = "NONE";
+                textNode.textAutoResize = "WIDTH_AND_HEIGHT";
             }
         }
 
@@ -4017,6 +4153,7 @@ async function setTextMain(node,star,end,fontSize){
     })
     node.setRangeFontName(star,end,{"family": "Source Han Sans CN","style": "Regular"});
     node.setRangeFontSize(star,end,fontSize);
+    //node.setRangeLineHeight(star,end,fontSize);
 }
 
 function addTable(b,H,L){

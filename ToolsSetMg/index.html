@@ -2332,7 +2332,17 @@
                 anotherBtns4.style.display = "flex";
                 badData()
               };
-            } else {
+            }else if (files[i].name.split(".")[1] == 'zy'){
+              var reader = new FileReader();
+              reader.readAsText(files[0]);
+              reader.onload = function (e) {
+                message([e.target.result,"createByModel"]);
+                fileName.innerHTML = '[-- 暂无数据 --]';
+                tagsContainer1.style.boxShadow = '';
+                autoUp.style.display = "block";
+              }
+            }
+             else {
               fileName.innerHTML = '<span style=-"color:var(--liColor1)">含错误格式/来源';
               //console.log(files[i].name)
               addImg([files[i].name])
