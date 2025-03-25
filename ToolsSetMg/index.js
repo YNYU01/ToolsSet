@@ -144,7 +144,6 @@ mg.on('layoutchange',function(){
     mg.ui.moveTo(mg.viewport.positionOnDom.x + rulerH,48 + rulerH);
 })
 
-mg.listAvailableFontsAsync()
 
 var tabInfo;
 var importNum = 1,xx = 0,yy = 0,time = 0,ww = 0,hh = 0;
@@ -266,9 +265,9 @@ mg.ui.onmessage = (message) => {
         var zyComponent = [
             {
                 name:"主标题",
-                h:zyData.public.fontsize[9][2],
+                h:zyData.public.fontsize[9][2]  * zyData.main.title[0].split('，').length,
                 w:zyData.public.fontsize[9][2] * (zyData.main.title[0].length + 2),
-                text:zyData.main.title[0],
+                text:zyData.main.title[0].replace('，','\n'),
                 fontsize:zyData.public.fontsize[9][2],
                 fontfamily:zyData.style.title.fontfamily,
             },
@@ -280,36 +279,30 @@ mg.ui.onmessage = (message) => {
                 fontsize:zyData.public.fontsize[9][1],
                 fontfamily:zyData.style.sectitle.fontfamily,
             },
-            {
-                name:"奖励1",
-                h:zyData.public.fontsize[9][2] * 1.5 + zyData.public.fontsize[9][0] * 2,
-                w:zyData.public.fontsize[9][2] * 1.5 + zyData.public.fontsize[9][0],
-                text:zyData.main.gift.name[0],
-                fontsize:zyData.public.fontsize[9][0],
-                fontfamily:'',
-            },
-            {
-                name:"奖励2",h:zyData.public.fontsize[9][2] * 1.5 + zyData.public.fontsize[9][0] * 2,
-                w:zyData.public.fontsize[9][2] * 1.5 + zyData.public.fontsize[9][0],
-                text:zyData.main.gift.name[1],
-                fontsize:zyData.public.fontsize[9][0],
-                fontfamily:'',
-            },
-            {
-                name:"奖励3",h:zyData.public.fontsize[9][2] * 1.5 + zyData.public.fontsize[9][0] * 2,
-                w:zyData.public.fontsize[9][2] * 1.5 + zyData.public.fontsize[9][0],
-                text:zyData.main.gift.name[2],
-                fontsize:zyData.public.fontsize[9][0],
-                fontfamily:'',
-            },
-            {
-                name:"奖励4",h:zyData.public.fontsize[9][2] * 1.5 + zyData.public.fontsize[9][0] * 2,
-                w:zyData.public.fontsize[9][2] * 1.5 + zyData.public.fontsize[9][0],
-                text:zyData.main.gift.name[3],
-                fontsize:zyData.public.fontsize[9][0],
-                fontfamily:'',
-            },
         ]
+
+        zyData.main.gift.isview.forEach((item,index) => {
+            if(item){
+                zyComponent.push({
+                    name:"奖励" + (index + 1),
+                    h:zyData.public.fontsize[9][2] * 1.5 + zyData.public.fontsize[9][0] * 3,
+                    w:zyData.public.fontsize[9][2] * 1.5 + zyData.public.fontsize[9][0],
+                    text:zyData.main.gift.name[index],
+                    fontsize:zyData.public.fontsize[9][0],
+                    fontfamily:'',
+                })
+            } else {
+                zyComponent.push({
+                    name:"奖励" + (index + 1),
+                    h:zyData.public.fontsize[9][2] * 1.5 + zyData.public.fontsize[9][0] * 3,
+                    w:zyData.public.fontsize[9][2] * 1.5 + zyData.public.fontsize[9][0],
+                    text:'未提供/无',
+                    fontsize:zyData.public.fontsize[9][0],
+                    fontfamily:'',
+                })
+            }
+        })
+
         addComponent(zyComponent,(x - 1920),y);
 
         easeframe(imgs,x,y,gap,true);
@@ -320,9 +313,11 @@ mg.ui.onmessage = (message) => {
             var zyInfoGroup = mg.createFrame();
             zyInfoGroup.name = "信息组";
             zyInfoGroup.fills = [];
+            zyInfoGroup.clipsContent = false;
             var giftInfoGroup = mg.createFrame();
             giftInfoGroup.name = "奖励组";
             giftInfoGroup.fills = [];
+            giftInfoGroup.clipsContent = false;
 
             var titleNode = a.children[a.children.length - imgs.length - zyComponent.length - 2].clone();//上面新建操作要-2序号，同时每次克隆操作会新增容器，所以序号相对静止
             var secTitleNode = a.children[a.children.length - imgs.length - zyComponent.length - 2].clone();
@@ -330,45 +325,6 @@ mg.ui.onmessage = (message) => {
             var gifNode2 = a.children[a.children.length - imgs.length - zyComponent.length - 2].clone();
             var gifNode3 = a.children[a.children.length - imgs.length - zyComponent.length - 2].clone();
             var gifNode4 = a.children[a.children.length - imgs.length - zyComponent.length - 2].clone();
-
-            giftInfoGroup.appendChild(gifNode1);
-            giftInfoGroup.appendChild(gifNode2);
-            giftInfoGroup.appendChild(gifNode3);
-            giftInfoGroup.appendChild(gifNode4);
-
-            if(imgs[imgsNum].info[0] == 1){
-                zyInfoGroup.appendChild(titleNode);
-            } else {
-                titleNode.remove();
-            };
-
-            if(imgs[imgsNum].info[1] == 1){
-                zyInfoGroup.appendChild(secTitleNode);
-            } else {
-                secTitleNode.remove();
-            };
-
-            
-            
-            if(imgs[imgsNum].info[2] == 1){
-                zyInfoGroup.appendChild(giftInfoGroup);
-                giftInfoGroup.layoutPositioning = 'AUTO';
-                giftInfoGroup.flexGrow = 0;
-                giftInfoGroup.flexMode = "HORIZONTAL";
-                giftInfoGroup.flexWrap = "NO_WRAP";
-                giftInfoGroup.itemSpacing = 24;
-                giftInfoGroup.mainAxisAlignItems = "FLEX_START";
-                giftInfoGroup.mainAxisSizingMode = "AUTO";
-                giftInfoGroup.crossAxisAlignItems = "FLEX_START"; 
-                giftInfoGroup.crossAxisSizingMode = "AUTO";
-                giftInfoGroup.paddingTop = 0;
-                giftInfoGroup.paddingBottom = 0;
-                giftInfoGroup.paddingLeft = 0;
-                giftInfoGroup.paddingRight= 0;
-            } else {
-                giftInfoGroup.remove();
-            };
-            
 
             zyInfoGroup.layoutPositioning = 'AUTO';
             zyInfoGroup.flexGrow = 0;
@@ -383,6 +339,61 @@ mg.ui.onmessage = (message) => {
             zyInfoGroup.paddingBottom = 0;
             zyInfoGroup.paddingLeft = 0;
             zyInfoGroup.paddingRight= 0;
+            
+            zyInfoGroup.appendChild(titleNode);
+            zyInfoGroup.appendChild(secTitleNode);
+
+            giftInfoGroup.appendChild(gifNode1);
+            giftInfoGroup.appendChild(gifNode2);
+            giftInfoGroup.appendChild(gifNode3);
+            giftInfoGroup.appendChild(gifNode4);
+            /*
+            zyData.main.gift.isview.forEach((item,index) => {
+                if(item){
+                    giftInfoGroup.appendChild("gifNode" + (index + 1));
+                }
+            })*/
+            giftInfoGroup.layoutPositioning = 'AUTO';
+            giftInfoGroup.flexGrow = 0;
+            giftInfoGroup.flexMode = "HORIZONTAL";
+            giftInfoGroup.flexWrap = "NO_WRAP";
+            giftInfoGroup.itemSpacing = 24;
+            giftInfoGroup.mainAxisAlignItems = "FLEX_START";
+            giftInfoGroup.mainAxisSizingMode = "AUTO";
+            giftInfoGroup.crossAxisAlignItems = "FLEX_START"; 
+            giftInfoGroup.crossAxisSizingMode = "AUTO";
+            giftInfoGroup.paddingTop = 0;
+            giftInfoGroup.paddingBottom = 0;
+            giftInfoGroup.paddingLeft = 0;
+            giftInfoGroup.paddingRight= 0;
+
+            zyInfoGroup.appendChild(giftInfoGroup);
+            zyInfoGroup.flexMode = "VERTICAL";
+            zyInfoGroup.mainAxisAlignItems = "FLEX_START";
+            zyInfoGroup.mainAxisSizingMode = "AUTO";
+            zyInfoGroup.crossAxisAlignItems = "CENTER"; 
+            zyInfoGroup.crossAxisSizingMode = "AUTO";
+
+            if(imgs[imgsNum].info[0] == 1){
+                //zyInfoGroup.appendChild(titleNode);
+            } else {
+                titleNode.remove();
+            };
+
+            if(imgs[imgsNum].info[1] == 1){
+                //zyInfoGroup.appendChild(secTitleNode);
+            } else {
+                secTitleNode.remove();
+            };
+            
+            if(imgs[imgsNum].info[2] == 1){
+                //zyInfoGroup.appendChild(giftInfoGroup);
+            } else {
+                giftInfoGroup.remove();
+            };
+            
+
+            
 
             if((imgs[imgsNum].info[0] + imgs[imgsNum].info[1] + imgs[imgsNum].info[2] ) > 0){
                 useFrame.appendChild(zyInfoGroup);
@@ -403,7 +414,7 @@ mg.ui.onmessage = (message) => {
             useFrame.crossAxisAlignItems = "CENTER"; 
 
             if(imgsNum > 0 && !titleNode.removed){
-                titleNode.rescale(zyData.zy[imgsNum - 1].set.fontsize[2]/titleNode.height,{scaleCenter:'CENTER'});
+                titleNode.rescale(zyData.zy[imgsNum - 1].set.fontsize[2] * zyData.main.title[0].split('，').length/titleNode.height,{scaleCenter:'CENTER'});
             }
             if(imgsNum > 0 && !secTitleNode.removed){
                 secTitleNode.rescale(zyData.zy[imgsNum - 1].set.fontsize[1]/secTitleNode.height,{scaleCenter:'CENTER'});
@@ -456,9 +467,8 @@ mg.ui.onmessage = (message) => {
                 ]
             }
             if(useFrame.children[0] && imgs[imgsNum].safa && imgs[imgsNum].safa[0] && !imgs[imgsNum].safa[0][4]){
-                var yy = imgs[imgsNum].safa[0][1] + imgs[imgsNum].safa[0][3] - useFrame.children[0].height * 1.5;
-                if(yy > (imgs[imgsNum].safa[0][1] + imgs[imgsNum].safa[0][3]/4)){
-                    useFrame.children[0].y = imgs[imgsNum].safa[0][1] + imgs[imgsNum].safa[0][3] - useFrame.children[0].height * 1.5
+                if(useFrame.children[0].height < (imgs[imgsNum].safa[0][1] + imgs[imgsNum].safa[0][3])/2){
+                    useFrame.children[0].y = imgs[imgsNum].safa[0][1] + imgs[imgsNum].safa[0][3] - useFrame.children[0].height - zyData.zy[imgsNum - 1].set.fontsize[2]
                 }
             }
             
@@ -524,7 +534,10 @@ mg.ui.onmessage = (message) => {
                         useFrame.children[ii].y = imgs[imgsNum].safa[0][1];
                     }
                     if(useFrame.children[ii - 1] && useFrame.children[ii - 1].y < useFrame.children[ii].y + useFrame.children[ii].height){
-                        useFrame.children[ii - 1].y = useFrame.children[ii].y + useFrame.children[ii].height
+                        //useFrame.children[ii - 1].y = useFrame.children[ii].y + useFrame.children[ii].height
+                        useFrame.children[ii].rescale(0.8);
+                        useFrame.children[ii].x = useFrame.children[ii].x/2;
+                        useFrame.children[ii].y = useFrame.children[ii].y/2;
                     }
                 }
                 
@@ -538,8 +551,9 @@ mg.ui.onmessage = (message) => {
 
         function addComponent(sets,starX,starY){
             var x = starX, y = starY;
-            var fontW = '';
+            
             for(var i = 0; i < sets.length; i++){
+                var fontW = 'Regular';
                 var node = mg.createComponent();
                 node.name = sets[i].name;
                 //node.fills = [{type:"SOLID",color:{r:0.175,g:0.175,b:0.175,a:1,}}];
@@ -551,35 +565,35 @@ mg.ui.onmessage = (message) => {
                 textNode.characters = sets[i].text;
                 textNode.textAlignHorizontal = "CENTER";
                 textNode.textAlignVertical = "CENTER";
-                textNode.textAutoResize = "NONE";
-                textNode.height = sets[i].fontsize;
+                textNode.textAutoResize = "WIDTH_AND_HEIGHT";
                 textNode.fills = [{type:"SOLID",color:{r:0.175,g:0.175,b:0.175,a:1,}}];
-                if(i == 0){
+                if(i == 0 && sets[i].fontfamily.split('Source').length > 1){
                     fontW = "Heavy";
-                } else if (i == 1){
+                } else if (i == 1 && sets[i].fontfamily.split('Source').length > 1){
                     fontW = "Bold";
                 }
                 setTextMain(textNode,0,sets[i].text.length,sets[i].fontsize,fontW,sets[i].fontfamily);
-                node.appendChild(textNode)
+                console.log(sets[i].fontsize,fontW,sets[i].fontfamily)
+                node.appendChild(textNode);
+                node.clipsContent = false;
                 node.flexMode = 'AUTO';
                 node.flexWrap = "NO_WRAP";
                 node.itemSpacing = 0;
-                node.mainAxisAlignItems = "FLEX_END";
+                node.mainAxisAlignItems = "CENTER";
                 node.crossAxisAlignItems = "CENTER"; 
                 node.width = sets[i].w;
                 node.height = sets[i].h;
-                node.flexMode = "NONE";
-                textNode.textAutoResize = "WIDTH_AND_HEIGHT";
                 if(i > 1){
                     var icon = mg.createRectangle();
                     icon.width = sets[i].w;
                     icon.height = sets[i].w;
                     icon.fills = [{type:"SOLID",color:{r:0.8,g:0.8,b:0.8,a:1,}}];
-                    node.appendChild(icon);
-                    node.children[1].x = 0;
-                    node.children[1].y = 0;
+                    node.insertChild(0,icon);
+                    node.itemSpacing = sets[i].fontsize/2;
+                    node.mainAxisAlignItems = "FLEX_START";
                 }
-                textNode.setRangeLineHeight(0,sets[i].text.length,sets[i].fontsize)
+
+                
             }
         }
 
@@ -4330,11 +4344,16 @@ async function setTextMain(node,star,end,fontSize,fontWeight,fontFamily){
     if(fontFamily){
         fontF = fonts.filter(item => item.fontName.family == fontFamily)[0];
         fontW = fontWeight;
+        if(!fontF){
+            fontF = "Source Han Sans CN"
+        }
         node.setRangeFontName(star,end,{"family": fontF.fontName.family,"style": fontW});
         node.setRangeFontSize(star,end,fontSize);
+        node.setRangeLineHeight(star,end,{value:fontSize, unit:"PIXELS"});
     } else {
         node.setRangeFontName(star,end,{"family":"Source Han Sans CN","style": "Regular"});
         node.setRangeFontSize(star,end,fontSize);
+        node.setRangeLineHeight(star,end,{value:fontSize, unit:"PIXELS"});
     }
     /*
     await mg.loadFontAsync({
